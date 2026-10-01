@@ -94,8 +94,9 @@
   border-color: var(--color-lab-border) !important; 
 }
 
-.text-slate-900, .text-slate-800, .text-gray-900 { color: #f4f4f5 !important; } /* zinc-100 */
-.text-slate-600, .text-slate-500, .text-gray-500 { color: #a1a1aa !important; } /* zinc-400 */
+.text-slate-900, .text-slate-800, .text-slate-700, .text-gray-900, .text-gray-800, .text-gray-700 { color: #f4f4f5 !important; } /* zinc-100 */
+.text-slate-600, .text-slate-500, .text-gray-600, .text-gray-500 { color: #a1a1aa !important; } /* zinc-400 */
+.text-slate-400, .text-slate-300, .text-gray-400, .text-gray-300 { color: #d4d4d8 !important; } /* zinc-300 */
 
 .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl {
   box-shadow: none !important;
