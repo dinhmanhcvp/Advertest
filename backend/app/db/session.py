@@ -10,7 +10,12 @@ from contextlib import contextmanager
 
 from backend.app.db.models import Base
 
+from pathlib import Path
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///data/advertest.db")
+
+if DATABASE_URL.startswith("sqlite:///"):
+    db_path = DATABASE_URL.replace("sqlite:///", "")
+    Path(db_path).parent.mkdir(parents=True, exist_ok=True)
 
 # SQLite needs check_same_thread=False for FastAPI async
 connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
