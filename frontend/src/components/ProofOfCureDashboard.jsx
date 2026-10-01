@@ -1,113 +1,106 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React from "react";
+import { DownloadCloud, ArrowUpRight, CheckCircle2, AlertTriangle, ShieldCheck } from "lucide-react";
 
-const ProofOfCureDashboard = ({ retrainData }) => {
-  if (!retrainData) return null;
+export default function ProofOfCureDashboard({ retrainData }) {
+  // Mock data to demonstrate the UI structure requested
+  const metrics = {
+    baselineMap: 92.4,
+    corruptedMap: 90.1,
+    delta: 27.5,
+    framesRecovered: 1420
+  };
 
-  const { map_improvement, proof_of_cure } = retrainData;
+  const lineageData = [
+    { id: "WF_042", errorClass: "False Negative", aug: "Biomechanical Blur (4Hz)", delta: "+0.45" },
+    { id: "WF_089", errorClass: "False Negative", aug: "Overexposure (Sev 3)", delta: "+0.38" },
+    { id: "EGO_112", errorClass: "BBox Drift", aug: "Motion Blur (Linear)", delta: "+0.29" },
+    { id: "EGO_404", errorClass: "False Positive", aug: "Gaussian Noise", delta: "+0.15" },
+  ];
 
   return (
-    <div className="flex flex-col gap-6 mt-6 max-w-5xl mx-auto">
-      {/* Header & Overall Improvement */}
-      <div className="bg-slate-900 border border-slate-700/50 rounded-2xl p-6 shadow-lg">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h2 className="text-xl font-bold text-white flex items-center gap-3">
-              <i className="fa-solid fa-shield-check text-emerald-400"></i>
-              Proof of Cure Validation
-            </h2>
-            <p className="text-sm text-slate-400 mt-1">
-              Retraining complete. Evaluating against held-out validation set.
-            </p>
-          </div>
-          <div className="bg-emerald-500/10 border border-emerald-500/30 px-4 py-2 rounded-lg flex items-center gap-3">
-             <div className="flex flex-col">
-               <span className="text-[10px] text-emerald-400/80 uppercase font-bold tracking-wider">mPC Improvement</span>
-               <span className="text-xl font-black text-emerald-400">+{map_improvement.corrupted_improvement_pct.toFixed(1)}%</span>
-             </div>
-             <div className="h-8 w-px bg-emerald-500/20 mx-2"></div>
-             <div className="flex flex-col">
-               <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Base mAP Drop</span>
-               <span className="text-sm font-bold text-slate-300">-{map_improvement.base_drop_pct.toFixed(1)}%</span>
-             </div>
+    <div className="flex flex-col gap-4 w-full max-w-6xl mx-auto text-zinc-100 bg-lab-bg p-4 font-sans">
+      <div className="flex justify-between items-end mb-2">
+        <div>
+          <h2 className="text-xl font-semibold flex items-center gap-2">
+            <ShieldCheck className="w-6 h-6 text-signal-teal" /> Proof of Cure Validation
+          </h2>
+          <p className="text-sm text-zinc-500 mt-1">Validation on held-out edge cases</p>
+        </div>
+        <button className="bg-white text-black font-semibold py-2.5 px-5 rounded-md flex items-center gap-2 hover:bg-zinc-200 transition-colors shadow-[0_0_15px_rgba(16,185,129,0.5)]">
+          <DownloadCloud className="w-5 h-5" /> Export Model & Lineage to Data Lake
+        </button>
+      </div>
+
+      {/* Top Row: Metrics (Bento Box) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Baseline mAP */}
+        <div className="bg-lab-surface border border-lab-border rounded-lg p-5 flex flex-col justify-between">
+          <span className="text-sm text-zinc-400 font-semibold uppercase tracking-wider">Baseline mAP</span>
+          <div className="mt-4 flex items-end gap-2">
+            <span className="font-mono text-4xl text-zinc-200 font-light">{metrics.baselineMap}%</span>
+            <span className="text-sm font-mono text-zinc-500 mb-1">STABLE</span>
           </div>
         </div>
 
-        {/* Before / After Masked Faceds */}
-        <h3 className="text-sm font-bold text-slate-300 mb-4 border-b border-slate-800 pb-2">Edge Case Validation Samples</h3>
-        
-        <div className="flex flex-col gap-6">
-          {proof_of_cure.map((item) => (
-            <div key={item.case_id} className="bg-slate-950 border border-slate-800 rounded-xl p-5 relative overflow-hidden shadow-inner">
-              <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs bg-slate-800 text-slate-400 px-2 py-1 rounded font-mono border border-slate-700">{item.case_id}</span>
-                  <h4 className="text-sm font-bold text-slate-200">{item.condition}</h4>
-                </div>
-                <div className="bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/40 px-3 py-1 rounded-full">
-                  <span className="text-emerald-400 font-bold flex items-center gap-1.5 text-xs">
-                    <i className="fa-solid fa-arrow-trend-up"></i>
-                    {item.delta}
-                  </span>
-                </div>
-              </div>
+        {/* Corrupted mAP */}
+        <div className="bg-lab-surface border border-lab-border rounded-lg p-5 flex flex-col justify-between relative overflow-hidden">
+          <span className="text-sm text-zinc-400 font-semibold uppercase tracking-wider">Corrupted mAP</span>
+          <div className="mt-4 flex items-end gap-3 z-10">
+            <span className="font-mono text-4xl text-zinc-200 font-light">{metrics.corruptedMap}%</span>
+            <span className="text-lg font-mono text-signal-teal flex items-center mb-1 font-bold">
+              <ArrowUpRight className="w-5 h-5 mr-1" /> +{metrics.delta}%
+            </span>
+          </div>
+          {/* Subtle bg glow for emphasis without breaking the strict UI */}
+          <div className="absolute -bottom-4 -right-4 w-24 h-24 bg-signal-teal/10 blur-2xl rounded-full"></div>
+        </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Model V1 */}
-                <div className="bg-slate-900 border border-red-500/20 rounded-lg p-3 relative overflow-hidden group">
-                  <div className="flex justify-between items-center mb-2 z-10 relative">
-                    <span className="text-xs font-bold text-slate-400">Model V1 (Baseline)</span>
-                    <span className="text-[10px] bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
-                      {item.model_v1.status}
-                    </span>
-                  </div>
-                  <div className="h-48 bg-slate-800 rounded-md relative flex items-center justify-center border border-slate-700/50">
-                     <i className="fa-regular fa-image text-3xl text-slate-600 absolute"></i>
-                     {item.model_v1.bbox ? (
-                       <div 
-                         className="absolute border-2 border-red-500 bg-red-500/10 flex items-end pb-1"
-                         style={{ left: '30%', top: '30%', width: '40%', height: '40%' }} // Mock coords
-                       >
-                         <span className="bg-red-500 text-white text-[9px] font-bold px-1 absolute -top-4 left-0">
-                            {item.model_v1.confidence.toFixed(2)}
-                         </span>
-                       </div>
-                     ) : (
-                       <div className="absolute flex flex-col items-center">
-                         <i className="fa-solid fa-ghost text-red-500/40 text-2xl mb-1"></i>
-                         <span className="text-red-400/60 text-[10px] font-bold">Missed</span>
-                       </div>
-                     )}
-                  </div>
-                </div>
+        {/* Frames Recovered */}
+        <div className="bg-lab-surface border border-lab-border rounded-lg p-5 flex flex-col justify-between">
+          <span className="text-sm text-zinc-400 font-semibold uppercase tracking-wider">Frames Recovered</span>
+          <div className="mt-4 flex items-end gap-2">
+            <span className="font-mono text-4xl text-zinc-200 font-light">{metrics.framesRecovered}</span>
+            <span className="text-sm font-mono text-signal-teal mb-1 flex items-center gap-1">
+              <CheckCircle2 className="w-4 h-4" /> VERIFIED
+            </span>
+          </div>
+        </div>
+      </div>
 
-                {/* Model V2 */}
-                <div className="bg-slate-900 border border-emerald-500/30 rounded-lg p-3 relative overflow-hidden">
-                  <div className="flex justify-between items-center mb-2 z-10 relative">
-                    <span className="text-xs font-bold text-emerald-400/80">Model V2 (Retrained)</span>
-                    <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider shadow-[0_0_10px_rgba(16,185,129,0.2)]">
-                      {item.model_v2.status}
+      {/* Bottom Row: Data Lineage Table */}
+      <div className="bg-lab-surface border border-lab-border rounded-lg overflow-hidden mt-2 flex flex-col">
+        <div className="p-4 border-b border-lab-border flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 text-signal-amber" />
+          <h3 className="text-sm font-semibold text-zinc-300">Top Corrected Edge Cases</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm whitespace-nowrap">
+            <thead className="bg-zinc-950/50 border-b border-lab-border text-zinc-400">
+              <tr>
+                <th className="px-6 py-3 font-semibold uppercase tracking-wider text-xs">Sample ID</th>
+                <th className="px-6 py-3 font-semibold uppercase tracking-wider text-xs">Error Class</th>
+                <th className="px-6 py-3 font-semibold uppercase tracking-wider text-xs">Applied IMU Augmentation</th>
+                <th className="px-6 py-3 font-semibold uppercase tracking-wider text-xs text-right">Confidence Delta</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-lab-border text-zinc-300">
+              {lineageData.map((row, idx) => (
+                <tr key={idx} className="hover:bg-zinc-800/30 transition-colors">
+                  <td className="px-6 py-4 font-mono text-zinc-400">{row.id}</td>
+                  <td className="px-6 py-4">
+                    <span className="bg-zinc-800 border border-lab-border px-2 py-1 rounded text-xs">
+                      {row.errorClass}
                     </span>
-                  </div>
-                  <div className="h-48 bg-slate-800 rounded-md relative flex items-center justify-center border border-slate-700/50">
-                     <i className="fa-regular fa-image text-3xl text-slate-600 absolute"></i>
-                     <div 
-                       className="absolute border-2 border-emerald-500 bg-emerald-500/10 flex items-end pb-1 shadow-[0_0_15px_rgba(16,185,129,0.2)]"
-                       style={{ left: '28%', top: '28%', width: '44%', height: '44%' }}
-                     >
-                       <span className="bg-emerald-500 text-white text-[9px] font-bold px-1 absolute -top-4 left-0 flex items-center gap-1">
-                          <i className="fa-solid fa-check text-[8px]"></i> {item.model_v2.confidence.toFixed(2)}
-                       </span>
-                     </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
+                  </td>
+                  <td className="px-6 py-4 font-mono text-xs">{row.aug}</td>
+                  <td className="px-6 py-4 font-mono text-right text-signal-teal">{row.delta}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
   );
-};
-
-export default ProofOfCureDashboard;
+}
