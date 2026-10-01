@@ -257,7 +257,7 @@ export default function ConfigureProblemPage() {
       sampleCount: dataset.sample_count,
       samples: dataset.sample_count != null ? `${dataset.sample_count} ảnh` : "chưa có ảnh",
       isLocal: dataset.runnable !== false && Boolean(dataset.anonymized),
-      reason: dataset.blocked_reason || (dataset.anonymized ? "Manifest chÆ°a sẵn sàng" : "Chưa anonymize"),
+      reason: dataset.blocked_reason || (dataset.anonymized ? "Manifest chưa sẵn sàng" : "Chưa anonymize"),
       classLabels: Object.entries(dataset.class_map || {}).map(([id, name]) => ({ id, name })),
       runnable: dataset.runnable !== false && Boolean(dataset.anonymized),
       source: "catalog",
@@ -639,7 +639,7 @@ export default function ConfigureProblemPage() {
               })}
               {!isLoadingCatalog && !filteredModels.length && (
                 <p role="status" className="col-span-full rounded-lg border border-dashed border-slate-300 p-4 text-xs text-slate-500">
-                  Live model catalog chÆ°a sẵn sàng; chưa thể chọn checkpoint để chạy.
+                  Live model catalog chưa sẵn sàng; chưa thể chọn checkpoint để chạy.
                 </p>
               )}
             </div>
@@ -708,7 +708,7 @@ export default function ConfigureProblemPage() {
               })}
               {!isLoadingCatalog && !filteredDatasets.length && (
                 <p role="status" className="col-span-full rounded-lg border border-dashed border-slate-300 p-4 text-xs text-slate-500">
-                  Live dataset catalog chÆ°a sẵn sàng; chưa thể chọn bundle đã xác thực.
+                  Live dataset catalog chưa sẵn sàng; chưa thể chọn bundle đã xác thực.
                 </p>
               )}
             </div>
