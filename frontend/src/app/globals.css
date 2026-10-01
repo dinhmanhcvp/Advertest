@@ -7,6 +7,8 @@
   --color-lab-bg: #000000;
   --color-lab-surface: rgba(255, 255, 255, 0.02);
   --color-lab-border: rgba(255, 255, 255, 0.1);
+  --color-signal-amber: #f59e0b; /* Amber */
+  --color-signal-teal: #22d3ee;  /* Neon Cyan */
   
   --font-sans: "Inter", sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", monospace;
@@ -96,8 +98,17 @@
 }
 
 /* Legacy Fallbacks mapped to new Scale AI theme */
-.bg-slate-900, .bg-slate-800 { background-color: var(--color-lab-bg) !important; }
-.border-slate-800, .border-slate-700 { border-color: var(--color-lab-border) !important; }
-.text-slate-400 { color: #a1a1aa !important; }
-.text-slate-300 { color: #d4d4d8 !important; }
+.bg-slate-50, .bg-slate-100 { background-color: var(--color-lab-surface) !important; color: #f4f4f5 !important; }
+.bg-slate-800, .bg-slate-900 { background-color: var(--color-lab-bg) !important; }
 
+.border-slate-100, .border-slate-200, .border-slate-300, .border-slate-700, .border-slate-800, .border-gray-200 { 
+  border-color: var(--color-lab-border) !important; 
+}
+
+.text-slate-900, .text-slate-800, .text-slate-700, .text-gray-900, .text-gray-800, .text-gray-700 { color: #f4f4f5 !important; } /* zinc-100 */
+.text-slate-600, .text-slate-500, .text-gray-600, .text-gray-500 { color: #a1a1aa !important; } /* zinc-400 */
+.text-slate-400, .text-slate-300, .text-gray-400, .text-gray-300 { color: #d4d4d8 !important; } /* zinc-300 */
+
+.shadow-sm, .shadow-md, .shadow-lg, .shadow-xl {
+  box-shadow: none !important;
+}
