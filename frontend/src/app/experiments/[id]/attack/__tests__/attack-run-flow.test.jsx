@@ -70,7 +70,7 @@ describe("ConfigureAttackPage real run handoff", () => {
       selectedDatasetSource: "project",
     };
     const globalModels = [{ id: "global-model", runnable: true, checkpoint_role: "base", task: "detection2d" }];
-    const globalDatasets = [{ name: "kitti", anonymized: true }];
+    const globalDatasets = [{ name: "widerface", anonymized: true }];
 
     expect(resolveBackendModel(context, globalModels, [])).toBeNull();
     expect(resolveBackendDataset(context, globalDatasets, [])).toBeNull();
@@ -79,19 +79,19 @@ describe("ConfigureAttackPage real run handoff", () => {
   it("persists backend report and samples before opening visual results", async () => {
     getModelVersions.mockResolvedValueOnce([
       {
-        id: "yolo11s-kitti-clean-b0",
-        model_name: "yolo11s",
-        checkpoint_path: "data/checkpoints/uploaded/yolo11s-clean-b0_best.pt",
-        model_family_id: "yolo11",
+        id: "yolov7-face-widerface-clean-b0",
+        model_name: "yolov7-face",
+        checkpoint_path: "data/checkpoints/uploaded/yolov7-face-clean-b0_best.pt",
+        model_family_id: "yolov7-face",
         task: "detection2d",
         runnable: true,
         checkpoint_role: "defence_baseline",
       },
       {
-        id: "yolo11s-base",
-        model_name: "yolo11s",
-        checkpoint_path: "data/checkpoints/surrogates/yolo11s.pt",
-        model_family_id: "yolo11",
+        id: "yolov7-face-base",
+        model_name: "yolov7-face",
+        checkpoint_path: "data/checkpoints/surrogates/yolov7-face.pt",
+        model_family_id: "yolov7-face",
         task: "detection2d",
         runnable: true,
         checkpoint_role: "base",
@@ -99,8 +99,8 @@ describe("ConfigureAttackPage real run handoff", () => {
     ]);
     getCatalogDatasets.mockResolvedValueOnce([
       {
-        name: "kitti",
-        title: "KITTI thật từ backend",
+        name: "widerface",
+        title: "WIDER FACE thật từ backend",
         task_id: "detection2d",
       },
     ]);
@@ -115,8 +115,8 @@ describe("ConfigureAttackPage real run handoff", () => {
       sample_id: "000001",
       attack: "depth_fog",
       severity: 3,
-      clean_prediction: { boxes: [{ xyxy: [1, 2, 10, 20], label: "Car", score: 0.8 }] },
-      attacked_prediction: { boxes: [{ xyxy: [2, 3, 8, 12], label: "Car", score: 0.4 }] },
+      clean_prediction: { boxes: [{ xyxy: [1, 2, 10, 20], label: "Masked Face", score: 0.8 }] },
+      attacked_prediction: { boxes: [{ xyxy: [2, 3, 8, 12], label: "Masked Face", score: 0.4 }] },
       artifacts: {
         clean_input_url: "/data/runs/run-real-001/clean.png",
         attacked_input_url: "/data/runs/run-real-001/attacked.png",
@@ -125,9 +125,9 @@ describe("ConfigureAttackPage real run handoff", () => {
     };
     const report = {
       run_id: "run-real-001",
-      model: "yolo11s",
-      model_version: "yolo11s-base",
-      dataset: "kitti",
+      model: "yolov7-face",
+      model_version: "yolov7-face-base",
+      dataset: "widerface",
       n_samples: 1,
       ap_clean: 0.8,
       sample_results: [sample],
@@ -145,16 +145,16 @@ describe("ConfigureAttackPage real run handoff", () => {
     expect(getCatalogAttacks).toHaveBeenCalledWith(
       expect.objectContaining({
         task_id: "detection2d",
-        model_family_id: "yolo11",
-        checkpoint_id: "yolo11s-kitti-clean-b0",
-        dataset: "kitti",
+        model_family_id: "yolov7-face",
+        checkpoint_id: "yolov7-face-widerface-clean-b0",
+        dataset: "widerface",
       }),
     );
     expect(createRun.mock.calls[0][0]).toMatchObject({
-      checkpoint_id: "yolo11s-kitti-clean-b0",
-      model_family_id: "yolo11",
+      checkpoint_id: "yolov7-face-widerface-clean-b0",
+      model_family_id: "yolov7-face",
       task_id: "detection2d",
-      dataset: "kitti",
+      dataset: "widerface",
       recipe: {
         steps: [
           expect.objectContaining({ attack_name: "depth_fog", position: 0 }),
@@ -173,10 +173,10 @@ describe("ConfigureAttackPage real run handoff", () => {
   it("submits individual attacks config when Tách riêng lẻ mode is selected", async () => {
     getModelVersions.mockResolvedValueOnce([
       {
-        id: "yolo11s-base",
-        model_name: "yolo11s",
-        checkpoint_path: "data/checkpoints/surrogates/yolo11s.pt",
-        model_family_id: "yolo11",
+        id: "yolov7-face-base",
+        model_name: "yolov7-face",
+        checkpoint_path: "data/checkpoints/surrogates/yolov7-face.pt",
+        model_family_id: "yolov7-face",
         task: "detection2d",
         runnable: true,
         checkpoint_role: "base",
@@ -184,8 +184,8 @@ describe("ConfigureAttackPage real run handoff", () => {
     ]);
     getCatalogDatasets.mockResolvedValueOnce([
       {
-        name: "kitti",
-        title: "KITTI",
+        name: "widerface",
+        title: "WIDER FACE",
         task_id: "detection2d",
       },
     ]);
@@ -209,7 +209,7 @@ describe("ConfigureAttackPage real run handoff", () => {
 
     await waitFor(() => expect(createRun).toHaveBeenCalledTimes(1));
     expect(createRun.mock.calls[0][0]).toMatchObject({
-      checkpoint_id: "yolo11s-base",
+      checkpoint_id: "yolov7-face-base",
       attacks: ["depth_fog", "motion_blur"],
     });
     expect(createRun.mock.calls[0][0].recipe).toBeUndefined();

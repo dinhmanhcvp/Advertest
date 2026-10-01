@@ -413,8 +413,8 @@ function predictionMetrics(report, sample, attacked, taskId = "detection2d") {
   if (taskId === "detection3d") {
     const boxes3d = predictionBoxes3d(prediction);
     const cleanBoxes3d = predictionBoxes3d(cleanPrediction);
-    const cleanAp3d = numericValue(report?.metrics?.clean?.kitti_3d_ap);
-    const attackedAp3d = numericValue(cell?.metrics?.kitti_3d_ap ?? cell?.ap);
+    const cleanAp3d = numericValue(report?.metrics?.clean?.widerface_3d_ap);
+    const attackedAp3d = numericValue(cell?.metrics?.widerface_3d_ap ?? cell?.ap);
     const cleanBevIou = numericValue(report?.metrics?.clean?.mean_bev_iou ?? report?.metrics?.clean?.bev_iou);
     const attackedBevIou = numericValue(cell?.metrics?.mean_bev_iou ?? cell?.metrics?.bev_iou);
     const confidence = averageConfidence(boxes3d);
@@ -433,7 +433,7 @@ function predictionMetrics(report, sample, attacked, taskId = "detection2d") {
         icon: Target,
       },
       {
-        label: "KITTI 3D AP",
+        label: "WIDER FACE 3D AP",
         value: (attacked ? attackedAp3d : cleanAp3d) === null ? NO_DATA : (attacked ? attackedAp3d : cleanAp3d).toFixed(2),
         trend: attacked ? percentageDelta(attackedAp3d, cleanAp3d) : null,
         icon: BarChart3,
@@ -787,7 +787,7 @@ function SampleNavigator({ samples, activeIndex, onSelectSample, zoom = 1, onZoo
   );
 }
 
-function EvidenceCard({ title, children, footer }) {
+function EvidenceMasked Faced({ title, children, footer }) {
   return (
     <section className="flex min-w-0 flex-col rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
       <h2 className="truncate text-[11px] font-bold text-slate-900">{title}</h2>
@@ -1314,7 +1314,7 @@ function DeepDiveGrid({ sample, taskId = "detection2d", zoomRegion, setZoomRegio
   return (
     <div data-testid="deep-dive-grid" className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
       {/* 1. Difference Map (|Δ|) */}
-      <EvidenceCard
+      <EvidenceMasked Faced
         title="Bản đồ khác biệt (|Δ|)"
         footer={
           <div className="flex justify-between text-[9px] text-slate-500 font-mono">
@@ -1343,10 +1343,10 @@ function DeepDiveGrid({ sample, taskId = "detection2d", zoomRegion, setZoomRegio
             <AnalysisArtifact src={null} />
           )}
         </div>
-      </EvidenceCard>
+      </EvidenceMasked Faced>
 
       {/* 2. Sụt giảm độ tin cậy (Confidence Drop) */}
-      <EvidenceCard
+      <EvidenceMasked Faced
         title="Sụt giảm Confidence (Độ tin cậy)"
         footer={
           <div className="flex justify-between text-[9px] text-slate-500 font-mono">
@@ -1367,9 +1367,9 @@ function DeepDiveGrid({ sample, taskId = "detection2d", zoomRegion, setZoomRegio
             <AnalysisArtifact src={null} />
           )}
         </div>
-      </EvidenceCard>
+      </EvidenceMasked Faced>
 
-      <EvidenceCard
+      <EvidenceMasked Faced
         title="Nhiễu đối kháng (Perturbation)"
         footer={
           <div className="flex justify-between text-[9px] text-slate-500 font-mono">
@@ -1419,10 +1419,10 @@ function DeepDiveGrid({ sample, taskId = "detection2d", zoomRegion, setZoomRegio
             <AnalysisArtifact src={null} />
           )}
         </div>
-      </EvidenceCard>
+      </EvidenceMasked Faced>
 
       {taskId === "detection3d" ? (
-        <EvidenceCard
+        <EvidenceMasked Faced
           title="BEV 3D: ground truth vÃ  prediction"
           footer={
             <div className="flex justify-between text-[9px] text-slate-500 font-mono">
@@ -1445,9 +1445,9 @@ function DeepDiveGrid({ sample, taskId = "detection2d", zoomRegion, setZoomRegio
           ) : (
             <AnalysisArtifact src={null} />
           )}
-        </EvidenceCard>
+        </EvidenceMasked Faced>
       ) : taskId === "segmentation" ? (
-        <EvidenceCard
+        <EvidenceMasked Faced
           title="Phân đoạn (Segmentation)"
           footer={
             <div className="flex flex-wrap gap-1.5 text-[8px] font-medium text-slate-600">
@@ -1495,9 +1495,9 @@ function DeepDiveGrid({ sample, taskId = "detection2d", zoomRegion, setZoomRegio
               <AnalysisArtifact src={null} />
             )}
           </div>
-        </EvidenceCard>
+        </EvidenceMasked Faced>
       ) : (
-        <EvidenceCard
+        <EvidenceMasked Faced
           title="Mật độ phát hiện (Target Density)"
           footer={
             <div className="flex justify-between text-[9px] text-slate-500 font-mono">
@@ -1574,10 +1574,10 @@ function DeepDiveGrid({ sample, taskId = "detection2d", zoomRegion, setZoomRegio
               <AnalysisArtifact src={null} />
             )}
           </div>
-        </EvidenceCard>
+        </EvidenceMasked Faced>
       )}
 
-      <EvidenceCard
+      <EvidenceMasked Faced
         title="So sánh vùng phóng to (Zoom)"
         footer={
           <div className="flex justify-between text-[9px] text-slate-500 font-mono">
@@ -1680,7 +1680,7 @@ function DeepDiveGrid({ sample, taskId = "detection2d", zoomRegion, setZoomRegio
             <AnalysisArtifact src={null} />
           )}
         </div>
-      </EvidenceCard>
+      </EvidenceMasked Faced>
     </div>
   );
 }

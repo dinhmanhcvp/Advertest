@@ -35,7 +35,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import Badge from "@/components/common/Badge";
 import Button from "@/components/common/Button";
-import Card from "@/components/common/Card";
+import Masked Faced from "@/components/common/Masked Faced";
 import PageHeader from "@/components/layout/PageHeader";
 import { useProject } from "@/context/ProjectContext";
 import {
@@ -152,8 +152,8 @@ export function resolveBackendModel(context, versions, projectCheckpoints = []) 
       const identity = `${version.id} ${version.model_name} ${version.checkpoint_path || ""}`.toLowerCase();
       return requestedTokens.length > 0 && requestedTokens.every((token) => identity.includes(token));
     }) ||
-    baseVersions.find((version) => version.id === "yolo11s-base") ||
-    taskVersions.find((version) => version.id === "yolo11s-kitti-clean-b0") ||
+    baseVersions.find((version) => version.id === "yolov7-face-base") ||
+    taskVersions.find((version) => version.id === "yolov7-face-widerface-clean-b0") ||
     baseVersions.find((version) => version.id === "portable-blob-detector-v1") ||
     baseVersions[0] ||
     taskVersions.find((version) => version.checkpoint_role === "base") ||
@@ -178,7 +178,7 @@ export function resolveBackendDataset(context, datasets, projectDatasets = []) {
   const runnableDatasets = datasets.filter((dataset) => dataset.runnable !== false && dataset.anonymized !== false);
   return (
     runnableDatasets.find((dataset) => dataset.name === context.selectedDatasetId) ||
-    runnableDatasets.find((dataset) => dataset.name === "kitti") ||
+    runnableDatasets.find((dataset) => dataset.name === "widerface") ||
     runnableDatasets.find((dataset) => dataset.title === context.selectedDatasetName) ||
     runnableDatasets.find(
       (dataset) => requestedName && requestedName.includes(String(dataset.name || "").toLowerCase()),
@@ -201,9 +201,9 @@ function attackParamsForQueue(queue) {
 function buildRealRunConfig(context, attackQueue, model, dataset, attackMode = "combined") {
   const isCombined = attackMode === "combined";
   // Each dataset uses a strict parameter schema.  Start with the parameters
-  // advertised by the backend and add KITTI-only controls only for KITTI.
+  // advertised by the backend and add WIDER FACE-only controls only for WIDER FACE.
   const datasetParams = { ...(dataset.dataset_params || {}) };
-  if (dataset.name === "kitti") {
+  if (dataset.name === "widerface") {
     datasetParams.split = datasetParams.split || "val";
     datasetParams.difficulty = datasetParams.difficulty || "all";
     datasetParams.merge_van_truck = true;
@@ -328,10 +328,10 @@ function ConfigureAttackPageContent() {
     expName: expId,
     selectedTask: "detection2d",
     taskName: "Object Detection",
-    selectedModelId: "local_yolo11s_clean",
-    selectedModelName: "yolo11s-clean-b0_best.pt (Local Workspace)",
-    selectedDatasetId: "kitti_anonymized_de",
-    selectedDatasetName: "KITTI De-anonymized Set (Local Workspace)",
+    selectedModelId: "local_yolov7-face_clean",
+    selectedModelName: "yolov7-face-clean-b0_best.pt (Local Workspace)",
+    selectedDatasetId: "widerface_anonymized_de",
+    selectedDatasetName: "WIDER FACE De-anonymized Set (Local Workspace)",
     batchSize: 16,
     mixedPrecision: true,
     limit: 2,
@@ -867,7 +867,7 @@ function ConfigureAttackPageContent() {
       </div>
 
       {/* 1. PREDEFINED ATTACK PRESETS BAR */}
-      <Card
+      <Masked Faced
         title="1. Chọn tổ hợp kịch bản mẫu sẵn có (Attack Presets)"
         subtitle={`Các kịch bản chuẩn tối ưu cho ${expContext.taskName}`}
       >
@@ -898,13 +898,13 @@ function ConfigureAttackPageContent() {
             ),
           )}
         </div>
-      </Card>
+      </Masked Faced>
 
       {/* 2. MAIN ATTACK PICKER + INSPECTOR & RECIPE SUMMARY */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
         {/* LEFT COLUMN: Attack Category Catalog (4 Columns) */}
         <div className="xl:col-span-4 space-y-4">
-          <Card title="2. Danh mục phương pháp tấn công" subtitle={`Lọc theo bài toán [${expContext.taskName}]`}>
+          <Masked Faced title="2. Danh mục phương pháp tấn công" subtitle={`Lọc theo bài toán [${expContext.taskName}]`}>
             {/* Search */}
             <div className="relative mb-3">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
@@ -967,12 +967,12 @@ function ConfigureAttackPageContent() {
                 </div>
               ))}
             </div>
-          </Card>
+          </Masked Faced>
         </div>
 
         {/* CENTER COLUMN: Visual Example Preview & Severity Slider & OK Button (5 Columns) */}
         <div className="xl:col-span-5 space-y-4">
-          <Card
+          <Masked Faced
             title={`Chi tiết & Tác động của: ${currentAttack.name}`}
             subtitle={currentAttack.fullName}
             headerAction={<Badge variant="primary">{currentAttack.norm}</Badge>}
@@ -1011,7 +1011,7 @@ function ConfigureAttackPageContent() {
                     {/* Simulated Clean Bbox */}
                     <div className="z-10 absolute left-[20%] top-[35%] w-[45%] h-[40%] border-2 border-emerald-400 bg-emerald-500/10 rounded pointer-events-none">
                       <span className="bg-emerald-600 text-white text-[8px] px-1 rounded absolute -top-4 left-0 font-mono">
-                        {isTask3D ? "Car 3D 0.94" : "car 0.95"}
+                        {isTask3D ? "Masked Face 3D 0.94" : "car 0.95"}
                       </span>
                     </div>
                   </div>
@@ -1035,7 +1035,7 @@ function ConfigureAttackPageContent() {
                     {/* Simulated Missed / Degraded Bbox */}
                     <div className="z-10 absolute left-[20%] top-[35%] w-[45%] h-[40%] border-2 border-dashed border-red-400 bg-red-500/20 rounded pointer-events-none">
                       <span className="bg-red-600 text-white text-[8px] px-1 rounded absolute -top-4 left-0 font-mono">
-                        {isTask3D ? "Car 3D 0.42 (Lệch)" : "car 0.38 (Lệch)"}
+                        {isTask3D ? "Masked Face 3D 0.42 (Lệch)" : "car 0.38 (Lệch)"}
                       </span>
                     </div>
                   </div>
@@ -1153,12 +1153,12 @@ function ConfigureAttackPageContent() {
                 Xác nhận: Thêm vào Tóm tắt cấu hình tác động (OK)
               </Button>
             </div>
-          </Card>
+          </Masked Faced>
         </div>
 
         {/* RIGHT COLUMN: Attack Recipe Summary (3 Columns) */}
         <div className="xl:col-span-3 space-y-4">
-          <Card
+          <Masked Faced
             title={
               attackMode === "combined" ? "3. Chuỗi kết hợp tác động (Recipe)" : "3. Tác động riêng lẻ (Individual)"
             }
@@ -1373,7 +1373,7 @@ function ConfigureAttackPageContent() {
                 </Button>
               </Link>
             </div>
-          </Card>
+          </Masked Faced>
         </div>
       </div>
 
