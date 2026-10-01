@@ -13,6 +13,7 @@ import {
   ArrowRight,
   ShieldCheck,
   Zap,
+  Database,
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
