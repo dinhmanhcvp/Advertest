@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdverTest - System Architecture</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { primary: '#4f46e5', secondary: '#0ea5e9', accent: '#8b5cf6' }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #f8fafc; }
+        .connector { position: relative; width: 40px; display: flex; align-items: center; justify-content: center; z-index: 0; }
+        .connector::after {
+            content: ''; position: absolute; height: 3px; width: 100%; background: #cbd5e1; top: 50%; transform: translateY(-50%);
+        }
+        .arrow-right { width: 0; height: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 8px solid #94a3b8; position: absolute; right: -4px; z-index: 10; }
+        .pulse-ring { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(139, 92, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); } }
+    </style>
+</head>
+<body class="text-slate-800 p-8 min-h-screen flex flex-col items-center justify-center">
+
+    <div class="max-w-6xl w-full">
+        <!-- Header -->
+        <div class="text-center mb-16">
+            <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight mb-3">AdverTest Architectural Blueprint</h1>
+            <p class="text-slate-500 text-lg">Self-Evolving Adversarial Pipeline for Resource-Constrained Environments</p>
+        </div>
+
+        <!-- Architecture Flow -->
+        <div class="flex flex-col lg:flex-row items-stretch justify-between gap-2 lg:gap-0 relative">
+
+            <!-- Zone 1: Ingestion -->
+            <div class="flex-1 bg-white border border-slate-200 rounded-2xl p-6 shadow-xl relative z-10 hover:-translate-y-1 transition-transform">
+                <div class="flex items-center gap-3 mb-4 border-b border-slate-100 pb-3">
+                    <div class="bg-blue-100 p-2 rounded-lg text-blue-600"><i class="fa-solid fa-database text-xl"></i></div>
+                    <h2 class="font-bold text-slate-700 text-lg">1. Ingestion Layer</h2>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-slate-50 border border-slate-200 p-3 rounded-lg flex items-center gap-3">
+                        <i class="fa-solid fa-images text-slate-400"></i>
+                        <div>
+                            <p class="text-sm font-semibold text-slate-700">WIDER FACE / Ego4D</p>
+                            <p class="text-xs text-slate-500">Validation Datasets</p>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 p-3 rounded-lg flex items-center gap-3">
+                        <i class="fa-solid fa-weight-hanging text-slate-400"></i>
+                        <div>
+                            <p class="text-sm font-semibold text-slate-700">Base Model (.pt)</p>
+                            <p class="text-xs text-slate-500">e.g., YOLOv7-tiny</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Connector -->
+            <div class="hidden lg:flex connector"><div class="arrow-right"></div></div>
+
+            <!-- Zone 2: Triage & Gateway -->
+            <div class="flex-1 bg-white border border-slate-200 rounded-2xl p-6 shadow-xl relative z-10 hover:-translate-y-1 transition-transform">
+                <div class="flex items-center gap-3 mb-4 border-b border-slate-100 pb-3">
+                    <div class="bg-teal-100 p-2 rounded-lg text-teal-600"><i class="fa-solid fa-server text-xl"></i></div>
+                    <h2 class="font-bold text-slate-700 text-lg">2. FastAPI Gateway</h2>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-slate-900 text-white p-3 rounded-lg flex items-center gap-3 shadow-inner">
+                        <i class="fa-solid fa-filter text-teal-400"></i>
+                        <div>
+                            <p class="text-sm font-semibold">Baseline Inference</p>
+                            <p class="text-xs text-slate-400">Extract Hard Negatives (IoU < 0.5)</p>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 p-3 rounded-lg flex items-center gap-3">
+                        <i class="fa-solid fa-chart-pie text-slate-400"></i>
+                        <div>
+                            <p class="text-sm font-semibold text-slate-700">Failure Distribution</p>
+                            <p class="text-xs text-slate-500">Smart Sampling Logic</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Connector -->
+            <div class="hidden lg:flex connector"><div class="arrow-right"></div></div>
+
+            <!-- Zone 3: The Engine (Highlighted) -->
+            <div class="flex-[1.2] bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-2xl p-6 shadow-2xl relative z-10 pulse-ring">
+                <div class="flex items-center gap-3 mb-4 border-b border-indigo-100 pb-3">
+                    <div class="bg-indigo-600 p-2 rounded-lg text-white"><i class="fa-solid fa-microchip text-xl"></i></div>
+                    <h2 class="font-bold text-indigo-900 text-lg">3. Adversarial Engine</h2>
+                    <span class="ml-auto bg-indigo-100 text-indigo-700 text-[10px] uppercase font-bold px-2 py-1 rounded">Core</span>
+                </div>
+                <div class="space-y-3">
+                    <div class="bg-white border border-indigo-100 p-3 rounded-lg flex items-center gap-3 shadow-sm">
+                        <i class="fa-solid fa-burst text-purple-500"></i>
+                        <div>
+                            <p class="text-sm font-semibold text-slate-800">Attack Synthesis (Albumentations)</p>
+                            <p class="text-xs text-slate-500">Generates physics-based curriculum</p>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-indigo-100 p-3 rounded-lg flex items-center gap-3 shadow-sm">
+                        <i class="fa-solid fa-brain text-indigo-500"></i>
+                        <div>
+                            <p class="text-sm font-semibold text-slate-800">RL Policy Bandit</p>
+                            <p class="text-xs text-slate-500">Learns optimal severity chains</p>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 p-3 rounded-lg flex items-center gap-3 shadow-md mt-2 relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_2s_infinite]"></div>
+                        <i class="fa-brands fa-google text-emerald-400"></i>
+                        <div>
+                            <p class="text-sm font-semibold text-white">Ray Cluster / Colab GPU</p>
+                            <p class="text-xs text-slate-400">Distributed Retraining Loop</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Connector -->
+            <div class="hidden lg:flex connector"><div class="arrow-right"></div></div>
+
+            <!-- Zone 4: Validation & UI -->
+            <div class="flex-1 bg-white border border-slate-200 rounded-2xl p-6 shadow-xl relative z-10 hover:-translate-y-1 transition-transform">
+                <div class="flex items-center gap-3 mb-4 border-b border-slate-100 pb-3">
+                    <div class="bg-slate-800 p-2 rounded-lg text-white"><i class="fa-solid fa-desktop text-xl"></i></div>
+                    <h2 class="font-bold text-slate-700 text-lg">4. Next.js UI</h2>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-slate-50 border border-slate-200 p-3 rounded-lg flex items-center gap-3">
+                        <i class="fa-solid fa-clipboard-list text-slate-400"></i>
+                        <div>
+                            <p class="text-sm font-semibold text-slate-700">Audit Trail Viewer</p>
+                            <p class="text-xs text-slate-500">Explainable Attack Recipes</p>
+                        </div>
+                    </div>
+                    <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-lg flex items-center gap-3">
+                        <i class="fa-solid fa-shield-check text-emerald-500"></i>
+                        <div>
+                            <p class="text-sm font-semibold text-emerald-800">Proof of Cure</p>
+                            <p class="text-xs text-emerald-600">Before vs After Comparison</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        
+        <!-- Future Roadmap -->
+        <div class="mt-12 bg-white border border-slate-200 rounded-2xl p-8 shadow-lg relative z-10">
+            <div class="flex items-center gap-3 mb-6 border-b border-slate-100 pb-4">
+                <div class="bg-rose-100 p-2 rounded-lg text-rose-600"><i class="fa-solid fa-rocket text-xl"></i></div>
+                <h2 class="font-bold text-slate-800 text-2xl">Future Roadmap: Advanced Egocentric Trajectories</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl">
+                    <div class="text-rose-500 mb-3"><i class="fa-solid fa-person-walking text-2xl"></i></div>
+                    <h3 class="font-bold text-slate-800 mb-2">1. Biomechanical & IMU Modeling</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">Transitioning from random 2D blur to physics-based trajectories driven by simulated IMU data (e.g., modeling 2Hz head-bobbing or chest-mount rotation patterns).</p>
+                </div>
+                
+                <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl">
+                    <div class="text-amber-500 mb-3"><i class="fa-solid fa-cubes text-2xl"></i></div>
+                    <h3 class="font-bold text-slate-800 mb-2">2. 3D Depth & Virtual Physics</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">Upgrading to Monocular Depth Estimation to project static images into a 2.5D space. Simulating a Virtual Camera with real-world optics (e.g., GoPro focal lengths) for true parallax and physically accurate Fisheye distortion.</p>
+                </div>
+                
+                <div class="bg-slate-50 border border-slate-200 p-5 rounded-xl">
+                    <div class="text-blue-500 mb-3"><i class="fa-solid fa-timeline text-2xl"></i></div>
+                    <h3 class="font-bold text-slate-800 mb-2">3. Temporal Context Integration</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">Moving beyond frame-level YOLO by integrating optical flow and tracking (e.g., ByteTrack). Ensures bounding box persistence across highly degraded, consecutive frames where deterministic detection fails.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Legend / Footer -->
+        <div class="mt-12 flex items-center justify-center gap-6 text-sm text-slate-500">
+            <div class="flex items-center gap-2"><i class="fa-solid fa-circle text-blue-500 text-[8px]"></i> Data Flow</div>
+            <div class="flex items-center gap-2"><i class="fa-solid fa-circle text-teal-500 text-[8px]"></i> Microservices</div>
+            <div class="flex items-center gap-2"><i class="fa-solid fa-circle text-indigo-500 text-[8px]"></i> GPU Accelerated Compute</div>
+        </div>
+    </div>
+</body>
+</html>

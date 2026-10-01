@@ -216,6 +216,24 @@ class Settings(BaseSettings):
                 "CRITICAL PRODUCTION CONFIGURATION ERROR: The following settings failed security validation: "
                 + ", ".join(failed_keys)
             )
+    # Label Studio Integration
+    label_studio_url: str = "http://localhost:8080"
+    label_studio_api_token: str = ""
+
+    # Egocentric Pipeline
+    egocentric_error_iou_threshold: float = 0.3
+    egocentric_max_video_batch_size: int = 10
+    egocentric_temp_cache_max_gb: float = 5.0
+    egocentric_eot_n_transforms: int = 50
+
+    # PII Detection
+    pii_classes: str = "face,credit_card,screen,license_plate,document"
+    pii_confidence_threshold: float = 0.5
+    
+    # Face Detection Integration
+    yolov7_face_weights_path: str = "data/weights/yolov7-lite-t.pt"
+    widerface_data_root: str = "data/widerface"
+    ego4d_data_root: str = "data/ego4d"
 
 
 @lru_cache

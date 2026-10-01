@@ -1,0 +1,6 @@
+# AdverTest MVP Demo — Python Dependencies
+# Install: pip install -r advertest/requirements.txt
+
+albumentations>=1.3.0
+opencv-python>=4.8.0
+numpy>=1.24.0

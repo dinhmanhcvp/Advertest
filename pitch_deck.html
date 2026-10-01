@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdverTest — Project Pitch Deck</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #0f172a; font-family: 'Inter', sans-serif; overflow: hidden; }
+        code, .mono { font-family: 'JetBrains Mono', monospace; }
+        .slide { opacity: 0; visibility: hidden; position: absolute; inset: 0; transition: opacity 0.5s ease, visibility 0.5s; z-index: 0; display: flex; flex-direction: column; }
+        .slide.active { opacity: 1; visibility: visible; z-index: 10; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        .g { background: rgba(255,255,255,0.04); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 20px 40px -12px rgba(0,0,0,0.6); }
+        @keyframes gw { from { width: 0; } }
+        .ab { width: 0; }
+        .ab.on { animation: gw 1.2s cubic-bezier(0.22,1,0.36,1) forwards; }
+        .t { font-size: 10px; padding: 2px 8px; border-radius: 6px; font-weight: 700; letter-spacing: 0.03em; display: inline-block; }
+        .ar { display: flex; justify-content: center; padding: 1px 0; color: #475569; font-size: 13px; }
+        .c { background: rgba(30,41,59,0.6); border: 1px solid rgba(71,85,105,0.5); border-radius: 12px; padding: 16px; transition: transform 0.2s; }
+        .c:hover { transform: translateY(-2px); border-color: rgba(96,165,250,0.4); background: rgba(30,41,59,0.8); }
+    </style>
+</head>
+<body class="text-slate-400 h-screen w-full relative">
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-900/40 via-slate-900 to-slate-950 -z-10"></div>
+    <div class="absolute bottom-0 left-0 w-full h-2/3 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-indigo-900/20 to-transparent -z-10"></div>
+    <div class="absolute bottom-5 right-8 z-50 flex items-center gap-3">
+        <span class="text-slate-600 text-xs hidden md:inline tracking-wide">← → Space</span>
+        <div class="flex gap-1.5">
+            <button onclick="prev()" class="w-9 h-9 rounded-full g flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition text-sm"><i class="fa-solid fa-chevron-left"></i></button>
+            <button onclick="next()" class="w-9 h-9 rounded-full g flex items-center justify-center text-white/70 hover:text-white hover:bg-white/10 transition text-sm"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+    </div>
+    <div class="absolute bottom-5 left-8 z-50 text-slate-600 font-bold text-xs tracking-[0.15em]">ADVERTEST // <span id="cnt" class="text-white/80">1 / 10</span></div>
+
+    <div class="relative w-full h-full" id="deck">
+
+        <!-- ============================================================== -->
+        <!-- 1. HOOK & TITLE                                                 -->
+        <!-- ============================================================== -->
+        <div class="slide active w-full h-screen p-10 lg:p-14 justify-center items-center">
+            <div class="flex flex-col items-center justify-center flex-1 min-h-0">
+                <div class="text-center max-w-5xl relative">
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-500/20 rounded-full blur-[100px] -z-10"></div>
+                    <div class="text-[12px] font-bold tracking-[0.4em] text-cyan-400 mb-6 uppercase">Project Pitch Deck</div>
+                    <h1 class="text-7xl md:text-8xl font-black text-white mb-6 tracking-tighter">Adver<span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Test</span></h1>
+                    <p class="text-2xl md:text-3xl font-medium text-slate-200 mb-8 max-w-3xl mx-auto leading-relaxed">
+                        <strong class="text-red-400">Phase 1:</strong> Attack to degrade accuracy.<br>
+                        <strong class="text-emerald-400">Phase 2:</strong> Synthesize new data to retrain and improve.<br>
+                        The Autonomous Adversarial Engine for any CV model.
+                    </p>
+                    <div class="flex justify-center gap-4 text-xs flex-wrap font-medium">
+                        <span class="bg-blue-500/10 text-blue-300 border border-blue-500/30 px-4 py-1.5 rounded-full">Targeted Simulation</span>
+                        <span class="bg-purple-500/10 text-purple-300 border border-purple-500/30 px-4 py-1.5 rounded-full">Physics-Constrained</span>
+                        <span class="bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 px-4 py-1.5 rounded-full">Zero Privacy Risk</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- 2. THE PROBLEM                                                  -->
+        <!-- ============================================================== -->
+        <div class="slide w-full h-screen p-10 lg:p-14 justify-center">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 flex-1 min-h-0 items-center max-w-7xl mx-auto w-full">
+                <div class="flex flex-col justify-center min-h-0 overflow-y-auto pr-2">
+                    <div class="text-red-400 font-bold tracking-wider text-xs mb-2">THE PROBLEM</div>
+                    <h2 class="text-3xl lg:text-5xl font-bold text-white mb-6 leading-tight">The Egocentric Collapse</h2>
+                    <p class="text-base text-slate-300 mb-6 leading-relaxed">
+                        State-of-the-art PII detection models excel on standard datasets (eye-level, static cameras). However, when deployed on <strong class="text-white">body-mounted cameras (Ego4D)</strong>, their performance plummets. Why?
+                    </p>
+                    <div class="space-y-4">
+                        <div class="c border-l-2 border-l-red-500">
+                            <strong class="text-white text-[15px] block mb-1"><i class="fa-solid fa-camera-rotate text-red-400 w-6"></i> 3D Geometric Distortion</strong>
+                            <p class="text-[13px] text-slate-400">Fisheye lenses severely warp 3D space. Combined with chest-mounted angles, facial features are stretched beyond recognition.</p>
+                        </div>
+                        <div class="c border-l-2 border-l-orange-500">
+                            <strong class="text-white text-[15px] block mb-1"><i class="fa-solid fa-sun text-orange-400 w-6"></i> ISP Auto-Exposure Lag</strong>
+                            <p class="text-[13px] text-slate-400">Tiny sensors fail to adjust quickly when transitioning from indoor to harsh sunlight, causing massive overexposure and HDR loss.</p>
+                        </div>
+                        <div class="c border-l-2 border-l-yellow-500">
+                            <strong class="text-white text-[15px] block mb-1"><i class="fa-solid fa-person-running text-yellow-400 w-6"></i> Dynamic Motion Blur</strong>
+                            <p class="text-[13px] text-slate-400">Continuous footsteps and rapid head rotations destroy high-frequency features needed for bounding box localization.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-col justify-center items-center min-h-0 overflow-y-auto">
+                    <div class="g rounded-3xl p-10 w-full max-w-md text-center relative border-red-500/20 shadow-[0_0_30px_rgba(239,68,68,0.1)]">
+                        <div class="absolute -top-6 left-1/2 -translate-x-1/2 bg-red-500 text-white font-bold px-4 py-1 rounded-full text-sm shadow-lg shadow-red-500/30">The Dilemma</div>
+                        <i class="fa-solid fa-ban text-5xl text-red-500/50 mb-6"></i>
+                        <h3 class="text-white font-bold text-xl mb-4">Real Data Collection is Dead</h3>
+                        <p class="text-[14px] text-slate-300 leading-relaxed mb-6">Sending agents to record thousands of hours of real pedestrians from a chest-mount is <strong class="text-white">expensive, unscalable</strong>, and poses a <strong class="text-red-400">severe privacy risk (GDPR violation)</strong>.</p>
+                        <div class="bg-slate-800/80 rounded-xl p-3 border border-slate-700">
+                            <p class="text-xs text-slate-400">Standard 2D Augmentation (random crop, color jitter) completely fails to replicate these complex physical conditions.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- 3. THE SOLUTION                                                 -->
+        <!-- ============================================================== -->
+        <div class="slide w-full h-screen p-10 lg:p-14 justify-center items-center">
+            <div class="flex flex-col items-center justify-center flex-1 min-h-0 max-w-5xl mx-auto">
+                <div class="text-cyan-400 font-bold tracking-wider text-xs mb-3">THE SOLUTION</div>
+                <h2 class="text-4xl lg:text-5xl font-bold text-white mb-6 text-center leading-tight">The 2-Phase Strategy</h2>
+                <p class="text-[16px] text-slate-300 mb-10 text-center max-w-3xl leading-relaxed">AdverTest's ultimate goal is simple: First, purposefully <strong class="text-red-400">attack</strong> the model on ANY dataset to drastically reduce its accuracy and expose vulnerabilities. Second, generate a targeted adversarial dataset to <strong class="text-emerald-400">retrain and improve</strong> the model.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+                    <div class="g rounded-2xl p-8 text-center flex flex-col items-center hover:border-cyan-500/40 transition duration-300">
+                        <div class="bg-cyan-500/10 w-16 h-16 rounded-2xl flex items-center justify-center mb-5 border border-cyan-500/20"><i class="fa-solid fa-microscope text-2xl text-cyan-400"></i></div>
+                        <h3 class="text-white font-bold text-lg mb-3">1. Error Intelligence</h3>
+                        <p class="text-[13px] text-slate-400 leading-relaxed">Automatically extract "Hard Negatives" by analyzing model failure points using strict mathematical thresholds (IoU, Confidence).</p>
+                    </div>
+                    <div class="g rounded-2xl p-8 text-center flex flex-col items-center hover:border-blue-500/40 transition duration-300">
+                        <div class="bg-blue-500/10 w-16 h-16 rounded-2xl flex items-center justify-center mb-5 border border-blue-500/20"><i class="fa-solid fa-wand-magic-sparkles text-2xl text-blue-400"></i></div>
+                        <h3 class="text-white font-bold text-lg mb-3">2. Targeted Simulation</h3>
+                        <p class="text-[13px] text-slate-400 leading-relaxed">Dynamically chain physics-based corruptions that specifically target the identified root causes (e.g., applying blur only where the model fails on motion).</p>
+                    </div>
+                    <div class="g rounded-2xl p-8 text-center flex flex-col items-center hover:border-emerald-500/40 transition duration-300">
+                        <div class="bg-emerald-500/10 w-16 h-16 rounded-2xl flex items-center justify-center mb-5 border border-emerald-500/20"><i class="fa-solid fa-shield-cat text-2xl text-emerald-400"></i></div>
+                        <h3 class="text-white font-bold text-lg mb-3">3. Physics Constraints</h3>
+                        <p class="text-[13px] text-slate-400 leading-relaxed">An Exclusion Matrix prevents the generation of physically impossible garbage data, ensuring every synthesized frame holds training value.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- 4. HOW IT WORKS - WORKFLOW                                      -->
+        <!-- ============================================================== -->
+        <div class="slide w-full h-screen p-10 lg:p-14 justify-center">
+            <div class="flex flex-col flex-1 min-h-0 justify-center max-w-7xl mx-auto w-full">
+                <div class="text-blue-400 font-bold tracking-wider text-xs mb-3">HOW IT WORKS</div>
+                <h2 class="text-3xl lg:text-4xl font-bold text-white mb-8 leading-tight">The Closed-Loop Pipeline</h2>
+                
+                <div class="g rounded-3xl p-8 lg:p-10 flex-1 min-h-0 flex flex-col justify-center relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-emerald-500/5 -z-10"></div>
+                    <div class="flex flex-col lg:flex-row items-center justify-between gap-4 w-full">
+                        <!-- Step 1 -->
+                        <div class="flex-1 w-full text-center relative z-10 group">
+                            <div class="bg-slate-800 border border-slate-700 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg group-hover:border-blue-400 transition-colors"><i class="fa-solid fa-crosshairs text-blue-400"></i></div>
+                            <h4 class="text-white font-bold text-[13px] mb-1">Inference & Filter</h4>
+                            <p class="text-[11px] text-slate-400 px-2">Isolate Hard Negatives (IoU < 0.5, Conf < 0.4).</p>
+                        </div>
+                        <div class="hidden lg:block w-8 h-[2px] bg-slate-700"></div>
+                        <div class="lg:hidden h-6 w-[2px] bg-slate-700 my-1"></div>
+                        <!-- Step 2 -->
+                        <div class="flex-1 w-full text-center relative z-10 group">
+                            <div class="bg-slate-800 border border-slate-700 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg group-hover:border-purple-400 transition-colors"><i class="fa-solid fa-tags text-purple-400"></i></div>
+                            <h4 class="text-white font-bold text-[13px] mb-1">Label Studio</h4>
+                            <p class="text-[11px] text-slate-400 px-2">Classify errors (Fisheye, Blur) to build the Insight Dashboard.</p>
+                        </div>
+                        <div class="hidden lg:block w-8 h-[2px] bg-slate-700"></div>
+                        <div class="lg:hidden h-6 w-[2px] bg-slate-700 my-1"></div>
+                        <!-- Step 3 -->
+                        <div class="flex-1 w-full text-center relative z-10 group">
+                            <div class="bg-slate-800 border border-slate-700 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg group-hover:border-amber-400 transition-colors"><i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i></div>
+                            <h4 class="text-white font-bold text-[13px] mb-1">Attack Engine</h4>
+                            <p class="text-[11px] text-slate-400 px-2">Generate targeted multi-chained physics corruptions.</p>
+                        </div>
+                        <div class="hidden lg:block w-8 h-[2px] bg-slate-700"></div>
+                        <div class="lg:hidden h-6 w-[2px] bg-slate-700 my-1"></div>
+                        <!-- Step 4 -->
+                        <div class="flex-1 w-full text-center relative z-10 group">
+                            <div class="bg-slate-800 border border-slate-700 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg group-hover:border-cyan-400 transition-colors"><i class="fa-solid fa-user-check text-cyan-400"></i></div>
+                            <h4 class="text-white font-bold text-[13px] mb-1">Quality Gate</h4>
+                            <p class="text-[11px] text-slate-400 px-2">VLM Auto-Triage & 1-Click HITL Approval.</p>
+                        </div>
+                        <div class="hidden lg:block w-8 h-[2px] bg-slate-700"></div>
+                        <div class="lg:hidden h-6 w-[2px] bg-slate-700 my-1"></div>
+                        <!-- Step 5 -->
+                        <div class="flex-1 w-full text-center relative z-10 group">
+                            <div class="bg-slate-800 border border-slate-700 w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-3 shadow-[0_0_15px_rgba(16,185,129,0.3)] group-hover:border-emerald-400 transition-colors"><i class="fa-solid fa-rotate text-emerald-400"></i></div>
+                            <h4 class="text-white font-bold text-[13px] mb-1">Retrain & Prove</h4>
+                            <p class="text-[11px] text-slate-400 px-2">Retrain model and benchmark mAP/mPC recovery.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- 5. DEEP DIVE: TARGETED SIMULATION                               -->
+        <!-- ============================================================== -->
+        <div class="slide w-full h-screen p-10 lg:p-14 justify-center">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 flex-1 min-h-0 items-center max-w-7xl mx-auto w-full">
+                <div class="flex flex-col justify-center min-h-0 overflow-y-auto pr-2">
+                    <div class="text-blue-400 font-bold tracking-wider text-xs mb-2">TARGETED SIMULATION</div>
+                    <h2 class="text-3xl lg:text-4xl font-bold text-white mb-4 leading-tight">From Insight to Targeted Pool</h2>
+                    <p class="text-[14px] text-slate-300 mb-6">Our Attack Engine isn't random. It ingests the <strong>Insight Dashboard</strong> from Label Studio and uses Dynamic Chaining to attack the model exactly where it's weakest.</p>
+                    <div class="space-y-4 text-[13px]">
+                        <div class="c relative">
+                            <span class="absolute top-3 right-3 t bg-blue-500/20 text-blue-300 border border-blue-500/30">error_fisheye</span>
+                            <strong class="text-white block mb-2"><i class="fa-solid fa-cube text-blue-400 mr-1 w-5"></i> Edge-weighted Grid Distortion</strong>
+                            <p class="text-[12px] text-slate-300">Distortion is aggressively applied at the image edges rather than a flat 2D stretch, accurately simulating the 3D projection of a spherical lens.</p>
+                        </div>
+                        <div class="c relative">
+                            <span class="absolute top-3 right-3 t bg-purple-500/20 text-purple-300 border border-purple-500/30">error_blur</span>
+                            <strong class="text-white block mb-2"><i class="fa-solid fa-person-running text-purple-400 mr-1 w-5"></i> Multi-axis Motion Blur</strong>
+                            <p class="text-[12px] text-slate-300">Chaining Linear Blur (vertical footsteps) with Radial Blur (horizontal head turning) to replicate true kinetic noise.</p>
+                        </div>
+                        <div class="c relative">
+                            <span class="absolute top-3 right-3 t bg-amber-500/20 text-amber-300 border border-amber-500/30">error_overexposure</span>
+                            <strong class="text-white block mb-2"><i class="fa-solid fa-sun text-amber-400 mr-1 w-5"></i> Sensor Degradation</strong>
+                            <p class="text-[12px] text-slate-300">ToneCurve (HDR clipping) + ISONoise (low-light sensor static) + SunFlare (additive optical blooming).</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="g rounded-2xl p-6 lg:p-8 flex flex-col justify-center min-h-0 overflow-y-auto shadow-[0_0_20px_rgba(59,130,246,0.1)]">
+                    <h3 class="text-sm font-bold text-white mb-5 border-b border-white/10 pb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-pie text-blue-400"></i> Label Studio Error Baseline
+                    </h3>
+                    <div class="space-y-4 w-full mb-6">
+                        <div>
+                            <div class="flex justify-between text-[11px] font-semibold text-slate-300 mb-1">
+                                <span><code class="text-[10px] text-cyan-300 bg-slate-800 px-1 rounded">error_fisheye</code></span>
+                                <span class="text-white">45%</span>
+                            </div>
+                            <div class="w-full bg-slate-800 rounded-full h-3 border border-slate-700 overflow-hidden"><div class="bg-gradient-to-r from-blue-500 to-cyan-400 h-3 rounded-full ab" data-width="45%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[11px] font-semibold text-slate-300 mb-1">
+                                <span><code class="text-[10px] text-purple-300 bg-slate-800 px-1 rounded">error_blur</code></span>
+                                <span class="text-white">25%</span>
+                            </div>
+                            <div class="w-full bg-slate-800 rounded-full h-3 border border-slate-700 overflow-hidden"><div class="bg-gradient-to-r from-purple-500 to-pink-500 h-3 rounded-full ab" data-width="25%"></div></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[11px] font-semibold text-slate-300 mb-1">
+                                <span><code class="text-[10px] text-amber-300 bg-slate-800 px-1 rounded">error_overexposure</code></span>
+                                <span class="text-white">15%</span>
+                            </div>
+                            <div class="w-full bg-slate-800 rounded-full h-3 border border-slate-700 overflow-hidden"><div class="bg-gradient-to-r from-amber-500 to-yellow-400 h-3 rounded-full ab" data-width="15%"></div></div>
+                        </div>
+                    </div>
+                    <div class="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
+                        <p class="text-[12px] text-blue-200/80 leading-relaxed"><strong class="text-white">The Engine at Work:</strong> Seeing this baseline, AdverTest allocates maximum GPU resources to generate 45% Fisheye-simulated data, aggressively targeting the exact knowledge gap holding the model back.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- 6. DEEP DIVE: CONSTRAINT ENGINE                                 -->
+        <!-- ============================================================== -->
+        <div class="slide w-full h-screen p-10 lg:p-14 justify-center">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 flex-1 min-h-0 items-center max-w-7xl mx-auto w-full">
+                <div class="flex flex-col justify-center min-h-0 overflow-y-auto pr-2">
+                    <div class="text-amber-400 font-bold tracking-wider text-xs mb-2">PHYSICS CONSTRAINTS</div>
+                    <h2 class="text-3xl lg:text-4xl font-bold text-white mb-4 leading-tight">Preventing Garbage Data</h2>
+                    <p class="text-[14px] text-slate-300 mb-6">Unconstrained augmentation yields impossible images that poison training. AdverTest employs rigorous geometric and physical constraints to preserve Data Integrity.</p>
+                    <div class="space-y-4">
+                        <div class="c border-l-2 border-l-amber-500">
+                            <strong class="text-white block mb-2 text-[13px]"><i class="fa-solid fa-table-cells text-amber-400 mr-2"></i> The Exclusion Matrix</strong>
+                            <p class="text-[12px] text-slate-300 mb-2">Blocks mutually exclusive optical phenomena from combining:</p>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="t bg-red-500/10 text-red-300 border border-red-500/20"><i class="fa-solid fa-xmark mr-1"></i>SunFlare + LowLight</span>
+                                <span class="t bg-red-500/10 text-red-300 border border-red-500/20"><i class="fa-solid fa-xmark mr-1"></i>HeavyFog + SunFlare</span>
+                            </div>
+                        </div>
+                        <div class="c border-l-2 border-l-emerald-500">
+                            <strong class="text-white block mb-2 text-[13px]"><i class="fa-solid fa-crop-simple text-emerald-400 mr-2"></i> Bounding Box Integrity</strong>
+                            <p class="text-[12px] text-slate-300">Geometric warping severely bends GT labels. If a PII feature drifts beyond 50% of the image boundary, AdverTest <strong class="text-red-400">automatically discards</strong> the sample to prevent label noise.</p>
+                        </div>
+                        <div class="c border-l-2 border-l-cyan-500">
+                            <strong class="text-white block mb-2 text-[13px]"><i class="fa-solid fa-gauge-high text-cyan-400 mr-2"></i> Severity Caps</strong>
+                            <p class="text-[12px] text-slate-300">Caps cumulative destruction. Ensures enough identifiable features remain so that the model (and humans) can still theoretically recognize the PII.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="g rounded-2xl p-6 lg:p-8 flex flex-col justify-center items-center min-h-0 overflow-y-auto">
+                    <h3 class="text-sm font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-robot text-amber-400"></i> Auto-Triage (VLM)</h3>
+                    <div class="bg-slate-800/80 border border-slate-600 rounded-xl p-5 w-full text-center shadow-lg relative">
+                        <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-white font-bold px-3 py-0.5 rounded text-[10px]">Quality Gate</div>
+                        <i class="fa-solid fa-filter-circle-xmark text-4xl text-slate-500 mb-3 mt-2"></i>
+                        <p class="text-[13px] text-slate-300 leading-relaxed mb-4">Before reaching the Human-In-The-Loop, a Vision-Language Model acts as a gatekeeper, instantly rejecting irrecoverably corrupted samples (Severity = 5).</p>
+                        <div class="flex items-center justify-center gap-4 text-xs font-bold border-t border-slate-700 pt-4">
+                            <span class="text-emerald-400"><i class="fa-solid fa-check mr-1"></i> Optimizes HITL Cost</span>
+                            <span class="text-blue-400"><i class="fa-solid fa-bolt mr-1"></i> 1-Click Approval</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- 7. VISUAL PROOF                                                 -->
+        <!-- ============================================================== -->
+        <div class="slide w-full h-screen p-10 lg:p-14 justify-center items-center">
+            <div class="flex flex-col items-center justify-center flex-1 min-h-0 max-w-5xl mx-auto w-full">
+                <div class="text-emerald-400 font-bold tracking-wider text-xs mb-3">VISUAL PROOF</div>
+                <h2 class="text-3xl lg:text-4xl font-bold text-white mb-4 text-center">Closing the Domain Gap</h2>
+                <p class="text-[14px] text-slate-300 mb-10 text-center">Visual Evidence: From a static origin image → Processed by AdverTest → Matching the extreme conditions of real Ego4D footage.</p>
+                
+                <div class="grid grid-cols-3 gap-4 text-center text-[11px] font-bold uppercase tracking-wider mb-4 w-full">
+                    <div class="text-slate-400 pb-2 border-b border-slate-700"><i class="fa-regular fa-image mr-1"></i> 1. Original (WIDER FACE)</div>
+                    <div class="text-blue-400 pb-2 border-b border-blue-900"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> 2. AdverTest Simulation</div>
+                    <div class="text-emerald-400 pb-2 border-b border-emerald-900"><i class="fa-solid fa-camera mr-1"></i> 3. Ground Truth (Ego4D)</div>
+                </div>
+                <div class="grid grid-cols-3 gap-6 w-full mb-8">
+                    <div class="g rounded-2xl p-8 flex items-center justify-center h-48 border-slate-600 hover:bg-slate-800 transition"><div class="text-center"><i class="fa-regular fa-image text-5xl text-slate-600 mb-3"></i><p class="text-[11px] text-slate-500 font-medium">Pristine lighting<br>Clear facial features</p></div></div>
+                    <div class="g rounded-2xl p-8 flex items-center justify-center h-48 border-blue-500/30 bg-blue-500/5 hover:bg-blue-500/10 transition relative">
+                        <div class="absolute -right-3 top-1/2 -translate-y-1/2 text-blue-500/50 hidden md:block"><i class="fa-solid fa-arrow-right"></i></div>
+                        <div class="text-center"><i class="fa-solid fa-bolt text-5xl text-blue-400/70 mb-3 drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]"></i><p class="text-[11px] text-blue-300 font-medium">Geometric Warp<br>+ Flare + Blur</p></div>
+                    </div>
+                    <div class="g rounded-2xl p-8 flex items-center justify-center h-48 border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10 transition"><div class="text-center"><i class="fa-solid fa-video text-5xl text-emerald-400/70 mb-3 drop-shadow-[0_0_10px_rgba(52,211,153,0.5)]"></i><p class="text-[11px] text-emerald-300 font-medium">Under-chin angle<br>Vignetting & Washout</p></div></div>
+                </div>
+                <div class="bg-gradient-to-r from-emerald-500/10 to-blue-500/10 border border-emerald-500/20 rounded-2xl p-5 w-full flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-check-circle text-emerald-400 text-lg"></i>
+                    <p class="text-[14px] text-white font-medium">Achieves <strong class="text-emerald-300">~85% physical realism</strong>, ready for immediate inclusion in the retraining pipeline.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- 8. FUTURE VISION - GEN AI                                       -->
+        <!-- ============================================================== -->
+        <div class="slide w-full h-screen p-10 lg:p-14 justify-center items-center">
+            <div class="flex flex-col items-center justify-center flex-1 min-h-0 max-w-4xl mx-auto w-full">
+                <div class="text-purple-400 font-bold tracking-wider text-xs mb-3">FUTURE VISION (R&D)</div>
+                <h2 class="text-3xl lg:text-5xl font-bold text-white mb-6 text-center leading-tight">Domain Translation via GenAI</h2>
+                <p class="text-[15px] text-slate-300 mb-10 text-center max-w-2xl leading-relaxed">Phase 1 (Mathematical IP) is production-ready. However, to solve the ultimate challenge of true <strong class="text-white">3D Depth & Camera Angles</strong>, Generative AI is our long-term solution.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+                    <div class="g rounded-2xl p-8 border-t-4 border-t-purple-500">
+                        <div class="flex items-center gap-3 mb-4">
+                            <i class="fa-solid fa-wand-magic-sparkles text-2xl text-purple-400"></i>
+                            <h3 class="text-white font-bold text-lg">ControlNet + Stable Diffusion</h3>
+                        </div>
+                        <p class="text-[13px] text-slate-400 leading-relaxed mb-4">Preserve the exact PII identity using Facial Landmarks as a conditioning map, while SD completely reimagines the lighting, angle, and environmental distortion.</p>
+                        <div class="bg-slate-900 rounded-lg p-3 text-[11px] mono text-purple-300 border border-purple-500/20">
+                            > prompt: "chest-mounted GoPro view, extreme fisheye, harsh lighting, action blur"
+                        </div>
+                    </div>
+                    <div class="g rounded-2xl p-8 border-t-4 border-t-rose-500">
+                        <div class="flex items-center gap-3 mb-4">
+                            <i class="fa-solid fa-arrows-rotate text-2xl text-rose-400"></i>
+                            <h3 class="text-white font-bold text-lg">CycleGAN (Unpaired)</h3>
+                        </div>
+                        <p class="text-[13px] text-slate-400 leading-relaxed mb-4">Learn the visual "Style" of the Ego4D domain and translate it directly onto the WIDER FACE domain entirely unsupervised (Unpaired Image-to-Image Translation).</p>
+                        <div class="mt-auto">
+                            <span class="inline-block bg-rose-500/20 text-rose-300 px-3 py-1 rounded text-xs font-bold border border-rose-500/30">Target FID Score < 50</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- 9. IMPACT & METRICS                                             -->
+        <!-- ============================================================== -->
+        <div class="slide w-full h-screen p-10 lg:p-14 justify-center">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 flex-1 min-h-0 items-center max-w-7xl mx-auto w-full">
+                <div class="flex flex-col justify-center min-h-0 overflow-y-auto pr-2">
+                    <div class="text-emerald-400 font-bold tracking-wider text-xs mb-2">IMPACT & METRICS</div>
+                    <h2 class="text-3xl lg:text-4xl font-bold text-white mb-6 leading-tight">Business Value & Benchmarks</h2>
+                    <div class="space-y-4">
+                        <div class="c bg-emerald-500/10 border-emerald-500/30">
+                            <h4 class="text-white font-bold text-[15px] mb-1"><i class="fa-solid fa-arrow-up text-emerald-400 mr-2"></i> Recovering the mAP Gap</h4>
+                            <p class="text-[13px] text-emerald-100/80">Shrink the performance drop on Hard Negatives from a fatal <strong class="text-white">-45% to an acceptable < -10%</strong>, while maintaining Clean mAP (WIDER FACE) within a 1% margin.</p>
+                        </div>
+                        <div class="c bg-blue-500/10 border-blue-500/30">
+                            <h4 class="text-white font-bold text-[15px] mb-1"><i class="fa-solid fa-shield-halved text-blue-400 mr-2"></i> Zero Privacy Risk & Cost</h4>
+                            <p class="text-[13px] text-blue-100/80">Synthesize hundreds of thousands of egocentric data samples <strong class="text-white">without filming a single real person</strong>. Eliminates 100% of physical data collection budgets.</p>
+                        </div>
+                        <div class="c">
+                            <h4 class="text-white font-bold text-[15px] mb-1"><i class="fa-solid fa-scale-balanced text-slate-300 mr-2"></i> Standardizing mPC / rPC</h4>
+                            <p class="text-[13px] text-slate-400">Establish a new standard for internal model robustness using Mean Performance under Corruption (mPC).</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="g rounded-3xl p-8 lg:p-10 flex flex-col justify-center min-h-0 overflow-y-auto">
+                    <h3 class="text-base font-bold text-white mb-6 border-b border-white/10 pb-4 text-center">
+                        Projected Performance Recovery
+                    </h3>
+                    <div class="space-y-5 w-full">
+                        <div>
+                            <div class="flex justify-between text-[12px] font-semibold text-slate-300 mb-2">
+                                <span><code class="text-[11px] text-cyan-300 bg-slate-800 px-1.5 py-0.5 rounded">Fisheye</code> Recovery</span>
+                                <span class="text-emerald-400 font-bold">+ 35%</span>
+                            </div>
+                            <div class="w-full bg-slate-800 rounded-full h-4 border border-slate-700 overflow-hidden relative shadow-inner">
+                                <div class="absolute inset-y-0 left-0 bg-slate-600 w-[55%]"></div>
+                                <div class="absolute inset-y-0 left-[55%] bg-gradient-to-r from-emerald-500 to-green-400 w-[35%]"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[12px] font-semibold text-slate-300 mb-2">
+                                <span><code class="text-[11px] text-purple-300 bg-slate-800 px-1.5 py-0.5 rounded">Motion Blur</code> Recovery</span>
+                                <span class="text-emerald-400 font-bold">+ 20%</span>
+                            </div>
+                            <div class="w-full bg-slate-800 rounded-full h-4 border border-slate-700 overflow-hidden relative shadow-inner">
+                                <div class="absolute inset-y-0 left-0 bg-slate-600 w-[70%]"></div>
+                                <div class="absolute inset-y-0 left-[70%] bg-gradient-to-r from-emerald-500 to-green-400 w-[20%]"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[12px] font-semibold text-slate-300 mb-2">
+                                <span><code class="text-[11px] text-amber-300 bg-slate-800 px-1.5 py-0.5 rounded">Overexposure</code> Recovery</span>
+                                <span class="text-emerald-400 font-bold">+ 15%</span>
+                            </div>
+                            <div class="w-full bg-slate-800 rounded-full h-4 border border-slate-700 overflow-hidden relative shadow-inner">
+                                <div class="absolute inset-y-0 left-0 bg-slate-600 w-[75%]"></div>
+                                <div class="absolute inset-y-0 left-[75%] bg-gradient-to-r from-emerald-500 to-green-400 w-[15%]"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+
+    <script>
+        const S=document.querySelectorAll('.slide'),C=document.getElementById('cnt');let i=0;
+        function tb(s){document.querySelectorAll('.ab').forEach(b=>{b.classList.remove('on');b.style.width='0'});s.querySelectorAll('.ab').forEach(b=>{const w=b.getAttribute('data-width');if(w){requestAnimationFrame(()=>{requestAnimationFrame(()=>{b.classList.add('on');b.style.width=w})})}})}
+        function u(){S.forEach((s,j)=>{if(j===i){s.classList.add('active');tb(s)}else s.classList.remove('active')});C.innerText=`${i+1} / ${S.length}`}
+        function next(){if(i<S.length-1){i++;u()}}function prev(){if(i>0){i--;u()}}
+        document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();next()}else if(e.key==='ArrowLeft'){e.preventDefault();prev()}});u();
+    </script>
+</body>
+</html>

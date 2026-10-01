@@ -1,0 +1,133 @@
+name: AdverTest Production CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY_BACKEND: advertest-backend
+  ECR_REPOSITORY_FRONTEND: advertest-frontend
+
+jobs:
+  test:
+    name: Continuous Integration (Lint & PyTest)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      - name: Setup Node.js (for Frontend)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest
+          # Use CPU-only torch for CI testing to save time/money
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          pip install -r requirements.txt
+
+      - name: Run Python Linting (Flake8)
+        run: |
+          flake8 advertest/ backend/ --count --select=E9,F63,F7,F82 --show-source --statistics
+
+      - name: Run Frontend Linting (ESLint)
+        working-directory: ./frontend
+        run: |
+          npm ci
+          npm run lint
+
+      - name: Execute PyTest Suite
+        run: |
+          # We mock the GPU calls via CPU for testing AttackEngine & Evaluator
+          pytest tests/ -v
+
+  build-and-push:
+    name: Build and Push to AWS ECR
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # ----------------------------------------------------
+      # Build & Push BACKEND (FastAPI + PyTorch GPU Image)
+      # ----------------------------------------------------
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Build and Push Backend
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile  # The CUDA PyTorch Dockerfile we created
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_BACKEND }}:${{ github.sha }}
+
+      # ----------------------------------------------------
+      # Build & Push FRONTEND (Next.js / Nginx Image)
+      # ----------------------------------------------------
+      - name: Build and Push Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_FRONTEND }}:${{ github.sha }}
+
+  deploy:
+    name: Continuous Deployment (AWS ECS Rolling Update)
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update ECS Service (Backend GPU Cluster)
+        run: |
+          # Triggers a rolling update on the ECS Cluster running the GPU tasks
+          aws ecs update-service \
+            --cluster advertest-production-cluster \
+            --service advertest-backend-service \
+            --force-new-deployment
+
+      - name: Update ECS Service (Frontend)
+        run: |
+          aws ecs update-service \
+            --cluster advertest-production-cluster \
+            --service advertest-frontend-service \
+            --force-new-deployment

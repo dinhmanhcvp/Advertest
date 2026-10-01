@@ -18,10 +18,10 @@ Modality = Literal["image", "lidar", "multi"]
 SensorKind = Literal["image", "camera_rig", "lidar"]
 CostClass = Literal["cheap", "medium", "expensive"]
 AttackGroup = Literal["A", "B", "C", "D", "E", "F"]
-Task = Literal["detection2d", "segmentation", "detection3d"]
+Task = Literal["detection2d", "segmentation", "detection3d", "pii_detection", "video_semantic"]
 
 #: Label space normalised across KITTI / nuScenes (plan §1.1).
-CLASSES: tuple[str, ...] = ("Car", "Pedestrian", "Cyclist")
+CLASSES: tuple[str, ...] = ("Car", "Pedestrian", "Cyclist", "Face")
 
 #: Severity 0 always means "no-op" (sanity check #1), 1..5 are the real levels.
 MAX_SEVERITY = 5
@@ -72,6 +72,9 @@ ATTACK_CATEGORY: dict[str, str] = {
     "glass_blur": "noise",
     "elastic_transform": "noise",
     "spatter": "noise",
+    "fisheye": "geometric",
+    "iso_noise": "noise",
+    "radial_blur": "noise",
 }
 
 #: Relative cost used by the pre-run GPU estimate (plan §5).
@@ -160,7 +163,7 @@ class Sample:
     """
 
     sample_id: str
-    image: np.ndarray
+    image: np.ndarray | Any  # np.ndarray or torch.Tensor for GPU acceleration
     boxes: tuple[Box, ...] = ()
     mask: np.ndarray | None = None
     depth: np.ndarray | None = None
@@ -175,7 +178,7 @@ class Sample:
     def shape(self) -> tuple[int, int, int]:
         return self.image.shape  # type: ignore[return-value]
 
-    def with_image(self, image: np.ndarray) -> Sample:
+    def with_image(self, image: np.ndarray | Any) -> Sample:
         """Return a copy carrying new pixels; ground truth is never modified."""
         return replace(self, image=image)
 

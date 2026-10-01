@@ -16,6 +16,8 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "recharts": "^3.10.1",
+    "sonner": "^1.5.0",
+    "framer-motion": "^11.5.0",
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {

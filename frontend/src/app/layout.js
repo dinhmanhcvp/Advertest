@@ -1,5 +1,6 @@
 import { Inter } from "next/font/google";
 import Script from "next/script";
+import { Toaster } from "sonner";
 import AppProviders from "@/components/AppProviders";
 import AppShell from "@/components/layout/AppShell";
 import "./globals.css";
@@ -21,6 +22,7 @@ export default function RootLayout({ children }) {
         <AppProviders>
           <AppShell>{children}</AppShell>
         </AppProviders>
+        <Toaster theme="dark" position="bottom-right" richColors />
       </body>
     </html>
   );

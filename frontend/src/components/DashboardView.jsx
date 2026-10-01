@@ -130,11 +130,11 @@ export default function DashboardView() {
               Nạp dataset
             </button>
             <Link
-              href={scopedHref("/analysis")}
-              className="rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-center text-xs font-semibold text-slate-700 hover:bg-slate-100"
+              href="/demo"
+              className="rounded-lg border border-purple-200 bg-purple-50 p-2.5 text-center text-xs font-semibold text-purple-700 hover:bg-purple-100 shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-all"
             >
-              <FileText className="mx-auto mb-1 h-4 w-4" />
-              Xuất báo cáo
+              <Workflow className="mx-auto mb-1 h-4 w-4" />
+              E2E Demo Workflow
             </Link>
           </div>
           <Link href="/defense">

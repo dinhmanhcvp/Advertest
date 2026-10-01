@@ -74,6 +74,8 @@ class AttackContext:
     rng: np.random.Generator
     model: ModelAdapter | None = None
     objective: AttackObjective = AttackObjective()
+    device: str = "cpu"
+    use_gpu: bool = False
 
     def require_model(self, attack_name: str) -> ModelAdapter:
         if self.model is None:

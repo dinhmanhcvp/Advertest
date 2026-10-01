@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AdverTest - Interactive Engine Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #0f172a; font-family: 'Inter', sans-serif; color: #cbd5e1; }
+        .g { background: rgba(30,41,59,0.5); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 20px 40px -12px rgba(0,0,0,0.6); }
+        .custom-file-upload { border: 2px dashed rgba(96, 165, 250, 0.4); transition: all 0.3s; }
+        .custom-file-upload:hover { border-color: rgba(96, 165, 250, 0.8); background: rgba(59, 130, 246, 0.05); }
+        .loader { border: 3px solid rgba(255,255,255,0.1); border-radius: 50%; border-top: 3px solid #3b82f6; width: 24px; height: 24px; animation: spin 1s linear infinite; display: none; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="min-h-screen relative overflow-x-hidden p-6 md:p-12">
+    <!-- Background elements -->
+    <div class="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
+    <div class="absolute bottom-0 left-0 w-96 h-96 bg-emerald-600/10 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
+
+    <div class="max-w-7xl mx-auto flex flex-col gap-8">
+        
+        <!-- Header -->
+        <header class="flex justify-between items-end border-b border-slate-700/50 pb-6">
+            <div>
+                <div class="text-[11px] font-bold tracking-[0.3em] text-cyan-400 mb-2 uppercase">Interactive Demo</div>
+                <h1 class="text-4xl font-black text-white tracking-tight">AdverTest <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Engine</span></h1>
+            </div>
+            <div class="text-xs text-slate-500 font-medium">Phase 1: Mathematical Corruptions</div>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Sidebar: Controls -->
+            <div class="lg:col-span-4 flex flex-col gap-6">
+                <!-- Upload Area -->
+                <div class="g rounded-2xl p-6">
+                    <h2 class="text-sm font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-image text-blue-400"></i> 1. Input Image</h2>
+                    <label class="custom-file-upload flex flex-col items-center justify-center p-8 rounded-xl cursor-pointer">
+                        <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-400 mb-3"></i>
+                        <span class="text-sm font-medium text-slate-300" id="file-name">Click to upload face image</span>
+                        <span class="text-xs text-slate-500 mt-1">JPG, PNG (max 5MB)</span>
+                        <input type="file" id="image-upload" accept="image/*" class="hidden">
+                    </label>
+                </div>
+
+                <!-- Attack Config -->
+                <div class="g rounded-2xl p-6 flex-1">
+                    <h2 class="text-sm font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-sliders text-purple-400"></i> 2. Target Errors (Insight)</h2>
+                    
+                    <div class="space-y-3 mb-6">
+                        <label class="flex items-start gap-3 p-3 rounded-lg border border-slate-700/50 hover:bg-slate-800/50 cursor-pointer transition">
+                            <input type="checkbox" value="error_fisheye" class="attack-tag mt-1 w-4 h-4 rounded border-slate-600 text-blue-500 focus:ring-blue-500 bg-slate-900" checked>
+                            <div>
+                                <strong class="text-white text-sm block">error_fisheye</strong>
+                                <span class="text-xs text-slate-400">Edge-weighted Grid Distortion</span>
+                            </div>
+                        </label>
+                        <label class="flex items-start gap-3 p-3 rounded-lg border border-slate-700/50 hover:bg-slate-800/50 cursor-pointer transition">
+                            <input type="checkbox" value="error_overexposure" class="attack-tag mt-1 w-4 h-4 rounded border-slate-600 text-amber-500 focus:ring-amber-500 bg-slate-900" checked>
+                            <div>
+                                <strong class="text-white text-sm block">error_overexposure</strong>
+                                <span class="text-xs text-slate-400">HDR ToneCurve + Sun Flare</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="mb-8">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-sm font-bold text-white">Severity Level</label>
+                            <span id="sev-val" class="text-cyan-400 font-bold text-sm">4</span>
+                        </div>
+                        <input type="range" id="severity" min="1" max="5" value="4" class="w-full accent-cyan-500">
+                        <div class="flex justify-between text-[10px] text-slate-500 mt-1 font-medium">
+                            <span>Slight (1)</span><span>Severe (5)</span>
+                        </div>
+                    </div>
+
+                    <button id="btn-simulate" class="w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-bold py-3 px-4 rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-all flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>Run Targeted Simulation</span>
+                        <div class="loader ml-2" id="btn-loader"></div>
+                    </button>
+                    <p id="error-msg" class="text-red-400 text-xs mt-3 hidden text-center"></p>
+                </div>
+            </div>
+
+            <!-- Main Display: Images -->
+            <div class="lg:col-span-8 flex flex-col gap-6">
+                <div class="g rounded-2xl p-6 flex-1 flex flex-col">
+                    <h2 class="text-sm font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-eye text-emerald-400"></i> 3. Visual Proof (Quality Gate)</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 flex-1 min-h-[400px]">
+                        <!-- Original Image -->
+                        <div class="flex flex-col">
+                            <div class="bg-slate-900 rounded-t-xl px-4 py-2 border-b border-slate-700/50 flex justify-between items-center">
+                                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Original (Clean)</span>
+                            </div>
+                            <div class="bg-slate-800/30 border border-slate-700/50 rounded-b-xl flex-1 flex items-center justify-center p-2 relative overflow-hidden group">
+                                <img id="img-original" src="" class="max-w-full max-h-[500px] object-contain rounded hidden" alt="Original">
+                                <div id="ph-original" class="text-center text-slate-500"><i class="fa-regular fa-image text-4xl mb-2"></i><p class="text-xs">No image loaded</p></div>
+                            </div>
+                        </div>
+
+                        <!-- Simulated Image -->
+                        <div class="flex flex-col">
+                            <div class="bg-slate-900 rounded-t-xl px-4 py-2 border-b border-slate-700/50 flex justify-between items-center">
+                                <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider">Simulated Ego4D</span>
+                                <span id="sim-status" class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700">Waiting</span>
+                            </div>
+                            <div class="bg-blue-500/5 border border-blue-500/20 rounded-b-xl flex-1 flex items-center justify-center p-2 relative overflow-hidden group">
+                                <img id="img-simulated" src="" class="max-w-full max-h-[500px] object-contain rounded hidden shadow-[0_0_30px_rgba(59,130,246,0.1)]" alt="Simulated">
+                                <div id="ph-simulated" class="text-center text-slate-500"><i class="fa-solid fa-bolt text-4xl mb-2 text-blue-500/30"></i><p class="text-xs">Run simulation to view</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- New End-to-End Product Section -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 border-t border-slate-700/50 pt-8 mt-2">
+            <!-- Component 1: Insight Matrix -->
+            <div class="g rounded-2xl p-6">
+                <h2 class="text-sm font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-chart-pie text-pink-400"></i> Insight Matrix (VLM)</h2>
+                <div id="insight-container" class="space-y-3">
+                    <div class="text-xs text-slate-500 flex justify-center py-4 loader-insights">
+                        <div class="loader" style="display: block;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Component 2: Job Controller -->
+            <div class="g rounded-2xl p-6 flex flex-col justify-between">
+                <div>
+                    <h2 class="text-sm font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-server text-emerald-400"></i> Pipeline Controller</h2>
+                    <div class="mb-4">
+                        <label class="text-xs font-bold text-slate-400 mb-1 block">Dataset Path</label>
+                        <input type="text" id="dataset-path" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-white focus:border-blue-500 focus:outline-none" value="data/raw_ego4d_streams">
+                    </div>
+                </div>
+                <div>
+                    <button id="btn-run-pipeline" class="w-full bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-bold py-3 px-4 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-play"></i>
+                        <span>Run AdverTest Pipeline</span>
+                    </button>
+                    <div id="job-status-container" class="mt-4 hidden p-3 rounded-lg border border-slate-700/50 bg-slate-800/50">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold text-slate-300">Status</span>
+                            <span id="job-status-text" class="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded border border-blue-500/30">Running...</span>
+                        </div>
+                        <div class="w-full bg-slate-900 rounded-full h-1.5">
+                            <div id="job-progress-bar" class="bg-gradient-to-r from-blue-500 to-cyan-400 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Component 3: Metrics Board -->
+            <div class="g rounded-2xl p-6">
+                <h2 class="text-sm font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-chart-line text-amber-400"></i> Evaluation Metrics</h2>
+                <div id="metrics-container" class="flex flex-col justify-center h-[calc(100%-2rem)]">
+                    <div class="text-xs text-slate-500 flex justify-center py-4 loader-metrics">
+                        <div class="loader" style="display: block;"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
