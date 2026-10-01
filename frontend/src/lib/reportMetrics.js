@@ -16,11 +16,11 @@ const TASK_METRICS = {
     { key: "pixel_recall", label: "Pixel recall", help: "Recall ở mức pixel" },
   ],
   detection3d: [
-    { key: "kitti_3d_ap", label: "KITTI 3D AP", help: "Average Precision 3D theo protocol KITTI" },
+    { key: "widerface_3d_ap", label: "WIDER FACE 3D AP", help: "Average Precision 3D theo protocol WIDER FACE" },
     { key: "mean_bev_iou", label: "BEV IoU", help: "IoU trung bình trên mặt phẳng nhìn từ trên" },
     { key: "detection3d_precision", label: "3D precision", help: "Precision của khung 3D" },
     { key: "detection3d_recall", label: "3D recall", help: "Recall của khung 3D" },
-    { key: "kitti_3d_ap_far", label: "Far-range AP", help: "AP cho vật thể cách từ 40 m" },
+    { key: "widerface_3d_ap_far", label: "Far-range AP", help: "AP cho vật thể cách từ 40 m" },
   ],
 };
 
@@ -32,7 +32,7 @@ export function resolveReportTask(report = {}) {
   const explicit = report?.provenance?.run_config?.task_id || report.task_id || report.task;
   if (TASK_METRICS[explicit]) return explicit;
   const clean = report?.metrics?.clean || {};
-  if (finite(clean.kitti_3d_ap) != null) return "detection3d";
+  if (finite(clean.widerface_3d_ap) != null) return "detection3d";
   if (finite(clean.miou) != null) return "segmentation";
   return "detection2d";
 }
@@ -102,7 +102,7 @@ export function buildRunDecisionView(report = {}) {
   const implementation = cleanMetrics.metric_implementation || null;
   if (implementation === "advertest-greedy-interpolated-v1") {
     limitations.push(
-      "AP/mAP được tính bằng matcher nội bộ AdverTest; không được trình bày là COCO API/pycocotools chính thức.",
+      "AP/mAP được tính bằng matcher nội bộ AdverTest; không được trình bày là Ego4D API/pyego4dtools chính thức.",
     );
   }
   if (report.simulation_only !== false) limitations.push("SIMULATION: chưa phải bằng chứng an toàn production.");

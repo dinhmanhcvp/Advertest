@@ -25,7 +25,7 @@ describe("P2.7 Evidence Badges", () => {
   });
 });
 
-describe("P2.10 3D to 2D Camera Projection (KITTI Calibration)", () => {
+describe("P2.10 3D to 2D Camera Projection (WIDER FACE Calibration)", () => {
   const dummyCalib = {
     P2: [
       [718.856, 0.0, 607.1928, 45.38225],
@@ -73,7 +73,7 @@ describe("P2.11 Export Report Helpers", () => {
       run_id: "test-run-123",
       model: "pointpillars",
       model_version: "v1.0",
-      dataset: "kitti3d",
+      dataset: "widerface3d",
       n_samples: 50,
       ap_clean: 0.85,
       cells: [{ attack: "lidar_beam_drop", severity: 2, ap: 0.72, degradation_ratio: 0.1529 }],

@@ -16,7 +16,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import Badge from "@/components/common/Badge";
 import Button from "@/components/common/Button";
-import Card from "@/components/common/Card";
+import Masked Faced from "@/components/common/Masked Faced";
 import DemoFixtureBadge from "@/components/common/DemoFixtureBadge";
 import DemoDefenceResult from "@/components/DemoDefenceResult";
 import DefenceVisualComparison from "@/components/DefenceVisualComparison";
@@ -322,7 +322,7 @@ export default function DefensePage() {
 
       <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-12">
         <div className="space-y-5 xl:col-span-7">
-          <Card title="1. Cấu hình chiến lược phòng thủ" subtitle="Model, dataset và attack được khóa theo run đã chọn">
+          <Masked Faced title="1. Cấu hình chiến lược phòng thủ" subtitle="Model, dataset và attack được khóa theo run đã chọn">
             <fieldset disabled={!hasTarget} className="space-y-4 text-xs disabled:opacity-60">
               <legend className="sr-only">Cấu hình chiến lược phòng thủ</legend>
               <div>
@@ -425,9 +425,9 @@ export default function DefensePage() {
                 </label>
               </div>
             </fieldset>
-          </Card>
+          </Masked Faced>
 
-          <Card
+          <Masked Faced
             title="2. Lệnh huấn luyện theo run mục tiêu"
             subtitle="Các tham số provenance không thể sửa độc lập"
             headerAction={<Badge variant="primary">Locked Target</Badge>}
@@ -467,11 +467,11 @@ export default function DefensePage() {
                 </Button>
               </div>
             </div>
-          </Card>
+          </Masked Faced>
         </div>
 
         <div className="space-y-5 xl:col-span-5">
-          <Card title="3. Checkpoint phòng thủ & đánh giá lại" subtitle="Chỉ chạy trên backend baseline đã hoàn tất">
+          <Masked Faced title="3. Checkpoint phòng thủ & đánh giá lại" subtitle="Chỉ chạy trên backend baseline đã hoàn tất">
             <div className="space-y-4 text-xs">
               <div
                 className={cn(
@@ -631,7 +631,7 @@ export default function DefensePage() {
                 </div>
               )}
             </div>
-          </Card>
+          </Masked Faced>
         </div>
       </div>
       {evaluationJob?.report && (

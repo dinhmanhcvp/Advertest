@@ -11,7 +11,7 @@ describe("task-aware report metrics", () => {
   it.each([
     ["detection2d", "mAP@50-95", "map50_95"],
     ["segmentation", "mIoU", "miou"],
-    ["detection3d", "KITTI 3D AP", "kitti_3d_ap"],
+    ["detection3d", "WIDER FACE 3D AP", "widerface_3d_ap"],
   ])("uses the meaningful headline for %s", (task, label, key) => {
     const catalog = metricCatalogForTask(task);
     expect(catalog[0]).toMatchObject({ label, key });
@@ -48,35 +48,35 @@ describe("task-aware report metrics", () => {
     expect(primaryMetricForCell(report, report.cells[0], view.taskId, view.primary.key)).toBeNull();
   });
 
-  it("uses measured cell metrics and carries protocol provenance", () => {
+  it("uses measured cell metrics and masked_faceries protocol provenance", () => {
     const view = buildRunDecisionView({
       run_id: "run-3d",
       n_samples: 42,
       ap_clean: 0.62,
-      metrics: { clean: { kitti_3d_ap: 0.62, mean_bev_iou: 0.71 } },
-      cells: [{ attack: "lidar_fog", severity: 3, ap: 0.39, metrics: { kitti_3d_ap: 0.39, mean_bev_iou: 0.48 } }],
+      metrics: { clean: { widerface_3d_ap: 0.62, mean_bev_iou: 0.71 } },
+      cells: [{ attack: "lidar_fog", severity: 3, ap: 0.39, metrics: { widerface_3d_ap: 0.39, mean_bev_iou: 0.48 } }],
       provenance: {
-        run_config: { task_id: "detection3d", benchmark_protocol_id: "kitti-val-v1" },
+        run_config: { task_id: "detection3d", benchmark_protocol_id: "widerface-val-v1" },
         dataset_version_id: "sha256:data",
       },
       simulation_only: false,
       benchmark_metrics_available: true,
     });
 
-    expect(view.primary).toMatchObject({ label: "KITTI 3D AP", clean: 0.62, attacked: 0.39 });
+    expect(view.primary).toMatchObject({ label: "WIDER FACE 3D AP", clean: 0.62, attacked: 0.39 });
     expect(view.robustnessRetained).toBeCloseTo(62.9032, 3);
-    expect(view.protocol.benchmarkProtocolId).toBe("kitti-val-v1");
+    expect(view.protocol.benchmarkProtocolId).toBe("widerface-val-v1");
     expect(view.protocol.datasetVersionId).toBe("sha256:data");
   });
 
   it("filters a long run history by run, model, dataset, or task", () => {
     const runs = [
-      { run_id: "run-yolo", report: { model: "yolo11", dataset: "coco", task_id: "detection2d" } },
-      { run_id: "run-kitti", report: { model: "pointpillars", dataset: "kitti3d", task_id: "detection3d" } },
+      { run_id: "run-yolo", report: { model: "yolov7-face", dataset: "ego4d", task_id: "detection2d" } },
+      { run_id: "run-widerface", report: { model: "pointpillars", dataset: "widerface3d", task_id: "detection3d" } },
     ];
 
     expect(filterCompletedRuns(runs, "POINTPILLARS")).toEqual([runs[1]]);
-    expect(filterCompletedRuns(runs, "kitti3d")).toEqual([runs[1]]);
+    expect(filterCompletedRuns(runs, "widerface3d")).toEqual([runs[1]]);
     expect(filterCompletedRuns(runs, "run-yolo")).toEqual([runs[0]]);
     expect(filterCompletedRuns(runs, "detection3d")).toEqual([runs[1]]);
   });

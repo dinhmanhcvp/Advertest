@@ -24,14 +24,14 @@ vi.mock("@/lib/api", () => ({
 const sessions = [
   {
     id: "session-a",
-    name: "Phiên YOLO11s trên KITTI",
+    name: "Phiên YOLOv7-Face trên WIDER FACE",
     description: "Fog robustness",
     task_id: "detection2d",
     task_name: "Object Detection 2D",
     model_id: "base-checkpoint-a",
-    model_name: "YOLO11s Production",
-    dataset_id: "kitti-val",
-    dataset_name: "KITTI Validation",
+    model_name: "YOLOv7-Face Production",
+    dataset_id: "widerface-val",
+    dataset_name: "WIDER FACE Validation",
     created_at: "29/08/2026 20:00:00",
     updated_at: "29/08/2026 20:10:00",
     status: "active",
@@ -71,7 +71,7 @@ const sessions = [
     task_id: "detection2d",
     task_name: "Object Detection 2D",
     model_id: "base-checkpoint-b",
-    model_name: "YOLO11n Legacy",
+    model_name: "YOLOv7-Facen Legacy",
     dataset_id: "cityscapes-val",
     dataset_name: "Cityscapes Validation",
     created_at: "28/08/2026 20:00:00",
@@ -118,11 +118,11 @@ const baselineRun = {
     provenance: {
       run_config: {
         task_id: "detection2d",
-        model: "yolo11",
-        model_family_id: "yolo11",
+        model: "yolov7-face",
+        model_family_id: "yolov7-face",
         checkpoint_id: "base-checkpoint-a",
         model_version_id: "base-checkpoint-a",
-        dataset: "kitti_anonymized",
+        dataset: "widerface_anonymized",
         seed: 42,
         recipe: { name: "depth-fog-3", steps: [{ attack: "depth_fog", severity: 3 }] },
       },
@@ -159,14 +159,14 @@ describe("DefensePage session and run targeting", () => {
     await user.selectOptions(sessionSelect, "session-a");
     await user.selectOptions(runSelect, "display-run-a");
 
-    expect(await screen.findByDisplayValue("YOLO11s Production")).toHaveAttribute("readOnly");
-    expect(screen.getByDisplayValue("KITTI Validation")).toHaveAttribute("readOnly");
+    expect(await screen.findByDisplayValue("YOLOv7-Face Production")).toHaveAttribute("readOnly");
+    expect(screen.getByDisplayValue("WIDER FACE Validation")).toHaveAttribute("readOnly");
     expect(screen.getByDisplayValue("depth_fog")).toHaveAttribute("readOnly");
     expect(screen.queryByText("Phục hồi +68.4%")).not.toBeInTheDocument();
 
     await user.selectOptions(sessionSelect, "session-b");
     expect(runSelect).toHaveValue("");
-    expect(screen.queryByDisplayValue("YOLO11s Production")).not.toBeInTheDocument();
+    expect(screen.queryByDisplayValue("YOLOv7-Face Production")).not.toBeInTheDocument();
 
     await user.selectOptions(runSelect, "display-run-b");
     expect(screen.getByText(/không có baseline backend có thể đối chiếu/i)).toBeInTheDocument();
@@ -183,7 +183,7 @@ describe("DefensePage session and run targeting", () => {
       expect(screen.getByLabelText(/tải lên checkpoint đã phòng thủ/i)).not.toBeDisabled();
     });
 
-    const file = new File(["checkpoint"], "yolo11s-defended.pt", { type: "application/octet-stream" });
+    const file = new File(["checkpoint"], "yolov7-face-defended.pt", { type: "application/octet-stream" });
     await user.upload(screen.getByLabelText(/tải lên checkpoint đã phòng thủ/i), file);
 
     await waitFor(() => expect(screen.getByText(/checkpoint đã xác thực/i)).toBeInTheDocument());
@@ -197,8 +197,8 @@ describe("DefensePage session and run targeting", () => {
     getRunDefenceCandidates.mockResolvedValue([
       {
         id: "yolo-defended",
-        model_name: "YOLO11s Defended",
-        model_family_id: "yolo11",
+        model_name: "YOLOv7-Face Defended",
+        model_family_id: "yolov7-face",
         runnable: true,
       },
       {
@@ -217,7 +217,7 @@ describe("DefensePage session and run targeting", () => {
     const candidateSelect = await screen.findByRole("combobox", {
       name: /checkpoint phòng thủ đã xác thực/i,
     });
-    expect(candidateSelect).toHaveTextContent("YOLO11s Defended");
+    expect(candidateSelect).toHaveTextContent("YOLOv7-Face Defended");
     expect(candidateSelect).not.toHaveTextContent("SAM2 Defended");
   });
 });

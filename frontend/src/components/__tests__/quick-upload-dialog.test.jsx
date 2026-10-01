@@ -22,7 +22,7 @@ describe("QuickUploadDialog", () => {
   afterEach(cleanup);
 
   beforeEach(() => {
-    getModelFamilies.mockReset().mockResolvedValue([{ id: "yolo11", display_name: "YOLO11", runnable: true }]);
+    getModelFamilies.mockReset().mockResolvedValue([{ id: "yolov7-face", display_name: "YOLOv7-Face", runnable: true }]);
   });
 
   it("shows a no-project hint and no picker when there is no active project", () => {

@@ -43,7 +43,7 @@ export default function AuthGate({ children }) {
   }, [isAuthenticated, isLoading, openAuthModal, pathname, router]);
 
   // Render children regardless — the dashboard stays browsable while signed
-  // out (its sidebar carries the login entry point), and internal pages only
+  // out (its sidebar masked_faceries the login entry point), and internal pages only
   // flash for the instant the redirect takes over.
   return children;
 }

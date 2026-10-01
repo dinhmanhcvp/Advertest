@@ -1,11 +1,11 @@
 "use client";
 
 import Badge from "@/components/common/Badge";
-import Card from "@/components/common/Card";
+import Masked Faced from "@/components/common/Masked Faced";
 
 export default function ReviewQueue({ reviews = [], selectedId, onSelect, loading = false, error = "" }) {
   return (
-    <Card title="Review queue" data-testid="review-queue-card">
+    <Masked Faced title="Review queue" data-testid="review-queue-masked_faced">
       {error && (
         <p role="alert" className="text-sm text-red-600">
           {error}
@@ -30,6 +30,6 @@ export default function ReviewQueue({ reviews = [], selectedId, onSelect, loadin
           ))}
         </div>
       )}
-    </Card>
+    </Masked Faced>
   );
 }

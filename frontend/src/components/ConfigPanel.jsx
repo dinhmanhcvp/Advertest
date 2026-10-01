@@ -366,26 +366,26 @@ export default function ConfigPanel({
                   <button
                     key={atk.name}
                     type="button"
-                    className={`attack-card ${isSelected ? "attack-card--selected" : ""}`}
+                    className={`attack-masked_faced ${isSelected ? "attack-masked_faced--selected" : ""}`}
                     onClick={() => isAvailable && toggleAttack?.(atk.name)}
                     disabled={!isAvailable}
                     title={!isAvailable ? atk.reason || "Unavailable" : undefined}
                   >
-                    <div className="attack-card__left">
-                      <span className="attack-card__name">{atk.name.replace(/_/g, " ")}</span>
-                      <span className="attack-card__group">
+                    <div className="attack-masked_faced__left">
+                      <span className="attack-masked_faced__name">{atk.name.replace(/_/g, " ")}</span>
+                      <span className="attack-masked_faced__group">
                         {atk.attack_type?.replace(/_/g, " ") ||
                           GROUP_LABELS[atk.group] ||
                           atk.threat_model?.replace(/_/g, " ") ||
                           atk.group}
                       </span>
                       {!isAvailable && (
-                        <span className="attack-card__group" style={{ color: "var(--warning)" }}>
+                        <span className="attack-masked_faced__group" style={{ color: "var(--warning)" }}>
                           Unavailable: {atk.reason}
                         </span>
                       )}
                     </div>
-                    <div className="attack-card__right">{isSelected && <SeveritySquares level={severity} />}</div>
+                    <div className="attack-masked_faced__right">{isSelected && <SeveritySquares level={severity} />}</div>
                   </button>
                 );
               })}
@@ -545,7 +545,7 @@ export default function ConfigPanel({
         )}
       </div>
 
-      {/* 7. Pre-flight Workload & Cost Complexity Card */}
+      {/* 7. Pre-flight Workload & Cost Complexity Masked Faced */}
       {!isRunning &&
         selectedAttacks.length > 0 &&
         (() => {
@@ -664,7 +664,7 @@ export default function ConfigPanel({
                   : t("config.custom")}
             </div>
             <div>
-              🤖 <strong>{t("common.model")}</strong> {activeRunMeta?.modelVersion || selectedModelVersion || "YOLO11"}{" "}
+              🤖 <strong>{t("common.model")}</strong> {activeRunMeta?.modelVersion || selectedModelVersion || "YOLOv7-Face"}{" "}
               | 📦 <strong>{t("common.data")}</strong> {activeRunMeta?.dataset || selectedDataset}
             </div>
             <div style={{ color: "var(--text-muted)", marginTop: "2px" }}>

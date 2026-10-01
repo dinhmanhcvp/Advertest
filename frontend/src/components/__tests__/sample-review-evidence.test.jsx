@@ -20,8 +20,8 @@ const samples = [
     attack: "fog",
     severity: 2,
     artifacts: { clean_input_url: "/clean-1.png", attacked_input_url: "/attack-1.png" },
-    ground_truth: { objects: [{ label: "car" }] },
-    clean_prediction: { boxes: [{ label: "car", score: 0.91 }] },
+    ground_truth: { objects: [{ label: "masked_face" }] },
+    clean_prediction: { boxes: [{ label: "masked_face", score: 0.91 }] },
     attacked_prediction: { boxes: [{ label: "truck", score: 0.31 }] },
     degradation_hint: 65.9,
   },
@@ -30,8 +30,8 @@ const samples = [
     attack: "rain",
     severity: 4,
     artifacts: { clean_input_url: "/clean-2.png", attacked_input_url: "/attack-2.png" },
-    ground_truth: { objects: [{ label: "pedestrian" }] },
-    clean_prediction: { boxes: [{ label: "pedestrian", score: 0.88 }] },
+    ground_truth: { objects: [{ label: "face" }] },
+    clean_prediction: { boxes: [{ label: "face", score: 0.88 }] },
     attacked_prediction: { boxes: [] },
     metric: { name: "AP50", clean: 0.8, attacked: 0.2 },
     degradation: 75,
@@ -57,8 +57,8 @@ describe("SampleReviewPanel evidence and decisions", () => {
 
     expect(screen.getByRole("img", { name: "Ảnh gốc scene-1" })).toHaveAttribute("src", "/clean-2.png");
     expect(screen.getByRole("img", { name: "Ảnh attacked scene-1" })).toHaveAttribute("src", "/attack-2.png");
-    expect(screen.getByText(/GT: pedestrian/)).toBeVisible();
-    expect(screen.getByText(/Prediction gốc: pedestrian 0.88/)).toBeVisible();
+    expect(screen.getByText(/GT: face/)).toBeVisible();
+    expect(screen.getByText(/Prediction gốc: face 0.88/)).toBeVisible();
     expect(screen.getByText(/Prediction attacked: —/)).toBeVisible();
     expect(screen.getByText(/AP50.*0.8.*0.2/)).toBeVisible();
     expect(screen.getByText(/Suy giảm: 75%/)).toBeVisible();

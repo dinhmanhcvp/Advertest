@@ -54,7 +54,7 @@ describe("ProjectAssetPicker", () => {
         projectId="project-1"
         taskId="detection2d"
         kind="model"
-        modelFamilyId="yolo11"
+        modelFamilyId="yolov7-face"
         onSelect={onSelect}
         onAssetsChange={onAssetsChange}
       />,
@@ -86,7 +86,7 @@ describe("ProjectAssetPicker", () => {
     else api.listProjectCheckpoints.mockResolvedValue([]);
     const user = userEvent.setup();
 
-    render(<ProjectAssetPicker projectId="project-1" taskId="detection2d" kind={kind} modelFamilyId="yolo11" />);
+    render(<ProjectAssetPicker projectId="project-1" taskId="detection2d" kind={kind} modelFamilyId="yolov7-face" />);
     await user.click(await screen.findByRole("button", { name: `Tải ${kind}.zip` }));
 
     await waitFor(() =>

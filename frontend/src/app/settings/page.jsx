@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Button from "@/components/common/Button";
-import Card from "@/components/common/Card";
+import Masked Faced from "@/components/common/Masked Faced";
 import PageHeader from "@/components/layout/PageHeader";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -231,8 +231,8 @@ export default function SettingsPage() {
           {prefSuccessMsg && <StatusBanner>{prefSuccessMsg}</StatusBanner>}
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-            {/* Theme Settings Card */}
-            <Card title={t("settings.theme.title")} subtitle={t("settings.theme.desc")}>
+            {/* Theme Settings Masked Faced */}
+            <Masked Faced title={t("settings.theme.title")} subtitle={t("settings.theme.desc")}>
               <div className="grid grid-cols-3 gap-2.5">
                 {THEME_MODES.map(({ mode, icon, labelKey }) => {
                   const selected = theme === mode;
@@ -254,10 +254,10 @@ export default function SettingsPage() {
                   );
                 })}
               </div>
-            </Card>
+            </Masked Faced>
 
-            {/* Language Settings Card */}
-            <Card title={t("settings.language.title")} subtitle={t("settings.language.desc")}>
+            {/* Language Settings Masked Faced */}
+            <Masked Faced title={t("settings.language.title")} subtitle={t("settings.language.desc")}>
               <div className="grid grid-cols-2 gap-2.5">
                 {[
                   { code: "vi", flag: "🇻🇳", labelKey: "settings.language.vi" },
@@ -282,7 +282,7 @@ export default function SettingsPage() {
                   );
                 })}
               </div>
-            </Card>
+            </Masked Faced>
           </div>
         </div>
       )}
@@ -294,8 +294,8 @@ export default function SettingsPage() {
           {profileErrorMsg && <StatusBanner tone="error">{profileErrorMsg}</StatusBanner>}
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-            {/* Profile Card */}
-            <Card title={t("settings.profile.title")}>
+            {/* Profile Masked Faced */}
+            <Masked Faced title={t("settings.profile.title")}>
               <div className="mb-5">
                 <div className="text-[15px] font-bold text-[var(--text-primary)]">
                   {user?.display_name || t("settings.profile.unnamed")}
@@ -337,10 +337,10 @@ export default function SettingsPage() {
                   {isSavingProfile ? t("settings.profile.saving") : t("settings.profile.save")}
                 </Button>
               </form>
-            </Card>
+            </Masked Faced>
 
-            {/* Resource Quotas Card */}
-            <Card title={t("settings.quota.title")}>
+            {/* Resource Quotas Masked Faced */}
+            <Masked Faced title={t("settings.quota.title")}>
               <div className="flex flex-col gap-4">
                 {/* Storage */}
                 <div>
@@ -374,7 +374,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
               </div>
-            </Card>
+            </Masked Faced>
           </div>
         </div>
       )}
@@ -382,7 +382,7 @@ export default function SettingsPage() {
       {/* Tab: RBAC Roles & Permissions */}
       {activeTab === "roles" && (
         <div className="space-y-5">
-          <Card>
+          <Masked Faced>
             <div className="text-[13px] font-bold text-[var(--text-secondary)]">{t("settings.roles.current")}</div>
             <div className="mt-2 flex items-center gap-3">
               <span className="text-[19px] font-extrabold text-[var(--text-primary)]">
@@ -390,7 +390,7 @@ export default function SettingsPage() {
               </span>
               <span className="text-[12px] text-[var(--text-muted)]">{t("settings.roles.managedBy")}</span>
             </div>
-          </Card>
+          </Masked Faced>
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
             {ROLES_INFO.map((r) => {
@@ -446,7 +446,7 @@ export default function SettingsPage() {
             <StatusBanner tone={wandbStatusMsg.startsWith("✅") ? "success" : "error"}>{wandbStatusMsg}</StatusBanner>
           )}
 
-          <Card
+          <Masked Faced
             title={t("settings.wandb.title")}
             subtitle={t("settings.wandb.desc")}
             headerAction={
@@ -560,7 +560,7 @@ export default function SettingsPage() {
                 </Button>
               </div>
             </form>
-          </Card>
+          </Masked Faced>
         </div>
       )}
     </div>

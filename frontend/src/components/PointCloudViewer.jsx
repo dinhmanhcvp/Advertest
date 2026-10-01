@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * Project a 3D LiDAR point (in Velodyne frame: [x, y, z]) into 2D camera pixel coordinates (u, v).
- * Uses real KITTI calibration schema:
+ * Uses real WIDER FACE calibration schema:
  * - Tr_velo_to_cam (4x4 or 3x4 transform)
  * - R_rect (3x3 or 4x4 rectification matrix)
  * - P2 (3x4 camera projection matrix)

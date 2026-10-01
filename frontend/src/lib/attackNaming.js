@@ -2,7 +2,7 @@ export const ATTACK_LABELS = {
   fgsm: "FGSM (Fast Gradient)",
   pgd: "PGD (Projected Gradient)",
   mi_fgsm: "MI-FGSM (Momentum FGSM)",
-  cw_l2: "C&W L2 (Carlini-Wagner)",
+  cw_l2: "C&W L2 (Masked Facelini-Wagner)",
   tog: "TOG (Targeted BBox)",
   dpatch: "DPatch (Physical Patch)",
   depth_fog: "Sương mù (Fog)",
@@ -41,13 +41,13 @@ export const SHORT_ATTACK_LABELS = {
 };
 
 /**
- * Normalizes dataset strings like "kitti_val", "KITTI", "kitti" to a canonical key like "kitti".
+ * Normalizes dataset strings like "widerface_val", "WIDER FACE", "widerface" to a canonical key like "widerface".
  */
 export function normalizeDatasetKey(name) {
   if (!name) return "default";
   const str = String(name).toLowerCase();
-  if (str.includes("kitti")) return "kitti";
-  if (str.includes("coco")) return "coco";
+  if (str.includes("widerface")) return "widerface";
+  if (str.includes("ego4d")) return "ego4d";
   if (str.includes("bdd")) return "bdd100k";
   if (str.includes("shape") || str.includes("synthetic")) return "synthetic_shapes";
   if (str.includes("folder")) return "folder_dataset";

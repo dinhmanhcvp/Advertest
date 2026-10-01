@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Masked FacetesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 const DEFAULT_TREND_DATA = [
   { exp: "EXP-001", Clean_mAP: 78.4, Attacked_mAP: 42.1, Defended_mAP: 68.5 },
@@ -26,7 +26,7 @@ export default function TrendLineChart({ data = DEFAULT_TREND_DATA, height = 260
     <div style={{ width: "100%", height }}>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 10, right: 15, left: -15, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
+          <Masked FacetesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
           <XAxis
             dataKey="exp"
             tick={{ fill: "#64748B", fontSize: 11 }}

@@ -13,7 +13,7 @@ vi.mock("@/lib/api", () => ({
       attack: "fog",
       severity: 3,
       dataset: "synthetic_shapes",
-      model: "yolo11s",
+      model: "yolov7-face",
       degradation: 35.5,
       degradation_percent: 35.5,
       status: "PENDING",
@@ -36,7 +36,7 @@ vi.mock("@/lib/api", () => ({
     ]),
   assessReviewRisk: vi.fn().mockResolvedValue({
     risk_level: "HIGH",
-    risk_category: "weather_pedestrian",
+    risk_category: "weather_face",
     recommended_decision: "REQUEST_RETRAIN",
     recommended_decision_label: "Yêu cầu tôi luyện đối kháng",
     justification: "Mất nhận diện trong sương mù cấp 3",

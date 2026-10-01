@@ -29,10 +29,10 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
-import ClassMappingCard from "@/components/ClassMappingCard";
+import ClassMappingMasked Faced from "@/components/ClassMappingMasked Faced";
 import Badge from "@/components/common/Badge";
 import Button from "@/components/common/Button";
-import Card from "@/components/common/Card";
+import Masked Faced from "@/components/common/Masked Faced";
 import PageHeader from "@/components/layout/PageHeader";
 import ProjectAssetPicker from "@/components/ProjectAssetPicker";
 import { createProject, getApiBase, getCatalogDatasets, getModelVersions, listProjects, listSessions } from "@/lib/api";
@@ -48,8 +48,8 @@ export default function ConfigureProblemPage() {
   const [selectedArch, setSelectedArch] = useState("yolo");
 
   // Active selected dataset and model objects
-  const [selectedDatasetId, setSelectedDatasetId] = useState("kitti");
-  const [selectedModelId, setSelectedModelId] = useState("yolo11s-base");
+  const [selectedDatasetId, setSelectedDatasetId] = useState("widerface");
+  const [selectedModelId, setSelectedModelId] = useState("yolov7-face-base");
   const [catalogDatasets, setCatalogDatasets] = useState([]);
   const [catalogModels, setCatalogModels] = useState([]);
   const [projectDatasets, setProjectDatasets] = useState([]);
@@ -64,11 +64,11 @@ export default function ConfigureProblemPage() {
 
   const [classMapping, setClassMapping] = useState({});
   const [expName, setExpName] = useState("EXP-2025-0512-001");
-  const [sessionName, setSessionName] = useState("Đánh giá Robustness YOLO11s trên KITTI");
+  const [sessionName, setSessionName] = useState("Đánh giá Robustness YOLOv7-Face trên WIDER FACE");
   const [expDesc, setExpDesc] = useState(
-    "Kiểm thử độ suy giảm của mô hình YOLO11s trước các điều kiện thời tiết khắc nghiệt và nhiễu đối kháng.",
+    "Kiểm thử độ suy giảm của mô hình YOLOv7-Face trước các điều kiện thời tiết khắc nghiệt và nhiễu đối kháng.",
   );
-  const [expTags, setExpTags] = useState("yolo11, kitti, object-detection, local");
+  const [expTags, setExpTags] = useState("yolov7-face, widerface, object-detection, local");
 
   // Experiment Session Workspace Management State
   const [sessionMode, setSessionMode] = useState("new"); // "new" | "existing"
@@ -270,8 +270,8 @@ export default function ConfigureProblemPage() {
   useEffect(() => {
     if (filteredModels.length > 0 && !filteredModels.some((m) => m.id === selectedModelId)) {
       const preferredModel =
-        filteredModels.find((m) => m.id === "yolo11s-base" && m.runnable) ||
-        filteredModels.find((m) => m.id === "yolo11s-kitti-clean-b0" && m.runnable) ||
+        filteredModels.find((m) => m.id === "yolov7-face-base" && m.runnable) ||
+        filteredModels.find((m) => m.id === "yolov7-face-widerface-clean-b0" && m.runnable) ||
         filteredModels.find((m) => m.id === "portable-blob-detector-v1" && m.runnable) ||
         filteredModels.find((m) => m.runnable) ||
         filteredModels[0];
@@ -280,7 +280,7 @@ export default function ConfigureProblemPage() {
     }
     if (filteredDatasets.length > 0 && !filteredDatasets.some((d) => d.id === selectedDatasetId)) {
       const preferredDataset =
-        filteredDatasets.find((d) => d.id === "kitti" && d.runnable) ||
+        filteredDatasets.find((d) => d.id === "widerface" && d.runnable) ||
         filteredDatasets.find((d) => d.runnable) ||
         filteredDatasets[0];
       setSelectedDatasetId(preferredDataset.id);
@@ -314,11 +314,11 @@ export default function ConfigureProblemPage() {
     currentModel?.native_class_names?.length
       ? currentModel.native_class_names
       : currentModel?.architecture === "pointpillars"
-        ? ["Car", "Pedestrian", "Cyclist"]
+        ? ["Masked Face", "Face", "Blurred Face"]
         : currentModel?.architecture === "anonymization"
           ? ["face", "license_plate"]
           : currentModel?.task === "segmentation"
-            ? ["road", "sidewalk", "building", "person", "car", "truck"]
+            ? ["road", "sidewalk", "building", "person", "masked_face", "truck"]
             : [];
 
   const datasetClasses = (currentDataset?.classLabels || []).map((c) => c.name);
@@ -431,7 +431,7 @@ export default function ConfigureProblemPage() {
         {/* LEFT & CENTER: Form Controls (2 Columns) */}
         <div className="xl:col-span-2 space-y-5">
           {/* 0. Quản lý Phiên làm việc & Cuộc thử nghiệm */}
-          <Card
+          <Masked Faced
             title="0. Phiên thử nghiệm"
             subtitle="Tạo phiên mới hoặc tiếp tục phiên đã có."
           >
@@ -484,7 +484,7 @@ export default function ConfigureProblemPage() {
                       type="text"
                       value={sessionName}
                       onChange={(e) => setSessionName(e.target.value)}
-                      placeholder="Ví dụ: Đánh giá Robustness YOLO11s trên KITTI Mùa 1"
+                      placeholder="Ví dụ: Đánh giá Robustness YOLOv7-Face trên WIDER FACE Mùa 1"
                       className="w-full py-1.5 px-3 rounded-lg border border-slate-300 bg-white font-medium text-slate-800 shadow-xs focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -510,8 +510,8 @@ export default function ConfigureProblemPage() {
                 </div>
               )}
             </div>
-          </Card>
-          <Card title="1. Chọn bài toán" subtitle="Chọn nhiệm vụ cần đánh giá.">
+          </Masked Faced>
+          <Masked Faced title="1. Chọn bài toán" subtitle="Chọn nhiệm vụ cần đánh giá.">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {PROBLEM_TYPES.filter((t) =>
                 ["detection2d", "segmentation", "detection3d", "classification"].includes(t.id),
@@ -573,10 +573,10 @@ export default function ConfigureProblemPage() {
                 );
               })}
             </div>
-          </Card>
+          </Masked Faced>
 
           {/* 2. Chọn Mô hình (Cascade Filtered by Task) */}
-          <Card
+          <Masked Faced
             title="2. Chọn mô hình"
             subtitle={
               isLoadingCatalog
@@ -643,10 +643,10 @@ export default function ConfigureProblemPage() {
                 </p>
               )}
             </div>
-          </Card>
+          </Masked Faced>
 
           {/* 3. Kho Dữ Liệu (Catalog Status & Selection) */}
-          <Card
+          <Masked Faced
             title="3. Chọn tập dữ liệu"
             subtitle={
               isLoadingCatalog
@@ -712,14 +712,14 @@ export default function ConfigureProblemPage() {
                 </p>
               )}
             </div>
-          </Card>
+          </Masked Faced>
 
           {/* 4. CLASS LABELS & LABEL MAPPING MATRIX */}
-          <Card
+          <Masked Faced
             title="4. Ánh xạ nhãn lớp"
             subtitle="Ghép từng lớp dữ liệu với lớp mô hình hoặc chọn bỏ qua."
           >
-            <ClassMappingCard
+            <ClassMappingMasked Faced
               modelClasses={modelClasses}
               datasetClasses={datasetClasses}
               source={currentDataset?.source ? "manifest" : "catalog"}
@@ -743,12 +743,12 @@ export default function ConfigureProblemPage() {
                 </Badge>
               </div>
             </div>
-          </Card>
+          </Masked Faced>
         </div>
 
         {/* RIGHT COLUMN: Experiment Summary & Hyperparameters (1 Column) */}
         <div className="space-y-5">
-          <Card
+          <Masked Faced
             title="Asset của project"
             subtitle={projectId ? `Project: ${projectId}` : "Chọn hoặc tạo project để upload asset"}
           >
@@ -819,9 +819,9 @@ export default function ConfigureProblemPage() {
                 Upload dùng API project-scoped; server quyết định validation và trạng thái READY.
               </p>
             </div>
-          </Card>
-          {/* Summary Card */}
-          <Card title="Tóm tắt cấu hình bài toán">
+          </Masked Faced>
+          {/* Summary Masked Faced */}
+          <Masked Faced title="Tóm tắt cấu hình bài toán">
             <div className="space-y-3 text-xs">
               <div className="flex justify-between py-1.5 border-b border-slate-100">
                 <span className="text-slate-500">Bài toán:</span>
@@ -870,7 +870,7 @@ export default function ConfigureProblemPage() {
                 </p>
               )}
             </div>
-          </Card>
+          </Masked Faced>
         </div>
       </div>
       {/* Uploads are handled by the project asset pickers above. */}

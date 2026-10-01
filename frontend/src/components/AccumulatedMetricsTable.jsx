@@ -64,8 +64,8 @@ function retentionTokens(retainedPct) {
 function buildMatrix(report) {
   const apClean = typeof report?.ap_clean === "number" ? report.ap_clean : null;
   const cleanMetrics = report?.metrics?.clean ?? {};
-  const is3D = cleanMetrics.kitti_3d_ap != null;
-  const cleanAp50 = cleanMetrics.kitti_3d_ap ?? cleanMetrics.ap50 ?? apClean;
+  const is3D = cleanMetrics.widerface_3d_ap != null;
+  const cleanAp50 = cleanMetrics.widerface_3d_ap ?? cleanMetrics.ap50 ?? apClean;
   const cleanMap = cleanMetrics.map50_95 ?? null;
   const rawCells = report?.cells ?? [];
 
@@ -75,7 +75,7 @@ function buildMatrix(report) {
   rawCells.forEach((cell) => {
     const key = getCanonicalAttackKey(cell, cell.severity, report);
     const label = getDescriptiveAttackName(cell, cell.severity, report);
-    const ap50 = cell.metrics?.kitti_3d_ap ?? cell.metrics?.ap50 ?? cell.ap ?? null;
+    const ap50 = cell.metrics?.widerface_3d_ap ?? cell.metrics?.ap50 ?? cell.ap ?? null;
     const map = cell.metrics?.map50_95 ?? null;
     const retained = apClean > 0 && ap50 != null ? Math.max(0, Math.min(100, (ap50 / apClean) * 100)) : null;
     columnMap.set(key, {

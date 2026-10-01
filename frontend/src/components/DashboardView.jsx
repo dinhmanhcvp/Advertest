@@ -13,7 +13,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Badge from "@/components/common/Badge";
 import Button from "@/components/common/Button";
-import Card from "@/components/common/Card";
+import Masked Faced from "@/components/common/Masked Faced";
 import QuickUploadDialog from "@/components/dashboard/QuickUploadDialog";
 import { useProject } from "@/context/ProjectContext";
 import { getCatalogAttacks, getCatalogDatasets, getModelVersions, listRuns } from "@/lib/api";
@@ -64,7 +64,7 @@ export default function DashboardView() {
 
   return (
     <div className="space-y-5 animate-fade-in">
-      <Card title="AdverTest là gì?" subtitle="Nền tảng kiểm thử độ bền vững mô hình AI trước tấn công đối kháng">
+      <Masked Faced title="AdverTest là gì?" subtitle="Nền tảng kiểm thử độ bền vững mô hình AI trước tấn công đối kháng">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-3xl space-y-3 text-sm text-slate-600">
             <p>
@@ -102,9 +102,9 @@ export default function DashboardView() {
             Bắt đầu làm việc
           </Link>
         </div>
-      </Card>
+      </Masked Faced>
       <div className="grid grid-cols-1 gap-4">
-        <Card title="Thao tác nhanh" subtitle="Lối tắt hành động thường dùng">
+        <Masked Faced title="Thao tác nhanh" subtitle="Lối tắt hành động thường dùng">
           <div className="grid grid-cols-2 gap-2">
             <Link
               href={scopedHref("/experiments/new")}
@@ -143,11 +143,11 @@ export default function DashboardView() {
               Quy trình phòng thủ đóng loop
             </Button>
           </Link>
-        </Card>
+        </Masked Faced>
       </div>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-        <Card
+        <Masked Faced
           title="Mô hình đang khả dụng"
           subtitle="Checkpoint catalog đã đăng ký"
           headerAction={
@@ -179,8 +179,8 @@ export default function DashboardView() {
               ))}
             </div>
           )}
-        </Card>
-        <Card
+        </Masked Faced>
+        <Masked Faced
           title="Dataset đang khả dụng"
           subtitle="Các tập dữ liệu đã qua gate anonymization"
           headerAction={
@@ -213,10 +213,10 @@ export default function DashboardView() {
               ))}
             </div>
           )}
-        </Card>
+        </Masked Faced>
       </div>
 
-      <Card title="Cảnh báo & Khuyến nghị" subtitle="Tín hiệu chỉ dựa trên các phiên đã ghi nhận">
+      <Masked Faced title="Cảnh báo & Khuyến nghị" subtitle="Tín hiệu chỉ dựa trên các phiên đã ghi nhận">
         {highRiskRun ? (
           <div className="flex items-start gap-2.5 rounded-lg border border-red-200 bg-red-50/60 p-3">
             <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
@@ -230,7 +230,7 @@ export default function DashboardView() {
         ) : (
           <div className="py-6 text-center text-xs font-medium text-slate-400">Chưa có cảnh báo nào</div>
         )}
-      </Card>
+      </Masked Faced>
 
       <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3 text-xs text-slate-500">
         <span>

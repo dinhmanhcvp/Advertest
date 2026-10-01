@@ -401,7 +401,7 @@ export default function SampleReviewPanel({ runId, samples = [], projectId, clas
           <p className="mt-1 text-xs text-emerald-800">
             Định dạng {dataset.format || "—"}: {dataset.format === "segmentation-mask"
               ? "images/ + masks/ + manifest.json"
-              : dataset.format === "kitti3d"
+              : dataset.format === "widerface3d"
                 ? "velodyne/ + label_2/ + calib/ + ImageSets/ + manifest.json"
                 : "images/ + labels/ + manifest.json"}. Lớp:{" "}
             {Object.values(dataset.class_map || {}).join(", ") || "—"}.{" "}

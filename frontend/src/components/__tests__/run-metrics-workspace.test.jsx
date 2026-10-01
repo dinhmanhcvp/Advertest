@@ -6,22 +6,22 @@ import { RunMetricsContent } from "@/components/analytics/RunMetricsWorkspace";
 const report3d = {
   run_id: "run-real-3d",
   model: "pointpillars",
-  dataset: "kitti3d",
+  dataset: "widerface3d",
   n_samples: 42,
   ap_clean: 0.62,
   simulation_only: false,
   benchmark_metrics_available: true,
-  metrics: { clean: { kitti_3d_ap: 0.62, mean_bev_iou: 0.71 } },
+  metrics: { clean: { widerface_3d_ap: 0.62, mean_bev_iou: 0.71 } },
   cells: [
     {
       attack: "lidar_fog",
       severity: 3,
       ap: 0.39,
       degradation_percent: 37.1,
-      metrics: { kitti_3d_ap: 0.39, mean_bev_iou: 0.48 },
+      metrics: { widerface_3d_ap: 0.39, mean_bev_iou: 0.48 },
     },
   ],
-  provenance: { run_config: { task_id: "detection3d", benchmark_protocol_id: "kitti-val-v1", split: "val", seed: 42 } },
+  provenance: { run_config: { task_id: "detection3d", benchmark_protocol_id: "widerface-val-v1", split: "val", seed: 42 } },
 };
 
 describe("RunMetricsContent", () => {
@@ -33,10 +33,10 @@ describe("RunMetricsContent", () => {
 
   it("uses task-aware 3D metrics and protocol provenance", () => {
     render(<RunMetricsContent report={report3d} mode="benchmark" analytics={{}} />);
-    expect(screen.getAllByText("KITTI 3D AP").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("WIDER FACE 3D AP").length).toBeGreaterThan(0);
     expect(screen.getAllByText("62.0%").length).toBeGreaterThan(0);
     expect(screen.getAllByText("39.0%").length).toBeGreaterThan(0);
-    expect(screen.getByText("kitti-val-v1")).toBeVisible();
+    expect(screen.getByText("widerface-val-v1")).toBeVisible();
     expect(screen.queryByText(/mAP@0.5 qua các lần/i)).toBeNull();
   });
 
@@ -48,20 +48,20 @@ describe("RunMetricsContent", () => {
           simulation_only: true,
           n_samples: 8,
           provenance: {
-            run_config: { task_id: "detection3d", benchmark_protocol_id: "kitti-val-v1", split: "val", seed: 42 },
+            run_config: { task_id: "detection3d", benchmark_protocol_id: "widerface-val-v1", split: "val", seed: 42 },
             ground_truth_available: true,
           },
         }}
         mode="analysis"
         analytics={{
           summary: { worst_attack: { attack: "lidar_fog", mean_degradation_percent: 37.1 } },
-          classes: [{ class_name: "Car", detection_drop_percent: 22.0, total_ground_truth_objects: 12 }],
+          classes: [{ class_name: "Masked Face", detection_drop_percent: 22.0, total_ground_truth_objects: 12 }],
           distance: { most_vulnerable_distance: "far", buckets: {} },
         }}
       />,
     );
     expect(screen.getAllByText(/lidar_fog/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Car/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Masked Face/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/SIMULATION/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Giới hạn cần đọc trước khi quyết định")).toBeVisible();
     expect(screen.queryByText(/L_adv = 0.4/i)).toBeNull();

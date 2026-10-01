@@ -246,7 +246,7 @@ export default function MethodComparisonTable({ report }) {
 
   const attackColumnCount = columnDefs.filter((c) => !c.isBaseline).length;
 
-  const is3D = report?.metrics?.clean?.kitti_3d_ap != null;
+  const is3D = report?.metrics?.clean?.widerface_3d_ap != null;
 
   return (
     <div className="heatmap" style={{ overflowX: "auto" }}>

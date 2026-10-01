@@ -40,7 +40,7 @@ export default function BevViewer({
 
       // We map the world coordinates to pixels.
       // Assuming X is right/left, Y is forward/backward
-      // Typical KITTI LiDAR: X forward, Y left. Let's assume ego is at (0,0).
+      // Typical WIDER FACE LiDAR: X forward, Y left. Let's assume ego is at (0,0).
       // Let's set origin at center bottom.
       const originX = width / 2;
       const originY = height * 0.9;

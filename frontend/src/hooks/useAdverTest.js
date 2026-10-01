@@ -41,58 +41,58 @@ const FALLBACK_MODES = [
 ];
 
 const FALLBACK_FAMILIES = [
-  { id: "yolo11", display_name: "YOLO11", runnable: true },
+  { id: "yolov7-face", display_name: "YOLOv7-Face", runnable: true },
   { id: "pointpillars", display_name: "PointPillars", runnable: true },
 ];
 
 const FALLBACK_CHECKPOINTS = [
   {
-    id: "yolo11s-base",
-    model_name: "yolo11s",
+    id: "yolov7-face-base",
+    model_name: "yolov7-face",
     task: "detection2d",
-    model_family_id: "yolo11",
+    model_family_id: "yolov7-face",
     runnable: true,
-    checkpoint_path: "checkpoints/surrogates/yolo11s.pt",
+    checkpoint_path: "checkpoints/surrogates/yolov7-face.pt",
   },
   {
-    id: "yolo11n",
-    model_name: "YOLO11n",
+    id: "yolov7-facen",
+    model_name: "YOLOv7-Facen",
     task: "detection2d",
-    model_family_id: "yolo11",
+    model_family_id: "yolov7-face",
     runnable: true,
-    checkpoint_path: "yolo11n.pt",
+    checkpoint_path: "yolov7-facen.pt",
   },
   {
-    id: "yolo11s",
-    model_name: "YOLO11s",
+    id: "yolov7-face",
+    model_name: "YOLOv7-Face",
     task: "detection2d",
-    model_family_id: "yolo11",
+    model_family_id: "yolov7-face",
     runnable: true,
-    checkpoint_path: "yolo11s.pt",
+    checkpoint_path: "yolov7-face.pt",
   },
   {
-    id: "pointpillars-kitti",
-    model_name: "PointPillars (KITTI)",
+    id: "pointpillars-widerface",
+    model_name: "PointPillars (WIDER FACE)",
     task: "detection3d",
     model_family_id: "pointpillars",
     runnable: true,
-    checkpoint_path: "hv_pointpillars_secfpn_6x8_160e_kitti-3d-3class.pth",
+    checkpoint_path: "hv_pointpillars_secfpn_6x8_160e_widerface-3d-3class.pth",
   },
 ];
 
 const FALLBACK_DATASETS = [
   {
-    id: "kitti_val",
-    name: "kitti",
-    title: "KITTI Validation",
+    id: "widerface_val",
+    name: "widerface",
+    title: "WIDER FACE Validation",
     annotation_schema: ["2d_bbox"],
     benchmark_ready: true,
     anonymized: true,
   },
   {
-    id: "coco_val",
-    name: "coco",
-    title: "COCO Validation",
+    id: "ego4d_val",
+    name: "ego4d",
+    title: "Ego4D Validation",
     annotation_schema: ["2d_bbox"],
     benchmark_ready: true,
     anonymized: true,
@@ -106,9 +106,9 @@ const FALLBACK_DATASETS = [
     anonymized: true,
   },
   {
-    id: "kitti3d",
-    name: "kitti3d",
-    title: "KITTI 3D Validation",
+    id: "widerface3d",
+    name: "widerface3d",
+    title: "WIDER FACE 3D Validation",
     annotation_schema: ["3d_bbox", "lidar"],
     benchmark_ready: true,
     anonymized: true,
@@ -400,7 +400,7 @@ export function useAdverTest() {
           getPerceptionModes(),
           getRecipePresets(),
           getModelFamilies("detection2d"),
-          getBaseCheckpoints("detection2d", "yolo11"),
+          getBaseCheckpoints("detection2d", "yolov7-face"),
         ]);
         if (cancelled) return;
         const value = (index, fallback) => (results[index].status === "fulfilled" ? results[index].value : fallback);

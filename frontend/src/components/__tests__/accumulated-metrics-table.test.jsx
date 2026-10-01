@@ -33,7 +33,7 @@ function makeCell(attack, severity, ap, map50_95 = ap * 0.72) {
  * @param {object[]} cells - Array of CellResult objects.
  * @returns {object}
  */
-function makeReport(apClean, cells, { cleanMap = apClean * 0.72, dataset = "kitti" } = {}) {
+function makeReport(apClean, cells, { cleanMap = apClean * 0.72, dataset = "widerface" } = {}) {
   return {
     ap_clean: apClean,
     dataset,

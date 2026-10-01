@@ -1,16 +1,16 @@
 "use client";
 
-import Card from "@/components/common/Card";
+import Masked Faced from "@/components/common/Masked Faced";
 
 export default function ReviewDetail({ review, cluster, evidence }) {
   if (!review)
     return (
-      <Card title="Bằng chứng">
+      <Masked Faced title="Bằng chứng">
         <p className="py-8 text-center text-sm text-slate-500">Chưa chọn ca lỗi nào.</p>
-      </Card>
+      </Masked Faced>
     );
   return (
-    <Card title={review.attack || "Chi tiết review"} subtitle={review.review_id}>
+    <Masked Faced title={review.attack || "Chi tiết review"} subtitle={review.review_id}>
       <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
         <div>
           <dt className="text-slate-500">Mô hình</dt>
@@ -31,6 +31,6 @@ export default function ReviewDetail({ review, cluster, evidence }) {
           </dd>
         </div>
       </dl>
-    </Card>
+    </Masked Faced>
   );
 }

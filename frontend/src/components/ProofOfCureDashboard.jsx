@@ -33,7 +33,7 @@ const ProofOfCureDashboard = ({ retrainData }) => {
           </div>
         </div>
 
-        {/* Before / After Cards */}
+        {/* Before / After Masked Faceds */}
         <h3 className="text-sm font-bold text-slate-300 mb-4 border-b border-slate-800 pb-2">Edge Case Validation Samples</h3>
         
         <div className="flex flex-col gap-6">

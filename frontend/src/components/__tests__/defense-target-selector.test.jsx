@@ -11,13 +11,13 @@ const sessions = [
   {
     id: "session-a",
     name: "Phiên đánh giá thời tiết",
-    description: "Đánh giá model production trên KITTI",
+    description: "Đánh giá model production trên WIDER FACE",
     task_id: "detection2d",
     task_name: "Object Detection 2D",
-    model_id: "yolo11s-prod",
-    model_name: "YOLO11s Production",
-    dataset_id: "kitti-val",
-    dataset_name: "KITTI Validation",
+    model_id: "yolov7-face-prod",
+    model_name: "YOLOv7-Face Production",
+    dataset_id: "widerface-val",
+    dataset_name: "WIDER FACE Validation",
     created_at: "29/08/2026 20:00:00",
     updated_at: "29/08/2026 20:10:00",
     status: "active",
@@ -89,8 +89,8 @@ describe("DefenseTargetSelector", () => {
     await user.selectOptions(screen.getByRole("combobox", { name: /phiên thử nghiệm/i }), "session-a");
     await user.selectOptions(screen.getByRole("combobox", { name: /attack run/i }), "run-visible-1");
 
-    expect(screen.getByText("YOLO11s Production")).toBeInTheDocument();
-    expect(screen.getByText("KITTI Validation")).toBeInTheDocument();
+    expect(screen.getByText("YOLOv7-Face Production")).toBeInTheDocument();
+    expect(screen.getByText("WIDER FACE Validation")).toBeInTheDocument();
     expect(screen.getByText("Depth Fog")).toBeInTheDocument();
     expect(screen.getByText("Cấp 3")).toBeInTheDocument();
     expect(screen.getByText("45.1%")).toBeInTheDocument();

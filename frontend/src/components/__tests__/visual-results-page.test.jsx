@@ -168,29 +168,29 @@ describe("VisualResultsPage layout contract", () => {
     expect(screen.getByTestId("clean-prediction-box-0").getAttribute("x")).toBe("10");
     expect(screen.getByTestId("clean-prediction-box-0").getAttribute("y")).toBe("12");
     expect(screen.queryByText("71.23%")).toBeNull();
-    expect(screen.queryByText("car 0.96")).toBeNull();
+    expect(screen.queryByText("masked_face 0.96")).toBeNull();
     expect(screen.queryByText("1024 × 768")).toBeNull();
     expect(screen.queryByAltText("Bản đồ khác biệt")).toBeNull();
   });
 
   it("renders sample navigator and switches between multiple samples", async () => {
     const sample1 = {
-      sample_id: "kitti_000000",
+      sample_id: "widerface_000000",
       artifacts: {
         clean_input_url: "/data/runs/real/clean_0.png",
         attacked_input_url: "/data/runs/real/attacked_0.png",
       },
-      clean_prediction: { boxes: [{ xyxy: [1, 2, 3, 4], label: "car", score: 0.9 }] },
+      clean_prediction: { boxes: [{ xyxy: [1, 2, 3, 4], label: "masked_face", score: 0.9 }] },
       attacked_prediction: { boxes: [] },
     };
     const sample2 = {
-      sample_id: "kitti_000001",
+      sample_id: "widerface_000001",
       artifacts: {
         clean_input_url: "/data/runs/real/clean_1.png",
         attacked_input_url: "/data/runs/real/attacked_1.png",
       },
-      clean_prediction: { boxes: [{ xyxy: [5, 6, 7, 8], label: "pedestrian", score: 0.85 }] },
-      attacked_prediction: { boxes: [{ xyxy: [5, 6, 7, 8], label: "pedestrian", score: 0.3 }] },
+      clean_prediction: { boxes: [{ xyxy: [5, 6, 7, 8], label: "face", score: 0.85 }] },
+      attacked_prediction: { boxes: [{ xyxy: [5, 6, 7, 8], label: "face", score: 0.3 }] },
     };
 
     localStorage.setItem(
@@ -208,12 +208,12 @@ describe("VisualResultsPage layout contract", () => {
     await waitFor(() => expect(screen.getByText("Bộ ảnh kiểm thử (2 ảnh)")).toBeDefined());
     expect(screen.getByText("Ảnh 1")).toBeDefined();
     expect(screen.getByText("Ảnh 2")).toBeDefined();
-    expect(screen.getAllByText("kitti_000000").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("widerface_000000").length).toBeGreaterThan(0);
 
     // Click on Sample 2
     const sample2Btn = screen.getByText("Ảnh 2");
     sample2Btn.click();
 
-    await waitFor(() => expect(screen.getAllByText("kitti_000001").length).toBeGreaterThan(0));
+    await waitFor(() => expect(screen.getAllByText("widerface_000001").length).toBeGreaterThan(0));
   });
 });

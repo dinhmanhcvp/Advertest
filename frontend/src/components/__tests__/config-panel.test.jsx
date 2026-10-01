@@ -31,14 +31,14 @@ describe("ConfigPanel", () => {
             blocked_reason: "WAITING_FOR_ARTIFACTS",
           },
         ]}
-        modelFamilies={[{ id: "yolo11", display_name: "YOLO11", runnable: true }]}
+        modelFamilies={[{ id: "yolov7-face", display_name: "YOLOv7-Face", runnable: true }]}
         baseCheckpoints={[
-          { id: "yolo11s-base", model_name: "yolo11s", model_family_id: "yolo11", task: "detection2d", runnable: true },
+          { id: "yolov7-face-base", model_name: "yolov7-face", model_family_id: "yolov7-face", task: "detection2d", runnable: true },
         ]}
         recipePresets={[{ preset_id: "weather_robustness", name: "Weather Robustness" }]}
         mode="detection2d"
-        selectedModelFamily="yolo11"
-        selectedModelVersion="yolo11s-base"
+        selectedModelFamily="yolov7-face"
+        selectedModelVersion="yolov7-face-base"
         selectedDataset="synthetic_shapes"
         selectedAttacks={["gaussian_noise"]}
         recipe={{ steps: [{ position: 0, attack_name: "gaussian_noise", severity: 3 }] }}
@@ -47,8 +47,8 @@ describe("ConfigPanel", () => {
       />,
     );
 
-    fireEvent.change(screen.getByLabelText("Base Checkpoint"), { target: { value: "yolo11s-base" } });
-    expect(actions.setSelectedModelVersion).toHaveBeenCalledWith("yolo11s-base");
+    fireEvent.change(screen.getByLabelText("Base Checkpoint"), { target: { value: "yolov7-face-base" } });
+    expect(actions.setSelectedModelVersion).toHaveBeenCalledWith("yolov7-face-base");
     expect(screen.getByRole("option", { name: "Instance Segmentation" })).not.toBeDisabled();
   });
 
@@ -58,19 +58,19 @@ describe("ConfigPanel", () => {
         datasets={[]}
         attacks={[]}
         modes={[]}
-        modelFamilies={[{ id: "yolo11", display_name: "YOLO11", runnable: true }]}
+        modelFamilies={[{ id: "yolov7-face", display_name: "YOLOv7-Face", runnable: true }]}
         baseCheckpoints={[
           {
-            id: "yolo11s-base",
-            model_name: "yolo11s",
+            id: "yolov7-face-base",
+            model_name: "yolov7-face",
             task: "detection2d",
-            model_family_id: "yolo11",
+            model_family_id: "yolov7-face",
             runnable: true,
           },
         ]}
         mode="detection2d"
-        selectedModelFamily="yolo11"
-        selectedModelVersion="yolo11s-base"
+        selectedModelFamily="yolov7-face"
+        selectedModelVersion="yolov7-face-base"
         selectedDataset=""
         selectedAttacks={[]}
         recipe={{ steps: [] }}
@@ -79,8 +79,8 @@ describe("ConfigPanel", () => {
       />,
     );
 
-    expect(screen.getByRole("option", { name: /yolo11s.*base/i })).toBeInTheDocument();
-    expect(screen.queryByRole("option", { name: /kitti.*b0/i })).toBeNull();
+    expect(screen.getByRole("option", { name: /yolov7-face.*base/i })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: /widerface.*b0/i })).toBeNull();
   });
 
   it("marks attacks incompatible with the selected model as unavailable", () => {
@@ -97,13 +97,13 @@ describe("ConfigPanel", () => {
           },
         ]}
         modes={[{ id: "detection2d", title: "2D Object Detection", runnable: true }]}
-        modelFamilies={[{ id: "yolo11", display_name: "YOLO11", runnable: true }]}
+        modelFamilies={[{ id: "yolov7-face", display_name: "YOLOv7-Face", runnable: true }]}
         baseCheckpoints={[
-          { id: "yolo11s-base", model_name: "yolo11s", model_family_id: "yolo11", task: "detection2d", runnable: true },
+          { id: "yolov7-face-base", model_name: "yolov7-face", model_family_id: "yolov7-face", task: "detection2d", runnable: true },
         ]}
         mode="detection2d"
-        selectedModelFamily="yolo11"
-        selectedModelVersion="yolo11s-base"
+        selectedModelFamily="yolov7-face"
+        selectedModelVersion="yolov7-face-base"
         selectedDataset="synthetic_shapes"
         selectedAttacks={[]}
         recipe={{ steps: [] }}
@@ -117,7 +117,7 @@ describe("ConfigPanel", () => {
     expect(dag).toHaveAttribute("title", "missing_model_capability:dense_proposals");
   });
 
-  it("separates attack cards by threat-model class without hiding incompatible methods", () => {
+  it("separates attack masked_faceds by threat-model class without hiding incompatible methods", () => {
     render(
       <ConfigPanel
         datasets={[]}
@@ -168,13 +168,13 @@ describe("ConfigPanel", () => {
         datasets={[{ name: "synthetic_shapes", anonymized: true }]}
         attacks={[{ name: "gaussian_noise", group: "A", cost_class: "LIGHT" }]}
         modes={[{ id: "detection2d", title: "YOLO", runnable: true }]}
-        modelFamilies={[{ id: "yolo11", display_name: "YOLO11", runnable: true }]}
+        modelFamilies={[{ id: "yolov7-face", display_name: "YOLOv7-Face", runnable: true }]}
         baseCheckpoints={[
-          { id: "yolo11s-base", model_name: "yolo11s", model_family_id: "yolo11", task: "detection2d", runnable: true },
+          { id: "yolov7-face-base", model_name: "yolov7-face", model_family_id: "yolov7-face", task: "detection2d", runnable: true },
         ]}
         mode="detection2d"
-        selectedModelFamily="yolo11"
-        selectedModelVersion="yolo11s-base"
+        selectedModelFamily="yolov7-face"
+        selectedModelVersion="yolov7-face-base"
         selectedDataset="synthetic_shapes"
         selectedAttacks={["gaussian_noise"]}
         recipe={{ steps: [{ position: 0, attack_name: "gaussian_noise", severity: 3 }] }}
@@ -195,13 +195,13 @@ describe("ConfigPanel", () => {
         datasets={[{ name: "synthetic_shapes", anonymized: true }]}
         attacks={[]}
         modes={[{ id: "detection2d", title: "YOLO", runnable: true }]}
-        modelFamilies={[{ id: "yolo11", display_name: "YOLO11", runnable: true }]}
+        modelFamilies={[{ id: "yolov7-face", display_name: "YOLOv7-Face", runnable: true }]}
         baseCheckpoints={[
-          { id: "yolo11s-base", model_name: "yolo11s", model_family_id: "yolo11", task: "detection2d", runnable: true },
+          { id: "yolov7-face-base", model_name: "yolov7-face", model_family_id: "yolov7-face", task: "detection2d", runnable: true },
         ]}
         mode="detection2d"
-        selectedModelFamily="yolo11"
-        selectedModelVersion="yolo11s-base"
+        selectedModelFamily="yolov7-face"
+        selectedModelVersion="yolov7-face-base"
         selectedDataset="synthetic_shapes"
         selectedAttacks={[]}
         recipe={{ steps: [] }}

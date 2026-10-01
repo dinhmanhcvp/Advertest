@@ -48,8 +48,8 @@ describe("DashboardView", () => {
     getModelVersions.mockResolvedValueOnce([
       {
         id: "checkpoint-opaque-id",
-        model_name: "YOLO11 Small",
-        model_family_id: "yolo11",
+        model_name: "YOLOv7-Face Small",
+        model_family_id: "yolov7-face",
         task: "detection2d",
         runnable: true,
       },
@@ -57,11 +57,11 @@ describe("DashboardView", () => {
 
     render(<DashboardView />);
 
-    expect(await screen.findByText("YOLO11 Small", { selector: "p" })).toBeVisible();
+    expect(await screen.findByText("YOLOv7-Face Small", { selector: "p" })).toBeVisible();
     expect(screen.getByText("ID: checkpoint-opaque-id")).toBeVisible();
   });
 
-  it("does not render the removed workflow architecture and results overview cards", async () => {
+  it("does not render the removed workflow architecture and results overview masked_faceds", async () => {
     render(<DashboardView />);
     await waitFor(() => expect(getModelVersions).toHaveBeenCalled());
 

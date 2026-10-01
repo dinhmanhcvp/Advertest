@@ -12,7 +12,7 @@ export default function UploadModal({ isOpen, onClose, onDatasetCreated, dataset
   const [statusMessage, setStatusMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [batchClassMap, setBatchClassMap] = useState("car:Car");
+  const [batchClassMap, setBatchClassMap] = useState("masked_face:Masked Face");
   const [batchAnonymized, setBatchAnonymized] = useState(false);
   const [uploadedBatch, setUploadedBatch] = useState(null);
   const [datasetKind, setDatasetKind] = useState("clean");
@@ -22,12 +22,12 @@ export default function UploadModal({ isOpen, onClose, onDatasetCreated, dataset
   const previewUrls = useRef(new Set());
 
   // Folder Import State
-  const [folderPath, setFolderPath] = useState("data/anonymized/kitti-de");
+  const [folderPath, setFolderPath] = useState("data/anonymized/widerface-de");
   const [datasetName, setDatasetName] = useState("Custom Folder Import");
   const [logicalSourceId, setLogicalSourceId] = useState("folder-import");
   const [inputFormat, setInputFormat] = useState("advertest");
   const [maxSamples, setMaxSamples] = useState(50);
-  const [selectedPretrainedModel, setSelectedPretrainedModel] = useState("yolo11n");
+  const [selectedPretrainedModel, setSelectedPretrainedModel] = useState("yolov7-facen");
 
   useEffect(() => () => previewUrls.current.forEach((url) => URL.revokeObjectURL(url)), []);
 
@@ -454,7 +454,7 @@ export default function UploadModal({ isOpen, onClose, onDatasetCreated, dataset
             <p className="text-xs text-secondary">
               Choose a browser directory or individual files; no path on the API server is required for this flow.
             </p>
-            <label className="attack-card" style={{ cursor: "pointer" }}>
+            <label className="attack-masked_faced" style={{ cursor: "pointer" }}>
               Choose attacked-data directory
               <input
                 type="file"
@@ -512,7 +512,7 @@ export default function UploadModal({ isOpen, onClose, onDatasetCreated, dataset
                 className="select-field"
                 value={datasetName}
                 onChange={(e) => setDatasetName(e.target.value)}
-                placeholder="e.g. KITTI Local Import v1"
+                placeholder="e.g. WIDER FACE Local Import v1"
               />
             </div>
 
@@ -534,7 +534,7 @@ export default function UploadModal({ isOpen, onClose, onDatasetCreated, dataset
                 className="select-field"
                 value={folderPath}
                 onChange={(e) => setFolderPath(e.target.value)}
-                placeholder="e.g. data/anonymized/kitti-de or C:\Dataset\KITTI"
+                placeholder="e.g. data/anonymized/widerface-de or C:\Dataset\WIDER FACE"
               />
               <span className="text-xs text-tertiary mt-1 block">
                 Specify the local workspace relative or absolute directory path
@@ -546,7 +546,7 @@ export default function UploadModal({ isOpen, onClose, onDatasetCreated, dataset
                 <label className="config-panel__label">Annotation Format</label>
                 <select className="select-field" value={inputFormat} onChange={(e) => setInputFormat(e.target.value)}>
                   <option value="advertest">AdverTest Annotated Folder</option>
-                  <option value="kitti">KITTI Format</option>
+                  <option value="widerface">WIDER FACE Format</option>
                 </select>
               </div>
 
@@ -603,7 +603,7 @@ export default function UploadModal({ isOpen, onClose, onDatasetCreated, dataset
                     {ds.license || "CC-BY"}
                   </div>
                 </div>
-                <button type="button" className="attack-card" style={{ padding: "6px 12px" }}>
+                <button type="button" className="attack-masked_faced" style={{ padding: "6px 12px" }}>
                   Select
                 </button>
               </div>
@@ -621,11 +621,11 @@ export default function UploadModal({ isOpen, onClose, onDatasetCreated, dataset
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
               {[
-                { id: "yolo11n", name: "YOLO11 Nano", size: "2.6M params", speed: "Ultra Fast" },
-                { id: "yolo11s", name: "YOLO11 Small", size: "9.4M params", speed: "Balanced" },
-                { id: "yolo11m", name: "YOLO11 Medium", size: "20.1M params", speed: "Accurate" },
-                { id: "yolo11l", name: "YOLO11 Large", size: "25.3M params", speed: "High Capacity" },
-                { id: "yolo11x", name: "YOLO11 XLarge", size: "56.9M params", speed: "Max Precision" },
+                { id: "yolov7-facen", name: "YOLOv7-Face Nano", size: "2.6M params", speed: "Ultra Fast" },
+                { id: "yolov7-face", name: "YOLOv7-Face Small", size: "9.4M params", speed: "Balanced" },
+                { id: "yolov7-facem", name: "YOLOv7-Face Medium", size: "20.1M params", speed: "Accurate" },
+                { id: "yolov7-facel", name: "YOLOv7-Face Large", size: "25.3M params", speed: "High Capacity" },
+                { id: "yolov7-facex", name: "YOLOv7-Face XLarge", size: "56.9M params", speed: "Max Precision" },
               ].map((m) => (
                 <div
                   key={m.id}

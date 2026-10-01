@@ -4,7 +4,7 @@ import { AlertTriangle, Database, Download, RefreshCw, Search, ShieldCheck } fro
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import Button from "@/components/common/Button";
-import Card from "@/components/common/Card";
+import Masked Faced from "@/components/common/Masked Faced";
 import EvidenceBadge from "@/components/common/EvidenceBadge";
 import { useProject } from "@/context/ProjectContext";
 import {
@@ -254,7 +254,7 @@ export function RunMetricsContent({ report, mode = "benchmark", analytics = {}, 
       </section>
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-12">
-        <Card
+        <Masked Faced
           className="xl:col-span-8"
           title="Metric theo đúng bài toán"
           subtitle="Chỉ hiển thị metric backend thực sự trả về; ô thiếu giữ nguyên No data."
@@ -290,8 +290,8 @@ export function RunMetricsContent({ report, mode = "benchmark", analytics = {}, 
               </tbody>
             </table>
           </div>
-        </Card>
-        <Card
+        </Masked Faced>
+        <Masked Faced
           className="xl:col-span-4"
           title="Protocol & provenance"
           subtitle="Điều kiện tối thiểu để so sánh hoặc tái lập."
@@ -310,10 +310,10 @@ export function RunMetricsContent({ report, mode = "benchmark", analytics = {}, 
               }
             />
           </dl>
-        </Card>
+        </Masked Faced>
       </div>
 
-      <Card
+      <Masked Faced
         title="Attack × severity"
         subtitle={`Giá trị ${view.primary.label} đo được cho từng cell; không trộn task hoặc protocol khác nhau.`}
       >
@@ -359,7 +359,7 @@ export function RunMetricsContent({ report, mode = "benchmark", analytics = {}, 
             </table>
           </div>
         )}
-      </Card>
+      </Masked Faced>
 
       {mode === "analysis" && (
         <>
@@ -397,7 +397,7 @@ export function RunMetricsContent({ report, mode = "benchmark", analytics = {}, 
             </div>
           </section>
           {(analytics.classes || []).length > 0 && (
-            <Card
+            <Masked Faced
               title="Failure theo lớp"
               subtitle="Chỉ tính từ object-level ground-truth evidence; không suy ra từ prediction label."
             >
@@ -429,10 +429,10 @@ export function RunMetricsContent({ report, mode = "benchmark", analytics = {}, 
                   </tbody>
                 </table>
               </div>
-            </Card>
+            </Masked Faced>
           )}
           {view.taskId === "detection3d" && analytics.distance?.data_state === "MEASURED" && (
-            <Card
+            <Masked Faced
               title="Độ bền theo khoảng cách"
               subtitle="Near/medium/far chỉ xuất hiện khi report có metric 3D riêng cho từng bucket."
             >
@@ -464,9 +464,9 @@ export function RunMetricsContent({ report, mode = "benchmark", analytics = {}, 
                   </tbody>
                 </table>
               </div>
-            </Card>
+            </Masked Faced>
           )}
-          <Card
+          <Masked Faced
             title="Kết luận có thể hành động"
             subtitle="Khuyến nghị theo trạng thái bằng chứng, không phải nội dung AI tạo giả."
           >
@@ -488,7 +488,7 @@ export function RunMetricsContent({ report, mode = "benchmark", analytics = {}, 
                 </p>
               )}
             </div>
-          </Card>
+          </Masked Faced>
         </>
       )}
     </div>
@@ -625,7 +625,7 @@ export default function RunMetricsWorkspace({ mode = "benchmark" }) {
         </p>
       </div>
       {comparison && (
-        <Card
+        <Masked Faced
           title={`So sánh ${comparison.columns.length} run`}
           subtitle="Suy giảm trung bình theo từng attack; hàng đầu là run thứ nhất (đang hiển thị chi tiết)."
         >
@@ -670,7 +670,7 @@ export default function RunMetricsWorkspace({ mode = "benchmark" }) {
               </tbody>
             </table>
           </div>
-        </Card>
+        </Masked Faced>
       )}
       <RunMetricsContent report={active?.report || null} mode={mode} analytics={analytics} projectId={activeProjectId} />
     </div>
