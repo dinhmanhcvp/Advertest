@@ -7,6 +7,9 @@ uvicorn[standard]>=0.34.0
 pydantic>=2.10.0
 pydantic-settings>=2.7.0
 python-dotenv>=1.0.0
+python-multipart>=0.0.9
+requests>=2.31.0
+sqlalchemy>=2.0.0
 
 # ---- Numerics: attack generation + metrics ----
 numpy>=1.26.0,<2
@@ -25,7 +28,7 @@ tqdm>=4.66.5
 # Attacks
 # torchattacks>=3.5.1           # FGSM / PGD / MI-FGSM / C&W references
 # kornia>=0.7.3                 # GPU corruptions (plan §5)
-opencv-python>=4.10,<5          # image ops for weather / patch rendering
+opencv-python-headless>=4.10,<5          # image ops for weather / patch rendering
 #
 # Metrics, search, tracking
 # pycocotools>=2.0.8            # official AP@[.50:.95]
