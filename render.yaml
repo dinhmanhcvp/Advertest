@@ -15,21 +15,8 @@ services:
           name: advertest-db
           property: connectionString
       - key: CORS_ORIGINS
+        # Vercel will generate a URL later, you can add it here or in the Render Dashboard
         value: https://c4-app-advertest-arqt.onrender.com,https://c4-app-195-advertest.is-pro.dev,http://localhost:3000
-
-  - type: web
-    name: advertest-frontend
-    runtime: node
-    region: singapore
-    plan: starter
-    buildCommand: cd frontend && npm install && npm run build
-    startCommand: cd frontend && npm start
-    envVars:
-      - key: NEXT_PUBLIC_API_URL
-        fromService:
-          type: web
-          name: advertest-api
-          property: host
 
 databases:
   - name: advertest-db
