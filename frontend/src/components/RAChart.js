@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Bar,
   BarChart,
-  Masked FacetesianGrid,
+  CartesianGrid,
   Cell,
   LabelList,
   ReferenceLine,
@@ -205,7 +205,7 @@ export default function RAChart({ cells = [], apClean = null, report = null }) {
       <div style={{ width: "100%", height: 300, marginTop: "var(--space-xs)" }}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData} margin={{ top: 24, right: 24, bottom: 24, left: 0 }} barCategoryGap="20%">
-            <Masked FacetesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} opacity={0.6} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-subtle)" vertical={false} opacity={0.6} />
             <XAxis
               dataKey="name"
               stroke="var(--text-muted)"

@@ -2,17 +2,17 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import Badge from "@/components/common/Badge";
 import Button from "@/components/common/Button";
-import Masked Faced from "@/components/common/Masked Faced";
+import Card from "@/components/common/Card";
 import Sidebar from "@/components/layout/Sidebar";
-import MetricMasked Faced from "@/components/metrics/MetricMasked Faced";
+import MetricCard from "@/components/metrics/MetricCard";
 
 describe("AdversAI Lab Design System & Common Components", () => {
   afterEach(() => {
     cleanup();
   });
 
-  it("renders standard Masked Faced with title and subtitle", () => {
-    render(<Masked Faced title="Tổng quan hệ thống" subtitle="Kiểm thử độ bền vững" />);
+  it("renders standard Card with title and subtitle", () => {
+    render(<Card title="Tổng quan hệ thống" subtitle="Kiểm thử độ bền vững" />);
     expect(screen.getByText("Tổng quan hệ thống")).toBeDefined();
     expect(screen.getByText("Kiểm thử độ bền vững")).toBeDefined();
   });
@@ -27,9 +27,9 @@ describe("AdversAI Lab Design System & Common Components", () => {
     expect(screen.getByText("Bắt đầu tấn công")).toBeDefined();
   });
 
-  it("renders MetricMasked Faced with value, trend, and sparkline", () => {
+  it("renders MetricCard with value, trend, and sparkline", () => {
     render(
-      <MetricMasked Faced
+      <MetricCard
         title="Số thí nghiệm"
         value="128"
         trend="↑ 18%"

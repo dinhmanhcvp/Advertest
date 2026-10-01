@@ -168,7 +168,7 @@ describe("VisualResultsPage layout contract", () => {
     expect(screen.getByTestId("clean-prediction-box-0").getAttribute("x")).toBe("10");
     expect(screen.getByTestId("clean-prediction-box-0").getAttribute("y")).toBe("12");
     expect(screen.queryByText("71.23%")).toBeNull();
-    expect(screen.queryByText("masked_face 0.96")).toBeNull();
+    expect(screen.queryByText("car 0.96")).toBeNull();
     expect(screen.queryByText("1024 × 768")).toBeNull();
     expect(screen.queryByAltText("Bản đồ khác biệt")).toBeNull();
   });
@@ -180,7 +180,7 @@ describe("VisualResultsPage layout contract", () => {
         clean_input_url: "/data/runs/real/clean_0.png",
         attacked_input_url: "/data/runs/real/attacked_0.png",
       },
-      clean_prediction: { boxes: [{ xyxy: [1, 2, 3, 4], label: "masked_face", score: 0.9 }] },
+      clean_prediction: { boxes: [{ xyxy: [1, 2, 3, 4], label: "car", score: 0.9 }] },
       attacked_prediction: { boxes: [] },
     };
     const sample2 = {

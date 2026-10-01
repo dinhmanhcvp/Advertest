@@ -48,7 +48,7 @@ describe("task-aware report metrics", () => {
     expect(primaryMetricForCell(report, report.cells[0], view.taskId, view.primary.key)).toBeNull();
   });
 
-  it("uses measured cell metrics and masked_faceries protocol provenance", () => {
+  it("uses measured cell metrics and carries protocol provenance", () => {
     const view = buildRunDecisionView({
       run_id: "run-3d",
       n_samples: 42,

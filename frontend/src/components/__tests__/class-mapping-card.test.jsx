@@ -2,18 +2,18 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 
-import ClassMappingMasked Faced from "@/components/ClassMappingMasked Faced";
+import ClassMappingCard from "@/components/ClassMappingCard";
 
 function ControlledMapping(props) {
   const [value, setValue] = React.useState({});
-  return <ClassMappingMasked Faced {...props} value={value} onChange={setValue} />;
+  return <ClassMappingCard {...props} value={value} onChange={setValue} />;
 }
 
-describe("ClassMappingMasked Faced", () => {
+describe("ClassMappingCard", () => {
   it("keeps an explicit mapping when parent arrays are recreated", () => {
     const props = {
-      datasetClasses: ["Masked Face", "Face"],
-      modelClasses: ["masked_face", "person"],
+      datasetClasses: ["Car", "Face"],
+      modelClasses: ["car", "person"],
       source: "manifest",
     };
     const { rerender } = render(<ControlledMapping {...props} />);
@@ -21,13 +21,13 @@ describe("ClassMappingMasked Faced", () => {
     fireEvent.change(screen.getByLabelText("Mapping Face"), {
       target: { value: "person" },
     });
-    rerender(<ControlledMapping {...props} datasetClasses={["Masked Face", "Face"]} modelClasses={["masked_face", "person"]} />);
+    rerender(<ControlledMapping {...props} datasetClasses={["Car", "Face"]} modelClasses={["car", "person"]} />);
     expect(screen.getByLabelText("Mapping Face")).toHaveValue("person");
   });
 
   it("records intentionally ignored labels", () => {
     render(
-      <ControlledMapping datasetClasses={["Blurred Face"]} modelClasses={["masked_face"]} source="manifest" />,
+      <ControlledMapping datasetClasses={["Blurred Face"]} modelClasses={["car"]} source="manifest" />,
     );
 
     fireEvent.change(screen.getByLabelText("Mapping Blurred Face"), {

@@ -318,7 +318,7 @@ export const MODEL_ARCHITECTURES = [
 
 export const CLASS_LABELS_DATA = [
   { id: 0, name: "person", count: 12543 },
-  { id: 1, name: "masked_face", count: 8732 },
+  { id: 1, name: "car", count: 8732 },
   { id: 2, name: "bus", count: 1652 },
   { id: 3, name: "truck", count: 1235 },
   { id: 4, name: "motorbike", count: 3984 },
@@ -344,7 +344,7 @@ export const AVAILABLE_DATASETS = [
     description:
       "Bộ dữ liệu WIDER FACE có sẵn trong thư mục `data/anonymized/widerface-de/` (gồm các mẫu 000000.png, 000002.png... kèm nhãn bbox và manifest).",
     classLabels: [
-      { id: 0, name: "Masked Face", count: 18 },
+      { id: 0, name: "Car", count: 18 },
       { id: 1, name: "Face", count: 6 },
       { id: 2, name: "Blurred Face", count: 3 },
     ],
@@ -363,7 +363,7 @@ export const AVAILABLE_DATASETS = [
     tags: ["local", "smoke-test", "pipeline"],
     description: "Bộ dữ liệu kiểm thử nhanh pipeline thị giác trong thư mục `data/anonymized/widerface-smoke/`.",
     classLabels: [
-      { id: 0, name: "Masked Face", count: 14 },
+      { id: 0, name: "Car", count: 14 },
       { id: 1, name: "Face", count: 4 },
       { id: 2, name: "Blurred Face", count: 2 },
     ],
@@ -417,7 +417,7 @@ export const AVAILABLE_DATASETS = [
     description:
       "Bộ dữ liệu cảm biến LiDAR 64 tia và camera stereo nằm tại `data/widerface/` dùng cho phát hiện xe trong không gian 3D.",
     classLabels: [
-      { id: 0, name: "Masked Face", count: 28742 },
+      { id: 0, name: "Car", count: 28742 },
       { id: 1, name: "Face", count: 4487 },
       { id: 2, name: "Blurred Face", count: 1627 },
     ],
@@ -442,7 +442,7 @@ export const AVAILABLE_DATASETS = [
       { id: 3, name: "boat", count: 390 },
       { id: 4, name: "bottle", count: 620 },
       { id: 5, name: "bus", count: 420 },
-      { id: 6, name: "masked_face", count: 1250 },
+      { id: 6, name: "car", count: 1250 },
       { id: 7, name: "cat", count: 510 },
       { id: 8, name: "chair", count: 920 },
       { id: 9, name: "cow", count: 310 },
@@ -463,7 +463,7 @@ export const AVAILABLE_DATASETS = [
     classLabels: [
       { id: 0, name: "person", count: 11004 },
       { id: 1, name: "bicycle", count: 715 },
-      { id: 2, name: "masked_face", count: 1932 },
+      { id: 2, name: "car", count: 1932 },
       { id: 3, name: "motorcycle", count: 871 },
       { id: 4, name: "airplane", count: 433 },
       { id: 5, name: "bus", count: 609 },
@@ -491,7 +491,7 @@ export const AVAILABLE_DATASETS = [
       { id: 3, name: "vegetation", count: 4950 },
       { id: 4, name: "sky", count: 4890 },
       { id: 5, name: "person", count: 3720 },
-      { id: 6, name: "masked_face", count: 4610 },
+      { id: 6, name: "car", count: 4610 },
       { id: 7, name: "truck", count: 1200 },
     ],
   },
@@ -509,7 +509,7 @@ export const AVAILABLE_DATASETS = [
     tags: ["segmentation", "bdd100k", "weather", "ready"],
     description: "Tập dữ liệu phân đoạn giao thông BDD100K 10,000 ảnh đa thời tiết phục vụ đánh giá độ bền vững SAM 2.",
     classLabels: [
-      { id: 0, name: "Masked Face", count: 24100 },
+      { id: 0, name: "Car", count: 24100 },
       { id: 1, name: "Person", count: 8900 },
       { id: 2, name: "Truck", count: 3200 },
       { id: 3, name: "Bus", count: 1800 },
@@ -570,7 +570,7 @@ export const AVAILABLE_MODELS = [
     mapBaseline: "66.8% 3D AP",
     fpsRtx4090: "62 FPS",
     description:
-      "Model PointPillars 3D hoàn chỉnh huấn luyện trên WIDER FACE 3 lớp (Masked Face, Face, Blurred Face) tại `checkpoints/pointpillars_widerface_3class.pth`.",
+      "Model PointPillars 3D hoàn chỉnh huấn luyện trên WIDER FACE 3 lớp (Car, Face, Blurred Face) tại `checkpoints/pointpillars_widerface_3class.pth`.",
     architecture: "pointpillars",
   },
   {
@@ -894,7 +894,7 @@ export const ATTACK_CATEGORIES = [
       {
         id: "cw_l2",
         name: "CW (L2)",
-        fullName: "Masked Facelini & Wagner L2",
+        fullName: "Carlini & Wagner L2",
         norm: "L2",
         defaultEps: "0.5",
         task_compatibility: ["detection2d", "classification"],

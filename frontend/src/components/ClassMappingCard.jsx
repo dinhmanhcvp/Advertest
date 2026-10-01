@@ -6,7 +6,7 @@ const normalize = (value) => value.trim().toLocaleLowerCase();
 const IGNORE = "ignore";
 const IGNORE_OPTION = "__ignore__";
 
-export default function ClassMappingMasked Faced({ modelClasses, datasetClasses, source, value = {}, onChange }) {
+export default function ClassMappingCard({ modelClasses, datasetClasses, source, value = {}, onChange }) {
   const datasetKey = datasetClasses.map(normalize).join("\u001f");
   const modelKey = modelClasses.map(normalize).join("\u001f");
   const mapping = useMemo(

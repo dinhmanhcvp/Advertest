@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Bar, BarChart, Masked FacetesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 const DEFAULT_DATA = [
   { metric: "mAP@0.5", Before: 27.4, After: 20.6 },
@@ -26,7 +26,7 @@ export default function ComparisonBarChart({ data = DEFAULT_DATA, height = 260 }
     <div style={{ width: "100%", height }}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 10, right: 10, left: -15, bottom: 0 }} barGap={4} barSize={20}>
-          <Masked FacetesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
+          <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" vertical={false} />
           <XAxis
             dataKey="metric"
             tick={{ fill: "#64748B", fontSize: 11 }}

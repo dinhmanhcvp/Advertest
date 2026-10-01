@@ -29,10 +29,10 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
-import ClassMappingMasked Faced from "@/components/ClassMappingMasked Faced";
+import ClassMappingCard from "@/components/ClassMappingCard";
 import Badge from "@/components/common/Badge";
 import Button from "@/components/common/Button";
-import Masked Faced from "@/components/common/Masked Faced";
+import Card from "@/components/common/Card";
 import PageHeader from "@/components/layout/PageHeader";
 import ProjectAssetPicker from "@/components/ProjectAssetPicker";
 import { createProject, getApiBase, getCatalogDatasets, getModelVersions, listProjects, listSessions } from "@/lib/api";
@@ -314,11 +314,11 @@ export default function ConfigureProblemPage() {
     currentModel?.native_class_names?.length
       ? currentModel.native_class_names
       : currentModel?.architecture === "pointpillars"
-        ? ["Masked Face", "Face", "Blurred Face"]
+        ? ["Car", "Face", "Blurred Face"]
         : currentModel?.architecture === "anonymization"
           ? ["face", "license_plate"]
           : currentModel?.task === "segmentation"
-            ? ["road", "sidewalk", "building", "person", "masked_face", "truck"]
+            ? ["road", "sidewalk", "building", "person", "car", "truck"]
             : [];
 
   const datasetClasses = (currentDataset?.classLabels || []).map((c) => c.name);
@@ -431,7 +431,7 @@ export default function ConfigureProblemPage() {
         {/* LEFT & CENTER: Form Controls (2 Columns) */}
         <div className="xl:col-span-2 space-y-5">
           {/* 0. Quản lý Phiên làm việc & Cuộc thử nghiệm */}
-          <Masked Faced
+          <Card
             title="0. Phiên thử nghiệm"
             subtitle="Tạo phiên mới hoặc tiếp tục phiên đã có."
           >
@@ -510,8 +510,8 @@ export default function ConfigureProblemPage() {
                 </div>
               )}
             </div>
-          </Masked Faced>
-          <Masked Faced title="1. Chọn bài toán" subtitle="Chọn nhiệm vụ cần đánh giá.">
+          </Card>
+          <Card title="1. Chọn bài toán" subtitle="Chọn nhiệm vụ cần đánh giá.">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {PROBLEM_TYPES.filter((t) =>
                 ["detection2d", "segmentation", "detection3d", "classification"].includes(t.id),
@@ -573,10 +573,10 @@ export default function ConfigureProblemPage() {
                 );
               })}
             </div>
-          </Masked Faced>
+          </Card>
 
           {/* 2. Chọn Mô hình (Cascade Filtered by Task) */}
-          <Masked Faced
+          <Card
             title="2. Chọn mô hình"
             subtitle={
               isLoadingCatalog
@@ -643,10 +643,10 @@ export default function ConfigureProblemPage() {
                 </p>
               )}
             </div>
-          </Masked Faced>
+          </Card>
 
           {/* 3. Kho Dữ Liệu (Catalog Status & Selection) */}
-          <Masked Faced
+          <Card
             title="3. Chọn tập dữ liệu"
             subtitle={
               isLoadingCatalog
@@ -712,14 +712,14 @@ export default function ConfigureProblemPage() {
                 </p>
               )}
             </div>
-          </Masked Faced>
+          </Card>
 
           {/* 4. CLASS LABELS & LABEL MAPPING MATRIX */}
-          <Masked Faced
+          <Card
             title="4. Ánh xạ nhãn lớp"
             subtitle="Ghép từng lớp dữ liệu với lớp mô hình hoặc chọn bỏ qua."
           >
-            <ClassMappingMasked Faced
+            <ClassMappingCard
               modelClasses={modelClasses}
               datasetClasses={datasetClasses}
               source={currentDataset?.source ? "manifest" : "catalog"}
@@ -743,12 +743,12 @@ export default function ConfigureProblemPage() {
                 </Badge>
               </div>
             </div>
-          </Masked Faced>
+          </Card>
         </div>
 
         {/* RIGHT COLUMN: Experiment Summary & Hyperparameters (1 Column) */}
         <div className="space-y-5">
-          <Masked Faced
+          <Card
             title="Asset của project"
             subtitle={projectId ? `Project: ${projectId}` : "Chọn hoặc tạo project để upload asset"}
           >
@@ -819,9 +819,9 @@ export default function ConfigureProblemPage() {
                 Upload dùng API project-scoped; server quyết định validation và trạng thái READY.
               </p>
             </div>
-          </Masked Faced>
-          {/* Summary Masked Faced */}
-          <Masked Faced title="Tóm tắt cấu hình bài toán">
+          </Card>
+          {/* Summary Card */}
+          <Card title="Tóm tắt cấu hình bài toán">
             <div className="space-y-3 text-xs">
               <div className="flex justify-between py-1.5 border-b border-slate-100">
                 <span className="text-slate-500">Bài toán:</span>
@@ -870,7 +870,7 @@ export default function ConfigureProblemPage() {
                 </p>
               )}
             </div>
-          </Masked Faced>
+          </Card>
         </div>
       </div>
       {/* Uploads are handled by the project asset pickers above. */}

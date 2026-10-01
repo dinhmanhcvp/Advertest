@@ -147,7 +147,7 @@ export default function AdminView() {
 
   return (
     <div className="space-y-6">
-      {/* Metric Telemetry Masked Faceds */}
+      {/* Metric Telemetry Cards */}
       {quotas && (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-4 backdrop-blur">

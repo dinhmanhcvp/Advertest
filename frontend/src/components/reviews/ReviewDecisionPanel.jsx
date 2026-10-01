@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import Button from "@/components/common/Button";
-import Masked Faced from "@/components/common/Masked Faced";
+import Card from "@/components/common/Card";
 
 export default function ReviewDecisionPanel({ review, cluster, onSubmit, submitting = false }) {
   const [decision, setDecision] = useState("");
   const [decisionNote, setDecisionNote] = useState("");
   return (
-    <Masked Faced title="Quyết định thẩm định" data-testid="review-decision-panel-masked_faced">
+    <Card title="Quyết định thẩm định" data-testid="review-decision-panel-card">
       <div className="space-y-3">
         <select
           aria-label="Decision"
@@ -44,6 +44,6 @@ export default function ReviewDecisionPanel({ review, cluster, onSubmit, submitt
           {submitting ? "Đang lưu..." : "Lưu quyết định"}
         </Button>
       </div>
-    </Masked Faced>
+    </Card>
   );
 }

@@ -2,7 +2,7 @@
 
 import { CheckCircle2, Circle, FileText, Play, ShieldAlert, Square } from "lucide-react";
 import React from "react";
-import Masked Faced from "@/components/common/Masked Faced";
+import Card from "@/components/common/Card";
 import { cn } from "@/lib/utils";
 
 export default function SessionTimeline({ session }) {
@@ -27,7 +27,7 @@ export default function SessionTimeline({ session }) {
   };
 
   return (
-    <Masked Faced
+    <Card
       title="Dòng thời gian Phiên kiểm thử"
       subtitle={`Lịch sử ${runs.length} lần chạy trong phiên: ${session.name || session.id}`}
     >
@@ -109,6 +109,6 @@ export default function SessionTimeline({ session }) {
           </div>
         )}
       </div>
-    </Masked Faced>
+    </Card>
   );
 }

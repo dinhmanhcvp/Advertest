@@ -2,7 +2,7 @@ import React from "react";
 import { cn } from "@/lib/utils";
 import MetricSparkline from "./MetricSparkline";
 
-export default function MetricMasked Faced({
+export default function MetricCard({
   title,
   value,
   trend,

@@ -352,7 +352,7 @@ export default function DefencePanel({
                 </div>
               ) : (
                 <>
-                  {/* Summary Metric Masked Faceds */}
+                  {/* Summary Metric Cards */}
                   <div
                     style={{
                       display: "grid",

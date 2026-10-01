@@ -4,7 +4,7 @@ import { RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import Button from "@/components/common/Button";
-import Masked Faced from "@/components/common/Masked Faced";
+import Card from "@/components/common/Card";
 import PageHeader from "@/components/layout/PageHeader";
 import ReviewDecisionPanel from "@/components/reviews/ReviewDecisionPanel";
 import ReviewDetail from "@/components/reviews/ReviewDetail";
@@ -81,11 +81,11 @@ export default function ReviewPage() {
     return (
       <main className="mx-auto max-w-3xl space-y-4 p-6">
         <PageHeader title="Thẩm định" subtitle="Chọn hoặc tạo project trước khi mở hàng đợi review." />
-        <Masked Faced>
+        <Card>
           <Link className="text-sm text-blue-600 underline" href="/dashboard">
             Đi tới tổng quan project
           </Link>
-        </Masked Faced>
+        </Card>
       </main>
     );
 
@@ -132,11 +132,11 @@ export default function ReviewPage() {
         />
         <div className="space-y-4">
           <ReviewDetail review={selected} evidence={evidence} />
-          <Masked Faced title="Bằng chứng">
+          <Card title="Bằng chứng">
             <p className="mt-2 text-sm text-slate-500">
               {evidence.length ? `${evidence.length} mẫu bằng chứng đã xác minh cho run này.` : "— / No verified data"}
             </p>
-          </Masked Faced>
+          </Card>
         </div>
         <ReviewDecisionPanel review={selected} onSubmit={submit} submitting={submitting} />
       </div>

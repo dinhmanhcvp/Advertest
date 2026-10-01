@@ -2,7 +2,7 @@ export const ATTACK_LABELS = {
   fgsm: "FGSM (Fast Gradient)",
   pgd: "PGD (Projected Gradient)",
   mi_fgsm: "MI-FGSM (Momentum FGSM)",
-  cw_l2: "C&W L2 (Masked Facelini-Wagner)",
+  cw_l2: "C&W L2 (Carlini-Wagner)",
   tog: "TOG (Targeted BBox)",
   dpatch: "DPatch (Physical Patch)",
   depth_fog: "Sương mù (Fog)",

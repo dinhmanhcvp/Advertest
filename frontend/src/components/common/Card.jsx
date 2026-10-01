@@ -1,7 +1,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 
-export default function Masked Faced({ children, className, title, subtitle, headerAction, noPadding = false, ...props }) {
+export default function Card({ children, className, title, subtitle, headerAction, noPadding = false, ...props }) {
   return (
     <div
       className={cn(

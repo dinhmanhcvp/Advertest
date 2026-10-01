@@ -5,8 +5,8 @@ import { useCallback, useEffect, useState } from "react";
 
 import ReportView from "@/components/ReportView";
 import Button from "@/components/common/Button";
-import Masked Faced from "@/components/common/Masked Faced";
-import MetricMasked Faced from "@/components/metrics/MetricMasked Faced";
+import Card from "@/components/common/Card";
+import MetricCard from "@/components/metrics/MetricCard";
 import TrendLineChart from "@/components/metrics/TrendLineChart";
 import { useProject } from "@/context/ProjectContext";
 import { getProjectAnalytics, getProjectRunsComparison, getRunReport } from "@/lib/api";
@@ -136,7 +136,7 @@ export default function ProjectAnalyticsPanel() {
       </div>
 
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Project overall">
-        <MetricMasked Faced
+        <MetricCard
           title="Robust score trung bình"
           value={overall.mean_robust_score == null ? "—" : `${overall.mean_robust_score}/100`}
           trend={
@@ -147,18 +147,18 @@ export default function ProjectAnalyticsPanel() {
           color="blue"
           sparkline={trend.robust_scores}
         />
-        <MetricMasked Faced
+        <MetricCard
           title="Suy giảm trung bình"
           value={formatNumber(overall.mean_degradation_percent, 1, "%")}
           note={`Trên ${overall.measured_run_count ?? 0} run có đo được`}
           color="red"
         />
-        <MetricMasked Faced
+        <MetricCard
           title="Số run / số cell"
           value={`${overall.run_count ?? 0} / ${overall.total_cells ?? 0}`}
           color="purple"
         />
-        <MetricMasked Faced
+        <MetricCard
           title="Attack nguy hiểm nhất"
           value={worst?.attack ?? "No data"}
           trend={worst ? `${worst.mean_degradation_percent}%` : undefined}
@@ -169,7 +169,7 @@ export default function ProjectAnalyticsPanel() {
       </section>
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
-        <Masked Faced
+        <Card
           className="xl:col-span-7"
           title="Xu hướng robustness theo run"
           subtitle="Run xếp theo thời gian lưu; trục % để so sánh clean vs attacked xuyên các phiên."
@@ -200,8 +200,8 @@ export default function ProjectAnalyticsPanel() {
               )}
             </p>
           )}
-        </Masked Faced>
-        <Masked Faced
+        </Card>
+        <Card
           className="xl:col-span-5"
           title="Bằng chứng tổng hợp đa run"
           subtitle="Chỉ kết luận từ object-level evidence; thiếu dữ liệu thì ghi rõ No data."
@@ -241,11 +241,11 @@ export default function ProjectAnalyticsPanel() {
               </p>
             </div>
           </div>
-        </Masked Faced>
+        </Card>
       </div>
 
       {comparison && (
-        <Masked Faced
+        <Card
           title="Bảng so sánh đa run"
           subtitle={`Suy giảm trung bình theo attack trên ${comparison.runs?.length ?? 0} run${
             comparison.comparable ? "" : " — cảnh báo: các run khác task, so sánh chỉ mang tham khảo"
@@ -292,10 +292,10 @@ export default function ProjectAnalyticsPanel() {
               </tbody>
             </table>
           </div>
-        </Masked Faced>
+        </Card>
       )}
 
-      <Masked Faced
+      <Card
         title="Báo cáo run chi tiết"
         subtitle="Chọn một run của project để xem đầy đủ bảng, biểu đồ và heatmap degradation."
       >
@@ -317,7 +317,7 @@ export default function ProjectAnalyticsPanel() {
         <div className="mt-4">
           {selectedReport ? <ReportView report={selectedReport} /> : null}
         </div>
-      </Masked Faced>
+      </Card>
     </div>
   );
 }

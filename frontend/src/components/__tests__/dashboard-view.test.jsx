@@ -61,7 +61,7 @@ describe("DashboardView", () => {
     expect(screen.getByText("ID: checkpoint-opaque-id")).toBeVisible();
   });
 
-  it("does not render the removed workflow architecture and results overview masked_faceds", async () => {
+  it("does not render the removed workflow architecture and results overview cards", async () => {
     render(<DashboardView />);
     await waitFor(() => expect(getModelVersions).toHaveBeenCalled());
 

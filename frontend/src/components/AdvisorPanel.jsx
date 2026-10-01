@@ -99,11 +99,11 @@ export default function AdvisorPanel({ runId, projectId, onTriggerAction }) {
 
       <div className="grid gap-3">
         {activeRecs.map((rec) => {
-          const masked_facedStyle = PRIORITY_STYLES[rec.priority] || PRIORITY_STYLES.LOW;
+          const cardStyle = PRIORITY_STYLES[rec.priority] || PRIORITY_STYLES.LOW;
           const badgeStyle = PRIORITY_BADGES[rec.priority] || PRIORITY_BADGES.LOW;
 
           return (
-            <div key={rec.id} className={`rounded-xl border p-4 transition-all duration-200 shadow-sm ${masked_facedStyle}`}>
+            <div key={rec.id} className={`rounded-xl border p-4 transition-all duration-200 shadow-sm ${cardStyle}`}>
               <div className="flex items-start justify-between gap-3">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">

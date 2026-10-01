@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Bar, BarChart, Masked FacetesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 import { getCanonicalAttackKey, getDescriptiveAttackName } from "@/lib/attackNaming";
 import { buildRunDecisionView } from "@/lib/reportMetrics";
@@ -56,7 +56,7 @@ export default function MetricsComparisonChart({ report }) {
       <div className="h-80 w-full" aria-label="Measured clean versus attacked metric chart">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 12, right: 16, left: 0, bottom: 8 }}>
-            <Masked FacetesianGrid strokeDasharray="3 3" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="metric" fontSize={12} />
             <YAxis domain={[0, 1]} fontSize={12} tickFormatter={(value) => value.toFixed(1)} />
             <Tooltip formatter={(value) => (value == null ? "No data" : Number(value).toFixed(4))} />

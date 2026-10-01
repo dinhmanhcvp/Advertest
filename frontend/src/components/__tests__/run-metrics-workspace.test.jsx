@@ -55,13 +55,13 @@ describe("RunMetricsContent", () => {
         mode="analysis"
         analytics={{
           summary: { worst_attack: { attack: "lidar_fog", mean_degradation_percent: 37.1 } },
-          classes: [{ class_name: "Masked Face", detection_drop_percent: 22.0, total_ground_truth_objects: 12 }],
+          classes: [{ class_name: "Car", detection_drop_percent: 22.0, total_ground_truth_objects: 12 }],
           distance: { most_vulnerable_distance: "far", buckets: {} },
         }}
       />,
     );
     expect(screen.getAllByText(/lidar_fog/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Masked Face/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Car/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/SIMULATION/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Giới hạn cần đọc trước khi quyết định")).toBeVisible();
     expect(screen.queryByText(/L_adv = 0.4/i)).toBeNull();

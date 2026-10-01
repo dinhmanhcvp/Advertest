@@ -12,7 +12,7 @@ export default function UploadModal({ isOpen, onClose, onDatasetCreated, dataset
   const [statusMessage, setStatusMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [batchClassMap, setBatchClassMap] = useState("masked_face:Masked Face");
+  const [batchClassMap, setBatchClassMap] = useState("car:Car");
   const [batchAnonymized, setBatchAnonymized] = useState(false);
   const [uploadedBatch, setUploadedBatch] = useState(null);
   const [datasetKind, setDatasetKind] = useState("clean");
@@ -454,7 +454,7 @@ export default function UploadModal({ isOpen, onClose, onDatasetCreated, dataset
             <p className="text-xs text-secondary">
               Choose a browser directory or individual files; no path on the API server is required for this flow.
             </p>
-            <label className="attack-masked_faced" style={{ cursor: "pointer" }}>
+            <label className="attack-card" style={{ cursor: "pointer" }}>
               Choose attacked-data directory
               <input
                 type="file"
@@ -603,7 +603,7 @@ export default function UploadModal({ isOpen, onClose, onDatasetCreated, dataset
                     {ds.license || "CC-BY"}
                   </div>
                 </div>
-                <button type="button" className="attack-masked_faced" style={{ padding: "6px 12px" }}>
+                <button type="button" className="attack-card" style={{ padding: "6px 12px" }}>
                   Select
                 </button>
               </div>

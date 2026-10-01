@@ -115,8 +115,8 @@ describe("ConfigureAttackPage real run handoff", () => {
       sample_id: "000001",
       attack: "depth_fog",
       severity: 3,
-      clean_prediction: { boxes: [{ xyxy: [1, 2, 10, 20], label: "Masked Face", score: 0.8 }] },
-      attacked_prediction: { boxes: [{ xyxy: [2, 3, 8, 12], label: "Masked Face", score: 0.4 }] },
+      clean_prediction: { boxes: [{ xyxy: [1, 2, 10, 20], label: "Car", score: 0.8 }] },
+      attacked_prediction: { boxes: [{ xyxy: [2, 3, 8, 12], label: "Car", score: 0.4 }] },
       artifacts: {
         clean_input_url: "/data/runs/run-real-001/clean.png",
         attacked_input_url: "/data/runs/run-real-001/attacked.png",

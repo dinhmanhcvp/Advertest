@@ -117,7 +117,7 @@ describe("ConfigPanel", () => {
     expect(dag).toHaveAttribute("title", "missing_model_capability:dense_proposals");
   });
 
-  it("separates attack masked_faceds by threat-model class without hiding incompatible methods", () => {
+  it("separates attack cards by threat-model class without hiding incompatible methods", () => {
     render(
       <ConfigPanel
         datasets={[]}
