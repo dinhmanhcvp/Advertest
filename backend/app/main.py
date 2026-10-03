@@ -147,7 +147,12 @@ async def generate_pipeline(request: GenerateRequest, background_tasks: Backgrou
 @app.get("/api/v1/jobs/status/{job_id}")
 async def get_job_status(job_id: str, db: Session = Depends(get_db)):
     """Read job status from database."""
-    job = db.query(RetrainingJob).filter(RetrainingJob.id == job_id).first()
+    try:
+        uuid_obj = uuid.UUID(job_id)
+    except ValueError:
+        raise HTTPException(status_code=404, detail="Job not found")
+        
+    job = db.query(RetrainingJob).filter(RetrainingJob.id == uuid_obj).first()
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
     return {

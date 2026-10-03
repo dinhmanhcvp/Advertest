@@ -55,7 +55,7 @@ def test_format_converter_logic():
     assert val["rectanglelabels"] == ["Face"]
 
 
-@patch("src.services.label_studio_manager.Client")
+@patch("src.services.label_studio_manager.LabelStudio")
 def test_label_studio_api_push(mock_client_cls):
     """Simulate a successful API call (HTTP 201) when pushing this JSON to a dummy project."""
     # Setup mock

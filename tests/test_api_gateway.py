@@ -19,6 +19,8 @@ from backend.app.main import app
 
 @pytest_asyncio.fixture
 async def client():
+    from backend.app.db.session import init_db
+    init_db()  # Initialize tables for tests
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://testserver") as ac:
         yield ac

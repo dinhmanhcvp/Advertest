@@ -17,6 +17,7 @@ Pillow>=10.0.0
 imagecorruptions>=1.1.2
 setuptools>=69.0.0,<81
 tqdm>=4.66.5
+albumentations>=1.4.15
 
 # ---- Optional extras: install per role, never in CI ----
 # Real models (adapters)

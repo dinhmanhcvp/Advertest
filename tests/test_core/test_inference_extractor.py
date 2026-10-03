@@ -53,7 +53,7 @@ def test_error_extractor(mock_predictions_and_gt):
     
     # We will override the logic slightly to test the exact condition requested:
     # Extract errors (Hard Negatives)
-    errors = extractor.extract_pii_errors([gt_sample], [prediction])
+    errors = extractor.extract_pii_errors([prediction], [gt_sample])
     
     # Assert the final count matches expected
     # Expected: 2 errors (1 Low IoU, 1 Low Confidence)

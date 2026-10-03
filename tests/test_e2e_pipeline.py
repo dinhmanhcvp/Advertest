@@ -35,7 +35,7 @@ def mock_micro_batch():
 
 
 @patch("src.agents.auto_triage.AutoTriageAgent._simulate_vlm_confidence", return_value=1.0)
-@patch("src.services.label_studio_manager.Client")
+@patch("src.services.label_studio_manager.LabelStudio")
 @patch("src.pipeline.data_packager.DataPackager.package_approved_pool")
 def test_e2e_pipeline_sanity(mock_package, mock_ls_client, mock_vlm_conf, mock_micro_batch):
     """Run E2E pipeline without throwing any exceptions."""
