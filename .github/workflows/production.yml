@@ -53,7 +53,7 @@ jobs:
       - name: Execute PyTest Suite
         run: |
           # We mock the GPU calls via CPU for testing AttackEngine & Evaluator
-          pytest tests/ -v
+          PYTHONPATH=. pytest tests/ -v
 
   build-and-push:
     name: Build and Push to AWS ECR
