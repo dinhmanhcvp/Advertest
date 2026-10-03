@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getMemory, loadState, saveState } from "@/lib/loop/store";
 import { MODELS, DATASETS } from "@/lib/loop/catalog";
-import { generateBaseline, evaluateBaseline } from "@/lib/loop/engine";
 
 import { StudioLayout } from "./StudioLayout";
 import StepSelect from "./StepSelect";
@@ -13,6 +11,51 @@ import StepInsights from "./StepInsights";
 import StepPlan from "./StepPlan";
 import StepAttack from "./StepAttack";
 import StepRetrain from "./StepRetrain";
+
+const PIPELINE_KEY = "advertest.studio.state.v1";
+const STORE_KEY = "advertest.closedloop.v1"; // from store.js
+
+function loadPipeline() {
+  try {
+    const raw = window.localStorage.getItem(PIPELINE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return {
+    version: 1,
+    retrainDb: [],
+    model: null,
+    dataset: null,
+    baseline: null,
+    triage: null,
+    insights: null,
+    plan: null,
+    attackRes: null,
+    retrainRes: null,
+  };
+}
+
+function savePipeline(state) {
+  try {
+    window.localStorage.setItem(PIPELINE_KEY, JSON.stringify(state));
+  } catch {}
+}
+
+function loadRLMemory() {
+  try {
+    const raw = window.localStorage.getItem(STORE_KEY);
+    if (raw) return JSON.parse(raw).memory || {};
+  } catch {}
+  return {};
+}
+
+function updateGlobalStore(updater) {
+  try {
+    const raw = window.localStorage.getItem(STORE_KEY);
+    const store = raw ? JSON.parse(raw) : { v: 1, db: [], memory: {}, models: {}, cycles: [] };
+    const next = updater(store);
+    window.localStorage.setItem(STORE_KEY, JSON.stringify(next));
+  } catch {}
+}
 
 export default function StudioController() {
   const [activeStep, setActiveStep] = useState(1);
@@ -29,16 +72,13 @@ export default function StudioController() {
 
   // Load state on mount
   useEffect(() => {
-    const s = loadState();
-    setAppState(s);
+    setAppState(loadPipeline());
   }, []);
 
   if (!appState) return null; // loading
 
-  // Generic flag updater
   const setFlag = (k, v) => setRunFlags((prev) => ({ ...prev, [k]: v }));
 
-  // Transitions
   const handleSelect = (modelId, datasetId) => {
     const updated = {
       ...appState,
@@ -51,22 +91,21 @@ export default function StudioController() {
       attackRes: null,
       retrainRes: null,
     };
-    saveState(updated);
+    savePipeline(updated);
     setAppState(updated);
     setActiveStep(2);
   };
 
   const handleRunBaseline = async () => {
     setFlag("evaluating", true);
-    // Simulate latency
-    await new Promise((r) => setTimeout(r, 1200));
+    await new Promise((r) => setTimeout(r, 800));
+    const { evaluate } = await import("@/lib/loop/engine");
     
-    // Call engine logic
-    const { getEngineBaseline } = await import("@/lib/loop/engine");
-    const baseline = getEngineBaseline(appState.model, appState.dataset);
+    // Evaluate clean
+    const baseline = evaluate(appState.model.id, appState.dataset.id, { version: appState.version, fixes: appState.fixes, baseDelta: appState.baseDelta });
     
     const updated = { ...appState, baseline };
-    saveState(updated);
+    savePipeline(updated);
     setAppState(updated);
     setFlag("evaluating", false);
     setActiveStep(3);
@@ -74,27 +113,27 @@ export default function StudioController() {
 
   const handleRunTriage = async () => {
     setFlag("triaging", true);
-    await new Promise((r) => setTimeout(r, 1500));
+    await new Promise((r) => setTimeout(r, 800));
+    const { triage } = await import("@/lib/loop/engine");
     
-    const { triageWorstSamples } = await import("@/lib/loop/engine");
-    const triage = triageWorstSamples(appState.baseline);
+    const triaged = triage(appState.baseline, 64);
     
-    const updated = { ...appState, triage };
-    saveState(updated);
+    const updated = { ...appState, triage: triaged };
+    savePipeline(updated);
     setAppState(updated);
     setFlag("triaging", false);
     setActiveStep(4);
   };
   
   const handleExtractInsights = async () => {
-    setFlag("triaging", true); // reuse flag
-    await new Promise((r) => setTimeout(r, 1000));
-    
+    setFlag("triaging", true);
+    await new Promise((r) => setTimeout(r, 800));
     const { extractInsights } = await import("@/lib/loop/engine");
-    const insights = extractInsights(appState.triage);
+    
+    const insights = extractInsights(appState.triage, appState.model.id);
     
     const updated = { ...appState, insights };
-    saveState(updated);
+    savePipeline(updated);
     setAppState(updated);
     setFlag("triaging", false);
     setActiveStep(5);
@@ -102,14 +141,26 @@ export default function StudioController() {
 
   const handleGeneratePlan = async () => {
     setFlag("planning", true);
-    await new Promise((r) => setTimeout(r, 1500));
+    await new Promise((r) => setTimeout(r, 800));
+    const { recommendCombos } = await import("@/lib/loop/engine");
+    const memory = loadRLMemory();
     
-    const { generateAttackPlan } = await import("@/lib/loop/engine");
-    const memory = getMemory();
-    const plan = generateAttackPlan(appState.insights, memory);
+    const plan = [];
+    for (const insight of appState.insights) {
+      const insightSamples = appState.triage.filter(s => s.attrTag === insight.tag);
+      const recs = recommendCombos({
+        insight,
+        samples: insightSamples,
+        modelId: appState.model.id,
+        modelState: { version: appState.version, fixes: appState.fixes, baseDelta: appState.baseDelta },
+        memory,
+      });
+      // automatically pick the recommended one
+      plan.push(recs.find(r => r.recommended) || recs[0]);
+    }
     
     const updated = { ...appState, plan };
-    saveState(updated);
+    savePipeline(updated);
     setAppState(updated);
     setFlag("planning", false);
     setActiveStep(6);
@@ -117,13 +168,39 @@ export default function StudioController() {
 
   const handleAttack = async () => {
     setFlag("attacking", true);
-    await new Promise((r) => setTimeout(r, 2000));
+    await new Promise((r) => setTimeout(r, 800));
+    const { runAttack, summarizeAttack, recordMemory, comboSignature } = await import("@/lib/loop/engine");
     
-    const { executeAttackPlan } = await import("@/lib/loop/engine");
-    const attackRes = executeAttackPlan(appState.plan, appState.triage);
+    // Execute attacks
+    const results = [];
+    let memory = loadRLMemory();
+    const newDbEntries = [...(appState.retrainDb || [])];
     
-    const updated = { ...appState, attackRes };
-    saveState(updated);
+    for (const p of appState.plan) {
+      const insightSamples = appState.triage.filter(s => s.attrTag === p.tag);
+      for (const s of insightSamples) {
+        const res = runAttack(s, appState.model.id, { version: appState.version, fixes: appState.fixes, baseDelta: appState.baseDelta }, p.attacks);
+        results.push(res);
+        // Add to retrain DB
+        if (res.effective || res.newlyMissed || res.flipped) {
+          newDbEntries.push({
+            id: s.id,
+            tag: p.tag,
+            sig: comboSignature(p.attacks),
+            combo: p.attacks,
+            drop: res.drop,
+          });
+        }
+      }
+      const summary = summarizeAttack(results.filter(r => appState.triage.find(s => s.id === r.sampleId)?.attrTag === p.tag));
+      memory = recordMemory(memory, p.tag, p.attacks, summary);
+    }
+    
+    // Save RL memory locally
+    updateGlobalStore(s => ({ ...s, memory }));
+    
+    const updated = { ...appState, attackRes: summarizeAttack(results), retrainDb: newDbEntries };
+    savePipeline(updated);
     setAppState(updated);
     setFlag("attacking", false);
     setActiveStep(7);
@@ -131,28 +208,54 @@ export default function StudioController() {
 
   const handleRetrain = async () => {
     setFlag("retraining", true);
-    await new Promise((r) => setTimeout(r, 2500));
+    await new Promise((r) => setTimeout(r, 1000));
+    const { simulateRetrain, planFromDb, applyRewards } = await import("@/lib/loop/engine");
     
-    const { simulateRetrain } = await import("@/lib/loop/engine");
-    const retrainRes = simulateRetrain(appState);
+    const dbPlan = planFromDb(appState.retrainDb);
+    const retrainRes = simulateRetrain({
+      modelId: appState.model.id,
+      datasetId: appState.dataset.id,
+      modelState: { version: appState.version, fixes: appState.fixes, baseDelta: appState.baseDelta },
+      dbEntries: appState.retrainDb,
+      plan: dbPlan
+    });
+    
+    // Apply rewards
+    updateGlobalStore(s => ({
+      ...s,
+      memory: applyRewards(s.memory || {}, retrainRes.rewards, appState.retrainDb)
+    }));
     
     const updated = { ...appState, retrainRes };
-    saveState(updated);
+    savePipeline(updated);
     setAppState(updated);
     setFlag("retraining", false);
   };
 
   const handleReset = () => {
-    // Keep version but reset pipeline
-    const s = loadState(); // loads fresh pipeline but persists version and memory
+    const s = {
+      version: appState.retrainRes.newState.version,
+      fixes: appState.retrainRes.newState.fixes,
+      baseDelta: appState.retrainRes.newState.baseDelta,
+      retrainDb: [],
+      model: appState.model,
+      dataset: appState.dataset,
+      baseline: null,
+      triage: null,
+      insights: null,
+      plan: null,
+      attackRes: null,
+      retrainRes: null,
+    };
+    savePipeline(s);
     setAppState(s);
     setActiveStep(1);
   };
 
   return (
     <StudioLayout 
-      version={appState.version} 
-      dbSize={appState.retrainDb.length} 
+      version={appState.version || 1} 
+      dbSize={appState.retrainDb?.length || 0} 
       activeStep={activeStep}
       setActiveStep={setActiveStep}
     >
@@ -223,3 +326,4 @@ export default function StudioController() {
     </StudioLayout>
   );
 }
+
