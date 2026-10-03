@@ -13,7 +13,8 @@ from src.attacks import get_attack
 from src.attacks.base import AttackContext
 from src.core.egocentric_types import AttackPool, AttackPoolEntry, ErrorCategory, ErrorCase
 from src.core.integrity import BBoxIntegrityChecker, TemporalBoundaryWarper
-from src.core.types import Sample, VideoSample
+from src.core.types import Sample
+from src.core.egocentric_types import VideoSample
 
 logger = logging.getLogger(__name__)
 
