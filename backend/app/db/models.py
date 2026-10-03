@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import Column, String, Float, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.ext.declarative import declarative_base
@@ -23,7 +23,7 @@ class RetrainingJob(Base):
     # RL Reward (Calculated as Corrupted_mAP improvement - Base_mAP drop penalty)
     rl_reward = Column(Float, nullable=True)
     
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     completed_at = Column(DateTime, nullable=True)
 
 
@@ -50,4 +50,4 @@ class AttackPoolItem(Base):
     # Did this specific sample help? (Attributed reward after retraining job completes)
     attributed_reward = Column(Float, default=0.0)
     
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))

@@ -15,7 +15,7 @@ import json
 import logging
 import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import cv2
@@ -32,7 +32,16 @@ from backend.app.db.models import RetrainingJob
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="AdverTest Engine API", version="2.0.0")
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Initialize database tables on startup."""
+    init_db()
+    logger.info("AdverTest API Gateway started. Database initialized.")
+    yield
+
+app = FastAPI(title="AdverTest Engine API", version="2.0.0", lifespan=lifespan)
 
 # CORS config
 app.add_middleware(
@@ -42,15 +51,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-# ── Startup Event ──────────────────────────────────────────────
-
-@app.on_event("startup")
-async def startup():
-    """Initialize database tables on startup."""
-    init_db()
-    logger.info("AdverTest API Gateway started. Database initialized.")
 
 
 # ── Paths ──────────────────────────────────────────────────────
@@ -116,7 +116,7 @@ async def _real_pipeline_execution(job_id: str, dataset_path: str, db_session_fa
 
             # Step 4: Complete
             job.status = "SUCCESS"
-            job.completed_at = datetime.utcnow()
+            job.completed_at = datetime.now(timezone.utc)
             db.commit()
 
         except Exception as exc:
@@ -131,7 +131,7 @@ async def generate_pipeline(request: GenerateRequest, background_tasks: Backgrou
     Persists job status to the database (not in-memory dict).
     """
     job = RetrainingJob(
-        model_version=f"v{datetime.utcnow().strftime('%Y%m%d%H%M')}",
+        model_version=f"v{datetime.now(timezone.utc).strftime('%Y%m%d%H%M')}",
         status="PENDING",
     )
     db.add(job)
