@@ -158,7 +158,7 @@ const AnalysisDashboard = ({ analysisData, onIsolate }) => {
                         {sample.id.split('-')[0]}
                       </td>
                       <td className="py-3 px-2 text-zinc-400 truncate max-w-[120px]">
-                        "{sample.image}"
+                        &quot;{sample.image}&quot;
                       </td>
                       <td className="py-3 px-2">
                         <span className="text-fuchsia-400">

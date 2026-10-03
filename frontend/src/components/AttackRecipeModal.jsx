@@ -71,9 +71,9 @@ const AttackRecipeModal = ({ isOpen, onClose, attackData }) => {
 
             <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700 relative">
               <i className="fa-solid fa-quote-left absolute top-2 left-2 text-slate-600/30 text-2xl"></i>
-              <h4 className="text-xs font-bold text-slate-300 mb-2 relative z-10">The "Why" (Justification)</h4>
+              <h4 className="text-xs font-bold text-slate-300 mb-2 relative z-10">The &quot;Why&quot; (Justification)</h4>
               <p className="text-sm text-slate-400 leading-relaxed relative z-10 italic">
-                "{audit_trail.justification}"
+                &quot;{audit_trail.justification}&quot;
               </p>
             </div>
           </div>
