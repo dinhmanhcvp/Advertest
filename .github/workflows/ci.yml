@@ -49,7 +49,9 @@ jobs:
           node-version: "22"
 
       - name: Install frontend dependencies
-        run: npm install
+        run: |
+          rm -f package-lock.json
+          npm install
         working-directory: frontend
 
       - name: Run frontend tests
