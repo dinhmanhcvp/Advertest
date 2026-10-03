@@ -9,7 +9,7 @@ from typing import ClassVar
 
 from src.attacks import ATTACKS
 from src.attacks.base import AttackContext, BaseAttack, AttackParams
-from src.core.types import Sample
+from src.core.types import Sample, AttackGroup
 from pydantic import Field
 
 class MotionBlurParams(AttackParams):
@@ -52,7 +52,7 @@ class MultiAxisMotionBlur(BaseAttack):
     """
 
     name: ClassVar[str] = "multi_axis_motion_blur"
-    group: ClassVar[str] = "A"
+    group: ClassVar[AttackGroup] = "A"
     category = "corruption"
     params_model = MotionBlurParams
 

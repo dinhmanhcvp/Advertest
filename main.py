@@ -127,9 +127,9 @@ def cmd_generate_attacks(args: argparse.Namespace) -> None:
         severity = random.randint(3, 5) # Hard mode
         
         # Execute Attack
-        res_img, res_boxes, discarded = engine.apply(img_bgr, boxes, strategy, severity)
+        result = engine.apply(img_bgr, boxes, strategy, severity)
         
-        if discarded:
+        if result.discarded:
             logger.warning("Image %s: Transformation rejected by BBoxIntegrityChecker.", img_path.name)
             continue
             
@@ -137,9 +137,9 @@ def cmd_generate_attacks(args: argparse.Namespace) -> None:
         out_img_path = output_dir / f"{img_path.stem}_{chosen_tag}_s{severity}.jpg"
         out_lbl_path = output_dir / f"{img_path.stem}_{chosen_tag}_s{severity}.txt"
         
-        cv2.imwrite(str(out_img_path), res_img)
+        cv2.imwrite(str(out_img_path), result.image)
         with open(out_lbl_path, "w") as f:
-            for b in res_boxes:
+            for b in result.boxes:
                 f.write(b.to_label_str() + "\n")
                 
         success_count += 1

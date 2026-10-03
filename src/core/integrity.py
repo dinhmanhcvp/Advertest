@@ -42,9 +42,7 @@ class BBoxIntegrityChecker:
         return Box(
             x1=x1, y1=y1, x2=x2, y2=y2,
             label=box.label,
-            score=box.score,
-            occluded=box.occluded,
-            truncated=box.truncated
+            score=box.score
         )
 
     @classmethod
@@ -64,9 +62,6 @@ class BBoxIntegrityChecker:
         if not new_boxes:
             return None
 
-        return sample.with_image(sample.image)  # This creates a copy. Need to replace boxes:
-        # Currently `Sample` is frozen. We'll bypass using object.__setattr__ or better:
-        # Replace function from dataclasses
         from dataclasses import replace
         return replace(sample, boxes=tuple(new_boxes))
 

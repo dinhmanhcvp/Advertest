@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import ClassVar
+from typing import ClassVar, cast
 
 import cv2
 import numpy as np
@@ -32,7 +32,8 @@ class GridDistortion(BaseAttack):
         distort_limit = severity * 0.03
         
         # Generate meshgrid
-        steps = self.params.num_steps
+        params = cast(GridDistortionParams, self.params)
+        steps = params.num_steps
         x_steps = np.linspace(0, w, steps + 1)
         y_steps = np.linspace(0, h, steps + 1)
         

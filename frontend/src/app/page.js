@@ -1,7 +1,7 @@
 "use client";
 
-import DashboardView from "@/components/DashboardView";
+import StudioController from "@/components/studio/StudioController";
 
 export default function HomePage() {
-  return <DashboardView />;
+  return <StudioController />;
 }

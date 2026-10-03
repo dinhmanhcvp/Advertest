@@ -120,8 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    }
-
     // ==========================================
     // Phase 4: End-to-End Pipeline Integration
     // ==========================================

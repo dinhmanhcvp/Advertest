@@ -27,7 +27,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from advertest.attacks.engine import YOLOBox, AttackResult
-from advertest.core.insight_router import InsightRouter, get_mock_label_studio_insights
+from advertest.core.insight_router import InsightRouter
 
 
 # ──────────────────────────────────────────── I/O helpers ──────

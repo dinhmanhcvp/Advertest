@@ -7,7 +7,7 @@ from pydantic import Field
 
 from src.attacks import ATTACKS
 from src.attacks.base import AttackContext, BaseAttack, AttackParams
-from src.core.types import Sample
+from src.core.types import Sample, AttackGroup
 
 try:
     import torch
@@ -39,7 +39,7 @@ class ControlNetEgocentric(BaseAttack):
     """
     
     name: ClassVar[str] = "controlnet_egocentric"
-    group: ClassVar[str] = "D"  # GenAI / Advanced
+    group: ClassVar[AttackGroup] = "D"  # GenAI / Advanced
     category = "synthesis"
     params_model = ControlNetParams
     

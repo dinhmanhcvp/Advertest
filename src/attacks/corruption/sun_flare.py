@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import math
-from typing import ClassVar
+from typing import ClassVar, cast
 
 import cv2
 import numpy as np
@@ -35,7 +35,8 @@ class RandomSunFlare(BaseAttack):
         x = int(ctx.rng.uniform(0, w))
         y = int(ctx.rng.uniform(0, int(h * 0.5)))
         
-        radius = int((self.params.flare_radius * w / 1920) * (1 + severity * 0.2))
+        params = cast(SunFlareParams, self.params)
+        radius = int((params.flare_radius * w / 1920) * (1 + severity * 0.2))
         
         flare_mask = np.zeros((h, w), dtype=np.float32)
         cv2.circle(flare_mask, (x, y), radius, 1.0, -1)
