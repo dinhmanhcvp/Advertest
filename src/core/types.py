@@ -68,6 +68,7 @@ ATTACK_CATEGORY: dict[str, str] = {
     "gaussian_blur": "noise",
     "defocus_blur": "noise",
     "motion_blur": "noise",
+    "multi_axis_motion_blur": "noise",
     "zoom_blur": "noise",
     "glass_blur": "noise",
     "elastic_transform": "noise",

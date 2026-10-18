@@ -316,6 +316,10 @@ class BiomechanicalBlur:
     Simulates non-linear egocentric camera motion (e.g., walking head-bob or quick panning)
     by generating a mathematically modeled 2D blur kernel and convolving it with the image.
     """
+    def __init__(self, imu_hz: float = 3.0):
+        # Human walking head-bob lives in the 2-5 Hz band.
+        self.imu_hz = float(min(5.0, max(2.0, imu_hz)))
+
     def __call__(
         self,
         image: np.ndarray,
@@ -333,13 +337,15 @@ class BiomechanicalBlur:
         center = k // 2
 
         amplitude = k * 0.4
-        frequency = 2.0
+        frequency = self.imu_hz / 2.0  # cycles across the exposure window
         num_points = 200
 
         for i in range(num_points):
             t = i / float(num_points)
             x = center + (t - 0.5) * amplitude
-            y = center + amplitude * 0.3 * math.sin(2 * math.pi * frequency * t)
+            # sine head-bob + cubic polynomial drift (rapid chest-mount pan)
+            y = (center + amplitude * 0.3 * math.sin(2 * math.pi * frequency * t)
+                 + amplitude * 0.15 * (t - 0.5) ** 3 * 8)
             x, y = int(round(x)), int(round(y))
             if 0 <= x < k and 0 <= y < k:
                 kernel[y, x] += 1.0
@@ -353,6 +359,24 @@ class BiomechanicalBlur:
         blurred_image = cv2.filter2D(image, -1, kernel)
         
         return blurred_image, list(boxes)
+
+
+class HandOcclusion:
+    """Egocentric partial-face occlusion (hand / strap / sleeve patch)."""
+
+    def __call__(self, image, boxes, severity: int = 3, rng=None):
+        rng = rng or np.random.default_rng()
+        severity = max(1, min(5, severity))
+        img = image.copy()
+        h, w = img.shape[:2]
+        for b in boxes:
+            bw, bh = b.width * w, b.height * h
+            pw, ph = int(bw * (0.1 + 0.08 * severity)), int(bh * (0.25 + 0.06 * severity))
+            cx = int(b.x_center * w + rng.uniform(-0.3, 0.3) * bw)
+            cy = int(b.y_center * h + rng.uniform(0.0, 0.3) * bh)
+            x1, y1 = max(0, cx - pw // 2), max(0, cy - ph // 2)
+            img[y1:min(h, y1 + ph), x1:min(w, x1 + pw)] = (60, 70, 90)
+        return img, list(boxes)
 
 
 # ─────────────────────────────────────────────────── Attack Engine ──────
@@ -375,6 +399,10 @@ class AttackEngine:
         "error_blur":         KineticBlur,
         "error_overexposure": SensorDegradation,
         "error_biomechanical": BiomechanicalBlur,
+        # Canonical registry tags (see advertest.core.taxonomy)
+        "error_motion_blur":  BiomechanicalBlur,
+        "error_sensor_noise": SensorDegradation,
+        "error_occlusion":    HandOcclusion,
     }
 
     def __init__(self, bbox_loss_threshold: float = 0.50, seed: int = 42):

@@ -1,0 +1,149 @@
+[
+  {
+    "case_id": "ego4d_001",
+    "condition": "Extreme Over-exposure (Chest Mount)",
+    "failure_tag": "error_sensor_noise",
+    "delta": "+0.63 Confidence Gain",
+    "model_v1": {
+      "status": "Failed",
+      "confidence": 0.25,
+      "bbox": [
+        120,
+        90,
+        110,
+        120
+      ],
+      "landmarks": null
+    },
+    "model_v2": {
+      "status": "Success",
+      "confidence": 0.88,
+      "bbox": [
+        120,
+        90,
+        110,
+        120
+      ],
+      "landmarks": [
+        [
+          148,
+          118
+        ],
+        [
+          196,
+          116
+        ],
+        [
+          172,
+          146
+        ],
+        [
+          152,
+          176
+        ],
+        [
+          192,
+          175
+        ]
+      ]
+    }
+  },
+  {
+    "case_id": "ego4d_007",
+    "condition": "Fisheye Edge Distortion (GoPro)",
+    "failure_tag": "error_fisheye",
+    "delta": "+0.53 Confidence Gain",
+    "model_v1": {
+      "status": "Failed",
+      "confidence": 0.31,
+      "bbox": [
+        60,
+        70,
+        100,
+        115
+      ],
+      "landmarks": null
+    },
+    "model_v2": {
+      "status": "Success",
+      "confidence": 0.84,
+      "bbox": [
+        60,
+        70,
+        100,
+        115
+      ],
+      "landmarks": [
+        [
+          88,
+          98
+        ],
+        [
+          136,
+          96
+        ],
+        [
+          112,
+          126
+        ],
+        [
+          92,
+          156
+        ],
+        [
+          132,
+          155
+        ]
+      ]
+    }
+  },
+  {
+    "case_id": "ego4d_012",
+    "condition": "Walking Head-bob Motion Blur (3 Hz)",
+    "failure_tag": "error_motion_blur",
+    "delta": "+0.63 Confidence Gain",
+    "model_v1": {
+      "status": "Failed",
+      "confidence": 0.18,
+      "bbox": [
+        140,
+        100,
+        95,
+        110
+      ],
+      "landmarks": null
+    },
+    "model_v2": {
+      "status": "Success",
+      "confidence": 0.81,
+      "bbox": [
+        140,
+        100,
+        95,
+        110
+      ],
+      "landmarks": [
+        [
+          168,
+          128
+        ],
+        [
+          216,
+          126
+        ],
+        [
+          192,
+          156
+        ],
+        [
+          172,
+          186
+        ],
+        [
+          212,
+          185
+        ]
+      ]
+    }
+  }
+]

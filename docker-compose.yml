@@ -47,3 +47,31 @@ services:
     environment:
       - LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
       - LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT=/data
+
+  # 3. FastAPI backend (serves live endpoints or pre-computed DEMO_MODE artifacts)
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: advertest-api
+    env_file:
+      - .env
+    environment:
+      - ENABLE_DEMO_MODE=${ENABLE_DEMO_MODE:-True}
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "8000:8000"
+
+  # 4. Next.js console (Module 1-5 UI at /engine)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: advertest-frontend
+    environment:
+      - API_PROXY_TARGET=http://api:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api

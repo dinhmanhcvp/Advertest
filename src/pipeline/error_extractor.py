@@ -63,6 +63,18 @@ class ErrorExtractor:
                         severity_estimate=3,  # placeholder
                     )
                     errors.append(error)
+                elif box.score < 0.4:
+                    error = ErrorCase(
+                        case_id=f"err-pii-{pred.sample_id}-{len(errors)}",
+                        sample_id=pred.sample_id,
+                        error_category="pii_low_confidence",
+                        iou=best_iou,
+                        confidence=box.score,
+                        predicted_label=box.label,
+                        ground_truth_label=best_gt_label,
+                        severity_estimate=2,  # Needs retraining
+                    )
+                    errors.append(error)
                     
                 # NEW METRIC: High Confidence False Positive (Background Clutter)
                 # Confidence > 0.8 but IoU is exactly 0.0

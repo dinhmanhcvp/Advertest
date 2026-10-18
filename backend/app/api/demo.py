@@ -1,25 +1,39 @@
-from fastapi import APIRouter
 import json
 import os
+from pathlib import Path
+
+from fastapi import APIRouter
 
 router = APIRouter()
 
-DEMO_ARTIFACTS_DIR = "data/demo_artifacts"
+DEMO_ARTIFACTS_DIR = Path("data/demo_artifacts")
+LIVE_DIR = Path("data/demo_output")
+
+
+def _demo_mode() -> bool:
+    return os.environ.get("ENABLE_DEMO_MODE", os.environ.get("DEMO_MODE", "")).strip().lower() in ("1", "true", "yes")
+
+
+def _serve(name: str):
+    """Live artifact when present and DEMO_MODE is off; otherwise the pre-computed one."""
+    stem, ext = name.rsplit(".", 1)
+    candidates = [DEMO_ARTIFACTS_DIR / name]
+    if not _demo_mode():
+        candidates.insert(0, LIVE_DIR / f"{stem}.live.{ext}")
+    for path in candidates:
+        if path.exists():
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
+    return []
+
 
 @router.get("/demo/audit-trail")
 async def get_demo_audit_trail():
-    """Reads and returns the contents of the local audit_trail.json file."""
-    file_path = os.path.join(DEMO_ARTIFACTS_DIR, "audit_trail.json")
-    if os.path.exists(file_path):
-        with open(file_path, "r") as f:
-            return json.load(f)
-    return []
+    """Explainability log: insight_source, applied_chain, severity_level, justification."""
+    return _serve("audit_trail.json")
+
 
 @router.get("/demo/proof-of-cure")
 async def get_demo_proof_of_cure():
-    """Reads and returns the contents of the local proof_of_cure.json file."""
-    file_path = os.path.join(DEMO_ARTIFACTS_DIR, "proof_of_cure.json")
-    if os.path.exists(file_path):
-        with open(file_path, "r") as f:
-            return json.load(f)
-    return []
+    """A/B evaluation: model_v1 (failed) vs model_v2 (cured) with bbox + 5-point landmarks."""
+    return _serve("proof_of_cure.json")

@@ -36,8 +36,11 @@ def mock_micro_batch():
 
 @patch("src.agents.auto_triage.AutoTriageAgent._simulate_vlm_confidence", return_value=1.0)
 @patch("src.services.label_studio_manager.LabelStudio")
+@patch.dict("os.environ", {"LABEL_STUDIO_API_TOKEN": "test-token"})
+@patch("src.pipeline.data_packager.DataPackager.export_retrain_ready")
+@patch("src.pipeline.data_packager.DataPackager.generate_data_card")
 @patch("src.pipeline.data_packager.DataPackager.package_approved_pool")
-def test_e2e_pipeline_sanity(mock_package, mock_ls_client, mock_vlm_conf, mock_micro_batch):
+def test_e2e_pipeline_sanity(mock_package, mock_card, mock_export, mock_ls_client, mock_vlm_conf, mock_micro_batch):
     """Run E2E pipeline without throwing any exceptions."""
     samples, preds = mock_micro_batch
     
@@ -45,16 +48,18 @@ def test_e2e_pipeline_sanity(mock_package, mock_ls_client, mock_vlm_conf, mock_m
     mock_project = MagicMock()
     mock_project.id = 99
     mock_ls_client().get_project.return_value = mock_project
-    mock_ls_client().create_project.return_value = mock_project
+    mock_ls_client().projects.create.return_value = mock_project
     
     # Mock packager to return a dummy path
     mock_package.return_value = "/tmp/mock_dataset_v1.0"
     
+    from src.config import get_settings
+    get_settings.cache_clear()  # pick up the patched token
     orchestrator = Orchestrator()
     
     # Override orchestrator's _run_extraction to use our micro batch
     def _mock_run_extraction(config):
-        errors = orchestrator.error_extractor.extract_pii_errors(samples, preds)
+        errors = orchestrator.error_extractor.extract_pii_errors(preds, samples)
         # Cast to ErrorCase
         return [
             ErrorCase(case_id=f"err-{i}", sample_id=e.sample_id, error_category=e.error_category)
@@ -79,5 +84,5 @@ def test_e2e_pipeline_sanity(mock_package, mock_ls_client, mock_vlm_conf, mock_m
     assert len(results["packaged_datasets"]) > 0
     
     # Verify Label Studio interactions
-    assert mock_ls_client().create_project.called
-    assert mock_project.import_tasks.called
+    assert mock_ls_client().projects.create.called
+    assert mock_ls_client().tasks.create_many.called

@@ -29,11 +29,11 @@ def get_default_insight_distribution() -> dict[str, float]:
     failures. Values must sum to 1.0.
     """
     return {
-        "error_fisheye":       0.35,  # 35 % lens distortion
-        "error_blur":          0.20,  # 20 % kinetic motion blur
-        "error_biomechanical": 0.15,  # 15 % IMU/biomechanical blur
-        "error_overexposure":  0.15,  # 15 % sensor / HDR clipping
-        "clean":               0.15,  # 15 % control group
+        "error_fisheye":      0.30,  # lens distortion
+        "error_motion_blur":  0.30,  # kinetic + IMU/biomechanical blur
+        "error_sensor_noise": 0.20,  # exposure / ISO / HDR clipping
+        "error_occlusion":    0.10,  # hands, straps, sleeves
+        "clean":              0.10,  # control group
     }
 
 

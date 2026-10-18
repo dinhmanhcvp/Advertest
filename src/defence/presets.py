@@ -56,7 +56,7 @@ TARGETED_REPAIR_RATIO = AttackMixRatio(
 TRAIN_ATTACKS: tuple[str, ...] = (
     "gaussian_noise",
     "fog",
-    "motion_blur",
+    "multi_axis_motion_blur",
     "object_occlusion",
     "patch_attack",
     "frame_freeze",

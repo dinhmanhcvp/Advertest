@@ -54,7 +54,16 @@ This mode allows you to spin up the UI and FastAPI backend using pre-computed `a
    - Frontend: [http://localhost:3000](http://localhost:3000)
    - Backend API Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
 
-Navigate to the **"E2E Demo Workflow"** button in the dashboard to see the active learning loop in action!
+Open **[http://localhost:3000/engine](http://localhost:3000/engine)** for the five-module console: Triage Matrix → Adversarial Studio → Visual Inspection (V1/V2 diff slider) → Temporal Inspector → Proof of Cure.
+
+Without Docker: `ENABLE_DEMO_MODE=True uvicorn backend.app.main:app --port 8000` and, in `frontend/`, `API_PROXY_TARGET=http://localhost:8000 npm run dev`.
+
+### Demo artifacts & taxonomy
+
+- Pre-computed artifacts live in `data/demo_artifacts/` (`audit_trail.json`, `proof_of_cure.json`, `eval_report.json`); regenerate deterministically with `python scripts/build_demo_artifacts.py`. Live runs write to `data/demo_output/*.live.json` and never overwrite them.
+- Failure tags are canonical (`error_fisheye`, `error_motion_blur`, `error_sensor_noise`, `error_occlusion`) and defined once in `advertest/core/taxonomy.py`; legacy engine tags are mapped at the API boundary.
+- The GPU stage (triage, synthesis, retrain, blind gate) is packaged in `colab/colab_yolov7_advertest.ipynb`. Model V2 is accepted only if corrupted mAP improves and base mAP drops by ≤ 1%.
+- Data Block ingestion (`src/services/data_connector.py`) handles presigned-URL expiry (re-sign once), retries with backoff, and purges raw files from the temporary cache.
 
 ## Production Mode (GPU Enabled)
 

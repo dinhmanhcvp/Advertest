@@ -186,8 +186,8 @@ export const DATASETS = [
     mix: { motion_blur: 1.2, low_light: 0.9, glare: 0.5, lens_distortion: 0.4, occlusion: 1.3, weather: 0.3, compression: 0.9 },
   },
   {
-    id: "vin-urban-night",
-    name: "VinDrive · Urban Night",
+    id: "ego-urban-night",
+    name: "Ego Drive · Urban Night",
     scene: "street",
     size: 960,
     classes: ["car", "pedestrian", "cyclist", "truck"],

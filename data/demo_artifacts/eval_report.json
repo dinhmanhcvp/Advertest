@@ -1,0 +1,19 @@
+{
+  "base_model": {
+    "base_map": 0.85,
+    "corrupted_map": 0.41
+  },
+  "advertest_model": {
+    "base_map": 0.84,
+    "corrupted_map": 0.68
+  },
+  "deltas": {
+    "base_drop": 0.01,
+    "corrupted_improvement": 0.27
+  },
+  "gate": {
+    "max_base_drop": 0.01,
+    "min_corrupted_gain": 0.05,
+    "accepted": true
+  }
+}

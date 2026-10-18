@@ -273,3 +273,14 @@
 @keyframes st-scan { 0% { transform: translateY(-100%); } 100% { transform: translateY(400%); } }
 @keyframes st-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 .st-pulse { animation: st-pulse 1.4s ease-in-out infinite; }
+
+/* Engineering blueprint grid + skeleton shimmer (engine console) */
+.scale-grid {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}

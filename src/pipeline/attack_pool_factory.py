@@ -161,7 +161,7 @@ class AttackPoolFactory:
         """Map error categories to relevant spatial attack plugins."""
         routes = {
             "pii_fisheye": ["fisheye"],
-            "pii_blur": ["motion_blur", "radial_blur"],
+            "pii_blur": ["multi_axis_motion_blur", "radial_blur"],
             "pii_occlusion": ["object_occlusion", "random_erasing"],
             "pii_overexposure": ["brightness", "contrast"],
             "pii_low_light": ["iso_noise", "shot_noise"],

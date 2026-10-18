@@ -9,8 +9,11 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+import numpy as np
+
 from src.config import get_settings
 from src.core.egocentric_types import ErrorCase
+from src.core.types import Box, Sample
 from src.agents.auto_triage import AutoTriageAgent
 from src.pipeline.attack_pool_factory import AttackPoolFactory
 from src.pipeline.data_packager import DataPackager
@@ -61,8 +64,10 @@ class Orchestrator:
         categories = {e.error_category for e in errors}
         pools = []
         for cat in categories:
-            # Generate spatial pool for PII
-            pool = self.factory.generate_spatial_pool(cat, source_samples=[]) # Dummy empty samples
+            # Generate spatial pool from the samples that actually failed in this category
+            cat_ids = {e.sample_id for e in errors if e.error_category == cat}
+            sources = self._resolve_source_samples(cat_ids, run_config)
+            pool = self.factory.generate_spatial_pool(cat, source_samples=sources)
             
             # Auto-Triage: VLM Agent filters out corrupted samples
             approved_pool, rejected_entries = self.triage_agent.triage_pool(pool)
@@ -95,6 +100,21 @@ class Orchestrator:
         
         logger.info("Full Pipeline Run Complete")
         return results
+
+    @staticmethod
+    def _resolve_source_samples(sample_ids: set[str], config: dict[str, Any]) -> list[Sample]:
+        """Return the real failing samples (``config["samples"]``); fall back to
+        neutral placeholder frames only when the caller supplied none."""
+        provided = {s.sample_id: s for s in config.get("samples", [])}
+        resolved: list[Sample] = []
+        for sid in sorted(sample_ids):
+            if sid in provided:
+                resolved.append(provided[sid])
+                continue
+            logger.warning("No source frame supplied for %s; using placeholder frame.", sid)
+            frame = np.full((720, 1280, 3), 0.5, dtype=np.float32)
+            resolved.append(Sample(sample_id=sid, image=frame, boxes=(Box(540, 260, 740, 460, "Face"),)))
+        return resolved
 
     def _run_extraction(self, config: dict[str, Any]) -> list[ErrorCase]:
         """Simulate extraction step."""

@@ -76,7 +76,7 @@ async def _real_pipeline_execution(job_id: str, dataset_path: str, db_session_fa
 
     with get_db_context() as db:
         # Find or create job
-        job = db.query(RetrainingJob).filter(RetrainingJob.id == job_id).first()
+        job = db.query(RetrainingJob).filter(RetrainingJob.id == uuid.UUID(job_id)).first()
         if not job:
             return
 
@@ -182,17 +182,17 @@ async def get_insights():
     try:
         from advertest.core.insight_router import InsightRouter
         router_obj = InsightRouter(seed=42)
-        insights = router_obj.insights
+        from advertest.core.taxonomy import TAG_COLORS, normalize_distribution
+        insights = normalize_distribution(router_obj.insights)
 
         total = 3400  # Estimate; in production this comes from evaluate_folder count
         distribution = []
-        colors = ["#ef4444", "#3b82f6", "#8b5cf6", "#f59e0b", "#10b981"]
-        for i, (tag, prob) in enumerate(insights.items()):
+        for tag, prob in insights.items():
             distribution.append({
                 "tag": tag,
                 "count": int(total * prob),
                 "percentage": round(prob * 100),
-                "color": colors[i % len(colors)],
+                "color": TAG_COLORS.get(tag, "#64748b"),
             })
 
         return {
@@ -241,7 +241,12 @@ async def get_eval_report(db: Session = Depends(get_db)):
             },
         }
 
-    # Fallback: read from proof_of_cure.json
+    # Fallback: pre-computed gate report, then proof_of_cure.json
+    report_path = DEMO_ARTIFACTS / "eval_report.json"
+    if report_path.exists():
+        with open(report_path, "r") as f:
+            return {"source": "demo_artifact", **json.load(f)}
+
     poc_path = DEMO_ARTIFACTS / "proof_of_cure.json"
     if poc_path.exists():
         with open(poc_path, "r") as f:

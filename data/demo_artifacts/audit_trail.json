@@ -1,0 +1,2020 @@
+[
+  {
+    "id": "ego4d_001",
+    "image_url": "/assets/attacked_ego4d_001_error_sensor_noise_s5.jpg",
+    "iou": 0.33,
+    "confidence": 0.18,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 5,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_002",
+    "image_url": "/assets/attacked_ego4d_002_error_occlusion_s3.jpg",
+    "iou": 0.1,
+    "confidence": 0.13,
+    "audit_trail": {
+      "insight_source": "error_occlusion",
+      "applied_chain": [
+        "HandOcclusion"
+      ],
+      "severity_level": 3,
+      "justification": "Partial-face misses from hands/straps; occluder patch selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_003",
+    "image_url": "/assets/attacked_ego4d_003_error_motion_blur_s3.jpg",
+    "iou": 0.4,
+    "confidence": 0.11,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (2.0 Hz sine + polynomial trajectory) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_004",
+    "image_url": "/assets/attacked_ego4d_004_error_fisheye_s4.jpg",
+    "iou": 0.21,
+    "confidence": 0.18,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 4,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_005",
+    "image_url": "/assets/attacked_ego4d_005_error_sensor_noise_s4.jpg",
+    "iou": 0.34,
+    "confidence": 0.23,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 4,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_006",
+    "image_url": "/assets/attacked_ego4d_006_error_fisheye_s2.jpg",
+    "iou": 0.42,
+    "confidence": 0.37,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 2,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_007",
+    "image_url": "/assets/attacked_ego4d_007_error_fisheye_s5.jpg",
+    "iou": 0.2,
+    "confidence": 0.21,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 5,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_008",
+    "image_url": "/assets/attacked_ego4d_008_error_motion_blur_s5.jpg",
+    "iou": 0.05,
+    "confidence": 0.12,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 5,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (2.2 Hz sine + polynomial trajectory) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_009",
+    "image_url": "/assets/attacked_ego4d_009_error_sensor_noise_s3.jpg",
+    "iou": 0.3,
+    "confidence": 0.08,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 3,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_010",
+    "image_url": "/assets/attacked_ego4d_010_error_motion_blur_s3.jpg",
+    "iou": 0.46,
+    "confidence": 0.26,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (3.6 Hz sine + polynomial trajectory) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_011",
+    "image_url": "/assets/attacked_ego4d_011_error_motion_blur_s2.jpg",
+    "iou": 0.3,
+    "confidence": 0.1,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 2,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (4.6 Hz sine + polynomial trajectory) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_012",
+    "image_url": "/assets/attacked_ego4d_012_error_motion_blur_s4.jpg",
+    "iou": 0.3,
+    "confidence": 0.21,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 4,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (4.9 Hz sine + polynomial trajectory) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_013",
+    "image_url": "/assets/attacked_ego4d_013_error_fisheye_s2.jpg",
+    "iou": 0.48,
+    "confidence": 0.21,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 2,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_014",
+    "image_url": "/assets/attacked_ego4d_014_error_motion_blur_s5.jpg",
+    "iou": 0.09,
+    "confidence": 0.3,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 5,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (2.9 Hz sine + polynomial trajectory) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_015",
+    "image_url": "/assets/attacked_ego4d_015_error_motion_blur_s4.jpg",
+    "iou": 0.34,
+    "confidence": 0.23,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 4,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (3.4 Hz sine + polynomial trajectory) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_016",
+    "image_url": "/assets/attacked_ego4d_016_error_fisheye_s3.jpg",
+    "iou": 0.26,
+    "confidence": 0.1,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_017",
+    "image_url": "/assets/attacked_ego4d_017_error_motion_blur_s2.jpg",
+    "iou": 0.16,
+    "confidence": 0.27,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 2,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (4.3 Hz sine + polynomial trajectory) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_018",
+    "image_url": "/assets/attacked_ego4d_018_error_sensor_noise_s2.jpg",
+    "iou": 0.14,
+    "confidence": 0.17,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 2,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_019",
+    "image_url": "/assets/attacked_ego4d_019_error_fisheye_s3.jpg",
+    "iou": 0.12,
+    "confidence": 0.23,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_020",
+    "image_url": "/assets/attacked_ego4d_020_error_occlusion_s4.jpg",
+    "iou": 0.3,
+    "confidence": 0.32,
+    "audit_trail": {
+      "insight_source": "error_occlusion",
+      "applied_chain": [
+        "HandOcclusion"
+      ],
+      "severity_level": 4,
+      "justification": "Partial-face misses from hands/straps; occluder patch selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_021",
+    "image_url": "/assets/attacked_ego4d_021_error_fisheye_s3.jpg",
+    "iou": 0.4,
+    "confidence": 0.3,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_022",
+    "image_url": "/assets/attacked_ego4d_022_error_fisheye_s3.jpg",
+    "iou": 0.25,
+    "confidence": 0.3,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_023",
+    "image_url": "/assets/attacked_ego4d_023_error_motion_blur_s2.jpg",
+    "iou": 0.24,
+    "confidence": 0.12,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 2,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (4.4 Hz sine + polynomial trajectory) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_024",
+    "image_url": "/assets/attacked_ego4d_024_error_sensor_noise_s4.jpg",
+    "iou": 0.45,
+    "confidence": 0.39,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 4,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_025",
+    "image_url": "/assets/attacked_ego4d_025_error_occlusion_s4.jpg",
+    "iou": 0.07,
+    "confidence": 0.21,
+    "audit_trail": {
+      "insight_source": "error_occlusion",
+      "applied_chain": [
+        "HandOcclusion"
+      ],
+      "severity_level": 4,
+      "justification": "Partial-face misses from hands/straps; occluder patch selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_026",
+    "image_url": "/assets/attacked_ego4d_026_error_fisheye_s4.jpg",
+    "iou": 0.31,
+    "confidence": 0.36,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 4,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_027",
+    "image_url": "/assets/attacked_ego4d_027_error_occlusion_s2.jpg",
+    "iou": 0.32,
+    "confidence": 0.32,
+    "audit_trail": {
+      "insight_source": "error_occlusion",
+      "applied_chain": [
+        "HandOcclusion"
+      ],
+      "severity_level": 2,
+      "justification": "Partial-face misses from hands/straps; occluder patch selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_028",
+    "image_url": "/assets/attacked_ego4d_028_error_motion_blur_s2.jpg",
+    "iou": 0.08,
+    "confidence": 0.18,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 2,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (4.5 Hz sine + polynomial trajectory) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_029",
+    "image_url": "/assets/attacked_ego4d_029_error_motion_blur_s3.jpg",
+    "iou": 0.1,
+    "confidence": 0.32,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (3.4 Hz sine + polynomial trajectory) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_030",
+    "image_url": "/assets/attacked_ego4d_030_error_motion_blur_s4.jpg",
+    "iou": 0.46,
+    "confidence": 0.3,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 4,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (2.3 Hz sine + polynomial trajectory) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_031",
+    "image_url": "/assets/attacked_ego4d_031_error_fisheye_s5.jpg",
+    "iou": 0.46,
+    "confidence": 0.3,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 5,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_032",
+    "image_url": "/assets/attacked_ego4d_032_error_sensor_noise_s3.jpg",
+    "iou": 0.03,
+    "confidence": 0.25,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 3,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_033",
+    "image_url": "/assets/attacked_ego4d_033_error_sensor_noise_s5.jpg",
+    "iou": 0.09,
+    "confidence": 0.33,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 5,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_034",
+    "image_url": "/assets/attacked_ego4d_034_error_fisheye_s5.jpg",
+    "iou": 0.18,
+    "confidence": 0.24,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 5,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_035",
+    "image_url": "/assets/attacked_ego4d_035_error_fisheye_s3.jpg",
+    "iou": 0.39,
+    "confidence": 0.3,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_036",
+    "image_url": "/assets/attacked_ego4d_036_error_sensor_noise_s2.jpg",
+    "iou": 0.45,
+    "confidence": 0.2,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 2,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_037",
+    "image_url": "/assets/attacked_ego4d_037_error_occlusion_s3.jpg",
+    "iou": 0.12,
+    "confidence": 0.14,
+    "audit_trail": {
+      "insight_source": "error_occlusion",
+      "applied_chain": [
+        "HandOcclusion"
+      ],
+      "severity_level": 3,
+      "justification": "Partial-face misses from hands/straps; occluder patch selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_038",
+    "image_url": "/assets/attacked_ego4d_038_error_sensor_noise_s4.jpg",
+    "iou": 0.37,
+    "confidence": 0.16,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 4,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_039",
+    "image_url": "/assets/attacked_ego4d_039_error_sensor_noise_s5.jpg",
+    "iou": 0.05,
+    "confidence": 0.3,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 5,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_040",
+    "image_url": "/assets/attacked_ego4d_040_error_motion_blur_s5.jpg",
+    "iou": 0.39,
+    "confidence": 0.23,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 5,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (4.0 Hz sine + polynomial trajectory) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_041",
+    "image_url": "/assets/attacked_ego4d_041_error_fisheye_s3.jpg",
+    "iou": 0.26,
+    "confidence": 0.06,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_042",
+    "image_url": "/assets/attacked_ego4d_042_error_sensor_noise_s5.jpg",
+    "iou": 0.3,
+    "confidence": 0.31,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 5,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_043",
+    "image_url": "/assets/attacked_ego4d_043_error_motion_blur_s3.jpg",
+    "iou": 0.24,
+    "confidence": 0.3,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (2.5 Hz sine + polynomial trajectory) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_044",
+    "image_url": "/assets/attacked_ego4d_044_error_sensor_noise_s2.jpg",
+    "iou": 0.26,
+    "confidence": 0.24,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 2,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_045",
+    "image_url": "/assets/attacked_ego4d_045_error_occlusion_s2.jpg",
+    "iou": 0.05,
+    "confidence": 0.12,
+    "audit_trail": {
+      "insight_source": "error_occlusion",
+      "applied_chain": [
+        "HandOcclusion"
+      ],
+      "severity_level": 2,
+      "justification": "Partial-face misses from hands/straps; occluder patch selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_046",
+    "image_url": "/assets/attacked_ego4d_046_error_fisheye_s2.jpg",
+    "iou": 0.25,
+    "confidence": 0.24,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 2,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_047",
+    "image_url": "/assets/attacked_ego4d_047_error_motion_blur_s2.jpg",
+    "iou": 0.3,
+    "confidence": 0.22,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 2,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (3.3 Hz sine + polynomial trajectory) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_048",
+    "image_url": "/assets/attacked_ego4d_048_error_fisheye_s3.jpg",
+    "iou": 0.23,
+    "confidence": 0.23,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_049",
+    "image_url": "/assets/attacked_ego4d_049_error_motion_blur_s5.jpg",
+    "iou": 0.13,
+    "confidence": 0.23,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 5,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (3.5 Hz sine + polynomial trajectory) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_050",
+    "image_url": "/assets/attacked_ego4d_050_error_fisheye_s4.jpg",
+    "iou": 0.43,
+    "confidence": 0.12,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 4,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_051",
+    "image_url": "/assets/attacked_ego4d_051_error_motion_blur_s5.jpg",
+    "iou": 0.08,
+    "confidence": 0.2,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 5,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (2.4 Hz sine + polynomial trajectory) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_052",
+    "image_url": "/assets/attacked_ego4d_052_error_fisheye_s2.jpg",
+    "iou": 0.22,
+    "confidence": 0.12,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 2,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_053",
+    "image_url": "/assets/attacked_ego4d_053_error_fisheye_s4.jpg",
+    "iou": 0.43,
+    "confidence": 0.1,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 4,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_054",
+    "image_url": "/assets/attacked_ego4d_054_error_fisheye_s4.jpg",
+    "iou": 0.43,
+    "confidence": 0.38,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 4,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_055",
+    "image_url": "/assets/attacked_ego4d_055_error_motion_blur_s3.jpg",
+    "iou": 0.06,
+    "confidence": 0.35,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (4.2 Hz sine + polynomial trajectory) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_056",
+    "image_url": "/assets/attacked_ego4d_056_error_sensor_noise_s3.jpg",
+    "iou": 0.4,
+    "confidence": 0.1,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 3,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_057",
+    "image_url": "/assets/attacked_ego4d_057_error_motion_blur_s5.jpg",
+    "iou": 0.21,
+    "confidence": 0.19,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 5,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (5.0 Hz sine + polynomial trajectory) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_058",
+    "image_url": "/assets/attacked_ego4d_058_error_fisheye_s4.jpg",
+    "iou": 0.35,
+    "confidence": 0.06,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 4,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_059",
+    "image_url": "/assets/attacked_ego4d_059_error_fisheye_s5.jpg",
+    "iou": 0.03,
+    "confidence": 0.16,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 5,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_060",
+    "image_url": "/assets/attacked_ego4d_060_error_motion_blur_s4.jpg",
+    "iou": 0.05,
+    "confidence": 0.38,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 4,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (3.5 Hz sine + polynomial trajectory) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_061",
+    "image_url": "/assets/attacked_ego4d_061_error_motion_blur_s3.jpg",
+    "iou": 0.07,
+    "confidence": 0.14,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (4.9 Hz sine + polynomial trajectory) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_062",
+    "image_url": "/assets/attacked_ego4d_062_error_fisheye_s2.jpg",
+    "iou": 0.1,
+    "confidence": 0.31,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 2,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_063",
+    "image_url": "/assets/attacked_ego4d_063_error_motion_blur_s5.jpg",
+    "iou": 0.33,
+    "confidence": 0.37,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 5,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (4.5 Hz sine + polynomial trajectory) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_064",
+    "image_url": "/assets/attacked_ego4d_064_error_occlusion_s5.jpg",
+    "iou": 0.44,
+    "confidence": 0.24,
+    "audit_trail": {
+      "insight_source": "error_occlusion",
+      "applied_chain": [
+        "HandOcclusion"
+      ],
+      "severity_level": 5,
+      "justification": "Partial-face misses from hands/straps; occluder patch selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_065",
+    "image_url": "/assets/attacked_ego4d_065_error_fisheye_s4.jpg",
+    "iou": 0.05,
+    "confidence": 0.28,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 4,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_066",
+    "image_url": "/assets/attacked_ego4d_066_error_motion_blur_s5.jpg",
+    "iou": 0.14,
+    "confidence": 0.06,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 5,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (4.7 Hz sine + polynomial trajectory) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_067",
+    "image_url": "/assets/attacked_ego4d_067_error_fisheye_s2.jpg",
+    "iou": 0.06,
+    "confidence": 0.34,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 2,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_068",
+    "image_url": "/assets/attacked_ego4d_068_error_occlusion_s2.jpg",
+    "iou": 0.08,
+    "confidence": 0.05,
+    "audit_trail": {
+      "insight_source": "error_occlusion",
+      "applied_chain": [
+        "HandOcclusion"
+      ],
+      "severity_level": 2,
+      "justification": "Partial-face misses from hands/straps; occluder patch selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_069",
+    "image_url": "/assets/attacked_ego4d_069_error_motion_blur_s5.jpg",
+    "iou": 0.14,
+    "confidence": 0.09,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 5,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (4.8 Hz sine + polynomial trajectory) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_070",
+    "image_url": "/assets/attacked_ego4d_070_error_motion_blur_s3.jpg",
+    "iou": 0.47,
+    "confidence": 0.14,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (4.8 Hz sine + polynomial trajectory) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_071",
+    "image_url": "/assets/attacked_ego4d_071_error_fisheye_s3.jpg",
+    "iou": 0.16,
+    "confidence": 0.15,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_072",
+    "image_url": "/assets/attacked_ego4d_072_error_occlusion_s3.jpg",
+    "iou": 0.25,
+    "confidence": 0.11,
+    "audit_trail": {
+      "insight_source": "error_occlusion",
+      "applied_chain": [
+        "HandOcclusion"
+      ],
+      "severity_level": 3,
+      "justification": "Partial-face misses from hands/straps; occluder patch selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_073",
+    "image_url": "/assets/attacked_ego4d_073_error_sensor_noise_s4.jpg",
+    "iou": 0.48,
+    "confidence": 0.06,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 4,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_074",
+    "image_url": "/assets/attacked_ego4d_074_error_fisheye_s2.jpg",
+    "iou": 0.27,
+    "confidence": 0.11,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 2,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_075",
+    "image_url": "/assets/attacked_ego4d_075_error_occlusion_s5.jpg",
+    "iou": 0.23,
+    "confidence": 0.27,
+    "audit_trail": {
+      "insight_source": "error_occlusion",
+      "applied_chain": [
+        "HandOcclusion"
+      ],
+      "severity_level": 5,
+      "justification": "Partial-face misses from hands/straps; occluder patch selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_076",
+    "image_url": "/assets/attacked_ego4d_076_error_fisheye_s5.jpg",
+    "iou": 0.27,
+    "confidence": 0.35,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 5,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_077",
+    "image_url": "/assets/attacked_ego4d_077_error_motion_blur_s4.jpg",
+    "iou": 0.47,
+    "confidence": 0.17,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 4,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (4.1 Hz sine + polynomial trajectory) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_078",
+    "image_url": "/assets/attacked_ego4d_078_error_sensor_noise_s3.jpg",
+    "iou": 0.18,
+    "confidence": 0.07,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 3,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_079",
+    "image_url": "/assets/attacked_ego4d_079_error_motion_blur_s3.jpg",
+    "iou": 0.31,
+    "confidence": 0.35,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (2.0 Hz sine + polynomial trajectory) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_080",
+    "image_url": "/assets/attacked_ego4d_080_error_fisheye_s5.jpg",
+    "iou": 0.06,
+    "confidence": 0.34,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 5,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_081",
+    "image_url": "/assets/attacked_ego4d_081_error_occlusion_s4.jpg",
+    "iou": 0.34,
+    "confidence": 0.07,
+    "audit_trail": {
+      "insight_source": "error_occlusion",
+      "applied_chain": [
+        "HandOcclusion"
+      ],
+      "severity_level": 4,
+      "justification": "Partial-face misses from hands/straps; occluder patch selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_082",
+    "image_url": "/assets/attacked_ego4d_082_error_motion_blur_s3.jpg",
+    "iou": 0.23,
+    "confidence": 0.14,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (2.5 Hz sine + polynomial trajectory) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_083",
+    "image_url": "/assets/attacked_ego4d_083_error_motion_blur_s4.jpg",
+    "iou": 0.27,
+    "confidence": 0.13,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 4,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (4.9 Hz sine + polynomial trajectory) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_084",
+    "image_url": "/assets/attacked_ego4d_084_error_fisheye_s4.jpg",
+    "iou": 0.1,
+    "confidence": 0.16,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 4,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_085",
+    "image_url": "/assets/attacked_ego4d_085_error_motion_blur_s2.jpg",
+    "iou": 0.25,
+    "confidence": 0.12,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 2,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (3.4 Hz sine + polynomial trajectory) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_086",
+    "image_url": "/assets/attacked_ego4d_086_error_sensor_noise_s2.jpg",
+    "iou": 0.4,
+    "confidence": 0.1,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 2,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_087",
+    "image_url": "/assets/attacked_ego4d_087_error_sensor_noise_s2.jpg",
+    "iou": 0.16,
+    "confidence": 0.26,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 2,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_088",
+    "image_url": "/assets/attacked_ego4d_088_error_fisheye_s2.jpg",
+    "iou": 0.26,
+    "confidence": 0.31,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 2,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_089",
+    "image_url": "/assets/attacked_ego4d_089_error_occlusion_s5.jpg",
+    "iou": 0.35,
+    "confidence": 0.22,
+    "audit_trail": {
+      "insight_source": "error_occlusion",
+      "applied_chain": [
+        "HandOcclusion"
+      ],
+      "severity_level": 5,
+      "justification": "Partial-face misses from hands/straps; occluder patch selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_090",
+    "image_url": "/assets/attacked_ego4d_090_error_occlusion_s4.jpg",
+    "iou": 0.32,
+    "confidence": 0.06,
+    "audit_trail": {
+      "insight_source": "error_occlusion",
+      "applied_chain": [
+        "HandOcclusion"
+      ],
+      "severity_level": 4,
+      "justification": "Partial-face misses from hands/straps; occluder patch selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_091",
+    "image_url": "/assets/attacked_ego4d_091_error_fisheye_s5.jpg",
+    "iou": 0.39,
+    "confidence": 0.1,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 5,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_092",
+    "image_url": "/assets/attacked_ego4d_092_error_occlusion_s2.jpg",
+    "iou": 0.29,
+    "confidence": 0.35,
+    "audit_trail": {
+      "insight_source": "error_occlusion",
+      "applied_chain": [
+        "HandOcclusion"
+      ],
+      "severity_level": 2,
+      "justification": "Partial-face misses from hands/straps; occluder patch selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_093",
+    "image_url": "/assets/attacked_ego4d_093_error_motion_blur_s3.jpg",
+    "iou": 0.04,
+    "confidence": 0.27,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (2.3 Hz sine + polynomial trajectory) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_094",
+    "image_url": "/assets/attacked_ego4d_094_error_sensor_noise_s2.jpg",
+    "iou": 0.23,
+    "confidence": 0.07,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 2,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_095",
+    "image_url": "/assets/attacked_ego4d_095_error_sensor_noise_s2.jpg",
+    "iou": 0.33,
+    "confidence": 0.22,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 2,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_096",
+    "image_url": "/assets/attacked_ego4d_096_error_fisheye_s2.jpg",
+    "iou": 0.05,
+    "confidence": 0.37,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 2,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_097",
+    "image_url": "/assets/attacked_ego4d_097_error_fisheye_s2.jpg",
+    "iou": 0.05,
+    "confidence": 0.3,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 2,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_098",
+    "image_url": "/assets/attacked_ego4d_098_error_motion_blur_s4.jpg",
+    "iou": 0.41,
+    "confidence": 0.13,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 4,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (4.4 Hz sine + polynomial trajectory) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_099",
+    "image_url": "/assets/attacked_ego4d_099_error_occlusion_s3.jpg",
+    "iou": 0.32,
+    "confidence": 0.21,
+    "audit_trail": {
+      "insight_source": "error_occlusion",
+      "applied_chain": [
+        "HandOcclusion"
+      ],
+      "severity_level": 3,
+      "justification": "Partial-face misses from hands/straps; occluder patch selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_100",
+    "image_url": "/assets/attacked_ego4d_100_error_fisheye_s5.jpg",
+    "iou": 0.44,
+    "confidence": 0.15,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 5,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_101",
+    "image_url": "/assets/attacked_ego4d_101_error_sensor_noise_s2.jpg",
+    "iou": 0.32,
+    "confidence": 0.08,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 2,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_102",
+    "image_url": "/assets/attacked_ego4d_102_error_sensor_noise_s3.jpg",
+    "iou": 0.32,
+    "confidence": 0.29,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 3,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_103",
+    "image_url": "/assets/attacked_ego4d_103_error_motion_blur_s3.jpg",
+    "iou": 0.05,
+    "confidence": 0.14,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (2.0 Hz sine + polynomial trajectory) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_104",
+    "image_url": "/assets/attacked_ego4d_104_error_occlusion_s2.jpg",
+    "iou": 0.33,
+    "confidence": 0.15,
+    "audit_trail": {
+      "insight_source": "error_occlusion",
+      "applied_chain": [
+        "HandOcclusion"
+      ],
+      "severity_level": 2,
+      "justification": "Partial-face misses from hands/straps; occluder patch selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_105",
+    "image_url": "/assets/attacked_ego4d_105_error_motion_blur_s4.jpg",
+    "iou": 0.23,
+    "confidence": 0.09,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 4,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (3.4 Hz sine + polynomial trajectory) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_106",
+    "image_url": "/assets/attacked_ego4d_106_error_fisheye_s3.jpg",
+    "iou": 0.06,
+    "confidence": 0.21,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_107",
+    "image_url": "/assets/attacked_ego4d_107_error_occlusion_s4.jpg",
+    "iou": 0.4,
+    "confidence": 0.38,
+    "audit_trail": {
+      "insight_source": "error_occlusion",
+      "applied_chain": [
+        "HandOcclusion"
+      ],
+      "severity_level": 4,
+      "justification": "Partial-face misses from hands/straps; occluder patch selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_108",
+    "image_url": "/assets/attacked_ego4d_108_error_motion_blur_s5.jpg",
+    "iou": 0.2,
+    "confidence": 0.36,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 5,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (5.0 Hz sine + polynomial trajectory) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_109",
+    "image_url": "/assets/attacked_ego4d_109_error_fisheye_s3.jpg",
+    "iou": 0.06,
+    "confidence": 0.3,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_110",
+    "image_url": "/assets/attacked_ego4d_110_error_sensor_noise_s4.jpg",
+    "iou": 0.08,
+    "confidence": 0.33,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 4,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_111",
+    "image_url": "/assets/attacked_ego4d_111_error_fisheye_s4.jpg",
+    "iou": 0.34,
+    "confidence": 0.13,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 4,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_112",
+    "image_url": "/assets/attacked_ego4d_112_error_motion_blur_s5.jpg",
+    "iou": 0.09,
+    "confidence": 0.37,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 5,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (3.2 Hz sine + polynomial trajectory) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_113",
+    "image_url": "/assets/attacked_ego4d_113_error_sensor_noise_s5.jpg",
+    "iou": 0.35,
+    "confidence": 0.19,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 5,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_114",
+    "image_url": "/assets/attacked_ego4d_114_error_motion_blur_s5.jpg",
+    "iou": 0.41,
+    "confidence": 0.05,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 5,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (2.9 Hz sine + polynomial trajectory) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_115",
+    "image_url": "/assets/attacked_ego4d_115_error_sensor_noise_s4.jpg",
+    "iou": 0.08,
+    "confidence": 0.36,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 4,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_116",
+    "image_url": "/assets/attacked_ego4d_116_error_motion_blur_s2.jpg",
+    "iou": 0.15,
+    "confidence": 0.18,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 2,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (4.7 Hz sine + polynomial trajectory) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_117",
+    "image_url": "/assets/attacked_ego4d_117_error_sensor_noise_s5.jpg",
+    "iou": 0.42,
+    "confidence": 0.08,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 5,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_118",
+    "image_url": "/assets/attacked_ego4d_118_error_motion_blur_s5.jpg",
+    "iou": 0.41,
+    "confidence": 0.15,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 5,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (4.3 Hz sine + polynomial trajectory) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_119",
+    "image_url": "/assets/attacked_ego4d_119_error_fisheye_s2.jpg",
+    "iou": 0.15,
+    "confidence": 0.37,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 2,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_120",
+    "image_url": "/assets/attacked_ego4d_120_error_fisheye_s3.jpg",
+    "iou": 0.22,
+    "confidence": 0.16,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_121",
+    "image_url": "/assets/attacked_ego4d_121_error_motion_blur_s4.jpg",
+    "iou": 0.22,
+    "confidence": 0.06,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 4,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (4.4 Hz sine + polynomial trajectory) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_122",
+    "image_url": "/assets/attacked_ego4d_122_error_sensor_noise_s5.jpg",
+    "iou": 0.45,
+    "confidence": 0.24,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 5,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_123",
+    "image_url": "/assets/attacked_ego4d_123_error_fisheye_s2.jpg",
+    "iou": 0.36,
+    "confidence": 0.2,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 2,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_124",
+    "image_url": "/assets/attacked_ego4d_124_error_occlusion_s3.jpg",
+    "iou": 0.15,
+    "confidence": 0.07,
+    "audit_trail": {
+      "insight_source": "error_occlusion",
+      "applied_chain": [
+        "HandOcclusion"
+      ],
+      "severity_level": 3,
+      "justification": "Partial-face misses from hands/straps; occluder patch selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_125",
+    "image_url": "/assets/attacked_ego4d_125_error_motion_blur_s3.jpg",
+    "iou": 0.21,
+    "confidence": 0.15,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (2.5 Hz sine + polynomial trajectory) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_126",
+    "image_url": "/assets/attacked_ego4d_126_error_fisheye_s4.jpg",
+    "iou": 0.47,
+    "confidence": 0.14,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 4,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_127",
+    "image_url": "/assets/attacked_ego4d_127_error_fisheye_s3.jpg",
+    "iou": 0.28,
+    "confidence": 0.18,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_128",
+    "image_url": "/assets/attacked_ego4d_128_error_fisheye_s3.jpg",
+    "iou": 0.05,
+    "confidence": 0.22,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_129",
+    "image_url": "/assets/attacked_ego4d_129_error_sensor_noise_s5.jpg",
+    "iou": 0.23,
+    "confidence": 0.16,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 5,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_130",
+    "image_url": "/assets/attacked_ego4d_130_error_sensor_noise_s5.jpg",
+    "iou": 0.27,
+    "confidence": 0.13,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 5,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_131",
+    "image_url": "/assets/attacked_ego4d_131_error_fisheye_s3.jpg",
+    "iou": 0.06,
+    "confidence": 0.13,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_132",
+    "image_url": "/assets/attacked_ego4d_132_error_fisheye_s4.jpg",
+    "iou": 0.11,
+    "confidence": 0.06,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 4,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_133",
+    "image_url": "/assets/attacked_ego4d_133_error_motion_blur_s5.jpg",
+    "iou": 0.36,
+    "confidence": 0.12,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 5,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (3.1 Hz sine + polynomial trajectory) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_134",
+    "image_url": "/assets/attacked_ego4d_134_error_occlusion_s4.jpg",
+    "iou": 0.05,
+    "confidence": 0.14,
+    "audit_trail": {
+      "insight_source": "error_occlusion",
+      "applied_chain": [
+        "HandOcclusion"
+      ],
+      "severity_level": 4,
+      "justification": "Partial-face misses from hands/straps; occluder patch selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_135",
+    "image_url": "/assets/attacked_ego4d_135_error_fisheye_s4.jpg",
+    "iou": 0.25,
+    "confidence": 0.26,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 4,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 4."
+    }
+  },
+  {
+    "id": "ego4d_136",
+    "image_url": "/assets/attacked_ego4d_136_error_sensor_noise_s3.jpg",
+    "iou": 0.43,
+    "confidence": 0.18,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 3,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_137",
+    "image_url": "/assets/attacked_ego4d_137_error_fisheye_s5.jpg",
+    "iou": 0.16,
+    "confidence": 0.33,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 5,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_138",
+    "image_url": "/assets/attacked_ego4d_138_error_fisheye_s2.jpg",
+    "iou": 0.22,
+    "confidence": 0.31,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 2,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 2."
+    }
+  },
+  {
+    "id": "ego4d_139",
+    "image_url": "/assets/attacked_ego4d_139_error_fisheye_s5.jpg",
+    "iou": 0.25,
+    "confidence": 0.07,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 5,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_140",
+    "image_url": "/assets/attacked_ego4d_140_error_sensor_noise_s5.jpg",
+    "iou": 0.13,
+    "confidence": 0.09,
+    "audit_trail": {
+      "insight_source": "error_sensor_noise",
+      "applied_chain": [
+        "ToneCurve",
+        "ISONoise"
+      ],
+      "severity_level": 5,
+      "justification": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity 5."
+    }
+  },
+  {
+    "id": "ego4d_141",
+    "image_url": "/assets/attacked_ego4d_141_error_fisheye_s3.jpg",
+    "iou": 0.47,
+    "confidence": 0.09,
+    "audit_trail": {
+      "insight_source": "error_fisheye",
+      "applied_chain": [
+        "OpticalDistortion"
+      ],
+      "severity_level": 3,
+      "justification": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity 3."
+    }
+  },
+  {
+    "id": "ego4d_142",
+    "image_url": "/assets/attacked_ego4d_142_error_motion_blur_s5.jpg",
+    "iou": 0.38,
+    "confidence": 0.05,
+    "audit_trail": {
+      "insight_source": "error_motion_blur",
+      "applied_chain": [
+        "BiomechanicalBlur"
+      ],
+      "severity_level": 5,
+      "justification": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur (2.3 Hz sine + polynomial trajectory) selected at severity 5."
+    }
+  }
+]

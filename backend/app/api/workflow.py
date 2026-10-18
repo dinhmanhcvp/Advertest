@@ -23,6 +23,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from advertest.core.taxonomy import TAG_COLORS, normalize_tag
 from backend.app.db.session import get_db
 from backend.app.db.models import RetrainingJob, AttackPoolItem
 
@@ -35,6 +36,14 @@ REPO_DIR = Path(os.environ.get("YOLOV7_REPO_DIR", "third_party/yolov7_face"))
 VALIDATION_DIR = Path(os.environ.get("VALIDATION_DIR", "data/raw"))
 DEMO_ARTIFACTS = Path("data/demo_artifacts")
 OUTPUT_DIR = Path("data/demo_output")
+
+def _demo_mode() -> bool:
+    """True when ENABLE_DEMO_MODE / DEMO_MODE is set: serve pre-computed artifacts only."""
+    for key in ("ENABLE_DEMO_MODE", "DEMO_MODE"):
+        if os.environ.get(key, "").strip().lower() in ("1", "true", "yes"):
+            return True
+    return False
+
 
 # ── Lazy imports (heavy deps may not be installed) ─────────────
 
@@ -110,7 +119,7 @@ async def analyze_triage(request: AnalyzeRequest, db: Session = Depends(get_db))
     Real path: Yolov7Evaluator.extract_hard_negatives()
     Fallback:  Reads from data/demo_artifacts/audit_trail.json
     """
-    evaluator = _get_evaluator()
+    evaluator = None if _demo_mode() else _get_evaluator()
     dataset_dir = Path(request.dataset_path)
 
     # ── Real Path ──
@@ -178,19 +187,20 @@ async def analyze_triage(request: AnalyzeRequest, db: Session = Depends(get_db))
         worst_samples = []
         for item in audit_data:
             trail = item.get("audit_trail", {})
-            reason = trail.get("insight_source", "Unknown")
+            reason = normalize_tag(trail.get("insight_source", "Unknown"))
             reason_counts[reason] = reason_counts.get(reason, 0) + 1
             worst_samples.append({
                 "id": item.get("id", "unknown"),
                 "image": item.get("image_url", ""),
-                "iou": 0.10,
+                "iou": item.get("iou", 0.10),
+                "confidence": item.get("confidence", 0.0),
                 "reason": reason,
             })
+        worst_samples.sort(key=lambda w: w["iou"])
 
-        colors = ["#ef4444", "#3b82f6", "#8b5cf6", "#f59e0b", "#10b981"]
         failure_distribution = [
-            {"name": name, "value": count, "color": colors[i % len(colors)]}
-            for i, (name, count) in enumerate(reason_counts.items())
+            {"name": name, "value": count, "color": TAG_COLORS.get(name, "#64748b")}
+            for name, count in reason_counts.items()
         ]
 
         return {
@@ -222,8 +232,8 @@ async def generate_attacks(request: AttackRequest, db: Session = Depends(get_db)
     import cv2
     import numpy as np
 
-    engine = _get_attack_engine()
-    router_obj = _get_insight_router()
+    engine = None if _demo_mode() else _get_attack_engine()
+    router_obj = None if _demo_mode() else _get_insight_router()
     dataset_dir = Path(VALIDATION_DIR)
 
     # ── Real Path ──
@@ -270,19 +280,23 @@ async def generate_attacks(request: AttackRequest, db: Session = Depends(get_db)
             cv2.imwrite(str(out_path), ar.image)
 
             # Persist to database
-            pool_item = AttackPoolItem(
-                image_uri=str(out_path),
-                insight_source=result.selected_tag,
-                applied_chain=[{"type": result.selected_tag, "severity": result.severity}],
-                severity_level=float(result.severity),
+            canon_tag = normalize_tag(result.selected_tag)
+            pool_item = (
+                db.query(AttackPoolItem).filter(AttackPoolItem.image_uri == str(out_path)).first()
             )
-            db.add(pool_item)
+            if pool_item is None:
+                pool_item = AttackPoolItem(image_uri=str(out_path))
+                db.add(pool_item)
+            pool_item.insight_source = canon_tag
+            pool_item.applied_chain = [{"type": canon_tag, "severity": result.severity}]
+            pool_item.severity_level = float(result.severity)
+            db.flush()
 
             audit_trail.append({
                 "id": str(pool_item.id),
                 "image_url": f"/assets/{out_filename}",
                 "audit_trail": {
-                    "insight_source": result.selected_tag,
+                    "insight_source": canon_tag,
                     "applied_chain": [result.selected_tag],
                     "severity_level": result.severity,
                     "justification": f"InsightRouter selected '{result.selected_tag}' at severity {result.severity} "
@@ -294,8 +308,9 @@ async def generate_attacks(request: AttackRequest, db: Session = Depends(get_db)
         db.commit()
 
         # Also persist audit trail to JSON for demo mode
-        audit_json_path = DEMO_ARTIFACTS / "audit_trail.json"
-        DEMO_ARTIFACTS.mkdir(parents=True, exist_ok=True)
+        # Live output goes to its own file; pre-computed demo artifacts are never overwritten.
+        audit_json_path = OUTPUT_DIR / "audit_trail.live.json"
+        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
         with open(audit_json_path, "w") as f:
             json.dump(audit_trail, f, indent=2)
 
@@ -335,7 +350,7 @@ async def retrain_and_evaluate(
     corrupted_val = Path(request.corrupted_val_dir)
 
     # ── Real Path ──
-    if old_weights.exists() and new_weights.exists() and clean_val.exists() and corrupted_val.exists():
+    if not _demo_mode() and old_weights.exists() and new_weights.exists() and clean_val.exists() and corrupted_val.exists():
         evaluator = _get_robustness_evaluator(str(old_weights), str(new_weights))
         if evaluator:
             logger.info("Running REAL blind evaluation gate...")
@@ -375,8 +390,8 @@ async def retrain_and_evaluate(
                 }]
 
                 # Persist proof of cure JSON
-                DEMO_ARTIFACTS.mkdir(parents=True, exist_ok=True)
-                with open(DEMO_ARTIFACTS / "proof_of_cure.json", "w") as f:
+                OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+                with open(OUTPUT_DIR / "proof_of_cure.live.json", "w") as f:
                     json.dump(proof_of_cure, f, indent=2)
 
                 return {

@@ -6,9 +6,17 @@ entire videos into memory, and managing temporal caching.
 
 from __future__ import annotations
 
+import calendar
+import hashlib
 import logging
-from collections.abc import Generator
+import os
+import shutil
+import time
+import urllib.error
+import urllib.request
+from collections.abc import Callable, Generator
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse
 from typing import Any
 
 import numpy as np
@@ -24,6 +32,10 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
+class PresignedURLExpired(Exception):
+    """The presigned URL's TTL elapsed (or its signature was rejected)."""
+
+
 class DataConnector:
     """Handles data ingestion and large video frame streaming."""
 
@@ -32,21 +44,100 @@ class DataConnector:
         self.cache_dir = Path(self.settings.data_root) / "egocentric_cache"
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
-    def pull_video_batch(self, urls: list[str], batch_size: int = 5) -> list[str]:
-        """Download videos via URLs and return local paths.
-        
-        In production, this would use boto3/requests and handle concurrency.
+    def pull_video_batch(
+        self,
+        urls: list[str],
+        batch_size: int = 5,
+        *,
+        refresh_url: Callable[[str], str] | None = None,
+        max_retries: int = 3,
+        timeout_s: float = 30.0,
+    ) -> list[str]:
+        """Download videos from Data Block presigned URLs into the temporary cache.
+
+        * Expired URLs are detected up front (``X-Amz-Date``+``X-Amz-Expires`` or ``Expires``)
+          and re-signed through ``refresh_url`` when given; HTTP 401/403 mid-flight does the same.
+        * Timeouts and 5xx responses are retried with exponential backoff.
+        * Data is written to a ``.part`` file and renamed atomically, so a failed transfer
+          never leaves partial raw data behind.
+        Remove raw files with :meth:`clear_cache` / :meth:`purge_expired` once frames are extracted.
         """
-        # Simulated download
-        logger.info(f"Downloading batch of {len(urls)} videos...")
-        paths = []
-        for i, url in enumerate(urls[:batch_size]):
-            # Placeholder logic
-            safe_name = f"video_{i}.mp4"
-            local_path = self.cache_dir / safe_name
-            paths.append(str(local_path))
-            
+        paths: list[str] = []
+        for url in urls[:batch_size]:
+            key = hashlib.sha256(url.split("?")[0].encode()).hexdigest()[:16]
+            local = self.cache_dir / f"video_{key}.mp4"
+            paths.append(str(self._download(url, local, refresh_url, max_retries, timeout_s)))
+        logger.info("Downloaded %d video(s) into temporary cache", len(paths))
         return paths
+
+    @staticmethod
+    def url_seconds_remaining(url: str, now: float | None = None) -> float | None:
+        """Seconds until a presigned URL expires, or ``None`` if it carries no expiry."""
+        q = parse_qs(urlparse(url).query)
+        now = time.time() if now is None else now
+        try:
+            if "X-Amz-Date" in q and "X-Amz-Expires" in q:
+                issued = calendar.timegm(time.strptime(q["X-Amz-Date"][0], "%Y%m%dT%H%M%SZ"))
+                return issued + int(q["X-Amz-Expires"][0]) - now
+            if "Expires" in q:
+                return int(q["Expires"][0]) - now
+        except (ValueError, IndexError):
+            return None
+        return None
+
+    def _download(self, url, local: Path, refresh_url, max_retries: int, timeout_s: float) -> Path:
+        refreshed = False
+        attempt = 0
+        while True:
+            remaining = self.url_seconds_remaining(url)
+            if remaining is not None and remaining <= 0:
+                if refresh_url and not refreshed:
+                    url, refreshed = refresh_url(url), True
+                    continue
+                raise PresignedURLExpired(f"presigned URL expired {-remaining:.0f}s ago")
+            part = local.with_suffix(".part")
+            try:
+                with urllib.request.urlopen(url, timeout=timeout_s) as resp, open(part, "wb") as out:
+                    shutil.copyfileobj(resp, out, length=1 << 20)
+                os.replace(part, local)
+                return local
+            except urllib.error.HTTPError as exc:
+                part.unlink(missing_ok=True)
+                if exc.code in (401, 403):
+                    if refresh_url and not refreshed:
+                        url, refreshed = refresh_url(url), True
+                        continue
+                    raise PresignedURLExpired(f"HTTP {exc.code}: presigned URL rejected") from exc
+                if exc.code < 500:
+                    raise
+                error: Exception = exc
+            except (urllib.error.URLError, TimeoutError, OSError) as exc:
+                part.unlink(missing_ok=True)
+                error = exc
+            if attempt >= max_retries:
+                raise error
+            logger.warning("Download attempt %d failed: %s", attempt + 1, error)
+            time.sleep(min(2**attempt * 0.5, 8.0))
+            attempt += 1
+
+    def purge_expired(self, max_age_s: float = 3600.0) -> int:
+        """Delete cached raw files older than ``max_age_s`` (PII retention limit)."""
+        removed = 0
+        cutoff = time.time() - max_age_s
+        for file in [*self.cache_dir.glob("*.mp4"), *self.cache_dir.glob("*.part")]:
+            try:
+                if file.stat().st_mtime < cutoff:
+                    file.unlink()
+                    removed += 1
+            except OSError as e:
+                logger.warning(f"Failed to purge {file}: {e}")
+        return removed
+
+    def __enter__(self) -> "DataConnector":
+        return self
+
+    def __exit__(self, *exc: object) -> None:
+        self.clear_cache()
 
     def stream_frames(
         self, video_path: str, max_frames: int | None = None
@@ -101,7 +192,7 @@ class DataConnector:
 
     def clear_cache(self) -> None:
         """Remove temporary video files."""
-        for file in self.cache_dir.glob("*.mp4"):
+        for file in [*self.cache_dir.glob("*.mp4"), *self.cache_dir.glob("*.part")]:
             try:
                 file.unlink()
             except OSError as e:

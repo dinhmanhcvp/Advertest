@@ -125,3 +125,7 @@ notebooks/*.zip
 notebooks/.ipynb_checkpoints/
 notebooks/kaggle-round2-fleet.ipynb
 notebooks/ziyfWn3x
+
+# Keep pre-computed demo artifacts tracked
+!/data/demo_artifacts/
+!/data/demo_artifacts/*.json
