@@ -55,6 +55,8 @@ export interface CureCase {
   condition: string;
   failure_tag: FailureTag;
   delta: string;
+  /** Optional real frame (data URI, letter-boxed to the 160x120 reference frame) from the GPU worker. */
+  image?: string;
   model_v1: ModelResult;
   model_v2: ModelResult;
 }

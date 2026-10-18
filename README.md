@@ -65,13 +65,18 @@ Without Docker: `ENABLE_DEMO_MODE=True uvicorn backend.app.main:app --port 8000`
 - The GPU stage (triage, synthesis, retrain, blind gate) is packaged in `colab/colab_yolov7_advertest.ipynb`. Model V2 is accepted only if corrupted mAP improves and base mAP drops by ≤ 1%.
 - Data Block ingestion (`src/services/data_connector.py`) handles presigned-URL expiry (re-sign once), retries with backoff, and purges raw files from the temporary cache.
 
-## Production Mode (GPU Enabled)
+## Real Pipeline — zero local disk (Colab GPU worker)
 
-To run the full adversarial engine and actually mutate data on the fly, you will need a CUDA-enabled GPU and a Ray Cluster configured.
+The laptop never stores datasets, weights, PyTorch images or generated binaries (tracked repo ≈ 3.4 MB; CI enforces < 5 MB).
+All heavy work is one script, [`colab/colab_zero_disk_pipeline.py`](colab/colab_zero_disk_pipeline.py) (also as `.ipynb`):
 
-1. Set `ENABLE_DEMO_MODE=False` in your `.env` file.
-2. Ensure you have your `yolov7-tiny-face.pt` weights placed in the `weights/` directory.
-3. Deploy the API via the optimized `Dockerfile.api` (Railway/AWS ECS compatible).
-4. Spin up the orchestrator to listen for RabbitMQ/Kafka streaming inputs.
+1. shallow-clone `derronqi/yolov7-face`, fetch the official tiny-face weights **into the Colab VM**;
+2. stream a micro-subset of WIDER FACE (Hugging Face streaming) and, if you provide `EGO4D_PRESIGNED_URLS`, decode Ego4D clips straight from presigned URLs in RAM;
+3. baseline inference → triage (IoU < 0.5 or conf < 0.4) → measured failure distribution;
+4. constraint-driven attacks (radial distortion, biomechanical IMU blur, sensor degradation, occlusion; exclusion matrix; bbox/landmark integrity) with a data-grounded `audit_trail` per sample;
+5. fine-tune with the repo's trainer (clean replay + targeted adversarial samples), then the **blind gate** on held-out images: accept V2 only if base mAP drops ≤ 1% and corrupted mAP gains ≥ 5 points;
+6. export < 1 MB of JSON + thumbnails (`advertest_artifacts.zip`). Unzip into `data/demo_artifacts/` and the API/UI serve those *measured* results.
+
+Notes: WIDER FACE has boxes only (landmarks come from the model and become pseudo-labels). Ego4D needs a licence, so without URLs the target domain is WIDER passed through the attack engine; the report's `provenance.target_domain` says which was used. The pure logic (AP, triage, geometry, tracker, gate) is unit-tested offline in `tests/test_colab_pipeline.py`.
 
 *Refer to the `docs/beautiful_architecture.html` for a comprehensive system diagram and handover report.*

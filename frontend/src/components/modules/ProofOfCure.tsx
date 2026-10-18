@@ -27,7 +27,7 @@ function Scene({ c, side }: { c: CureCase; side: "v1" | "v2" }) {
   const [x, y, w, h] = m.bbox;
   const color = side === "v1" ? "#ef4444" : "#10b981";
   return (
-    <CVFrame box={face} {...effects(c.failure_tag)} hud={`${c.case_id} · ${c.condition.toUpperCase()}`} className="h-full w-full">
+    <CVFrame box={face} {...(c.image ? {} : effects(c.failure_tag))} imageUrl={c.image} hud={`${c.case_id} · ${c.condition.toUpperCase()}`} className="h-full w-full">
       <g>
         <rect x={x} y={y} width={w} height={h} fill="none" stroke={color} strokeWidth="1" strokeDasharray={side === "v1" ? "3 2" : undefined} />
         <text x={x} y={y - 1.8} fill={color} fontSize="3.4" fontFamily="var(--font-jb-mono), monospace">
