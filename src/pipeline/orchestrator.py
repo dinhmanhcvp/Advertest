@@ -11,10 +11,10 @@ from typing import Any
 
 import numpy as np
 
+from src.agents.auto_triage import AutoTriageAgent
 from src.config import get_settings
 from src.core.egocentric_types import ErrorCase
 from src.core.types import Box, Sample
-from src.agents.auto_triage import AutoTriageAgent
 from src.pipeline.attack_pool_factory import AttackPoolFactory
 from src.pipeline.data_packager import DataPackager
 from src.pipeline.error_extractor import ErrorExtractor
@@ -40,24 +40,24 @@ class Orchestrator:
         """Execute the complete E2E pipeline (simulation)."""
         logger.info("Starting Full Pipeline Run")
         results = {}
-        
+
         # Stage 1: Error Extraction
         logger.info("--- Stage 1: Error Extraction ---")
         errors = self._run_extraction(run_config)
         results["extracted_errors"] = len(errors)
-        
+
         if not errors:
             logger.warning("No errors extracted. Pipeline stopping.")
             return results
-            
+
         # Stage 1.5: Push to Label Studio for classification
         logger.info("--- Label Studio: Pushing Error Tasks ---")
         project_id = self.ls_manager.create_project("Error Analysis", "pii")
         self.ls_manager.push_error_tasks(project_id, errors)
-        
+
         # (In reality, we would pause here and wait for human labeling.
         # For demonstration, we proceed assuming classification is done).
-        
+
         # Stage 2: Attack Pool Generation
         logger.info("--- Stage 2: Attack Pool Generation ---")
         # We group by the automatically classified error_category
@@ -68,24 +68,24 @@ class Orchestrator:
             cat_ids = {e.sample_id for e in errors if e.error_category == cat}
             sources = self._resolve_source_samples(cat_ids, run_config)
             pool = self.factory.generate_spatial_pool(cat, source_samples=sources)
-            
+
             # Auto-Triage: VLM Agent filters out corrupted samples
             approved_pool, rejected_entries = self.triage_agent.triage_pool(pool)
-            
+
             # Auto-approve the remaining ones for pipeline automation testing
             from dataclasses import replace
             if len(approved_pool.entries) > 0:
                 approved_pool = replace(approved_pool, status="approved")
                 pools.append(approved_pool)
-            
+
         results["generated_pools"] = len(pools)
-        
+
         # Stage 3: Label Studio Review Push
         logger.info("--- Stage 3: HITL Review Push ---")
         review_project_id = self.ls_manager.create_project("Pool Review", "pii")
         for pool in pools:
             self.ls_manager.push_review_tasks(review_project_id, pool)
-            
+
         # Stage 4: Package and Export
         logger.info("--- Stage 4: Data Packaging ---")
         packaged_paths = []
@@ -95,9 +95,9 @@ class Orchestrator:
                 self.packager.generate_data_card(pool, path)
                 self.packager.export_retrain_ready(path, format="coco")
                 packaged_paths.append(path)
-                
+
         results["packaged_datasets"] = packaged_paths
-        
+
         logger.info("Full Pipeline Run Complete")
         return results
 

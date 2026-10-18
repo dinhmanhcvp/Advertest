@@ -6,8 +6,6 @@ and mocks a successful HTTP 201 push to a dummy project.
 
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from src.core.types import Box
 from src.services.label_studio_manager import LabelStudioManager
 
@@ -18,7 +16,7 @@ def convert_yolo_to_ls_format(box: Box, img_width: int, img_height: int) -> dict
     y_pct = (box.y1 / img_height) * 100
     w_pct = ((box.x2 - box.x1) / img_width) * 100
     h_pct = ((box.y2 - box.y1) / img_height) * 100
-    
+
     return {
         "original_width": img_width,
         "original_height": img_height,
@@ -37,12 +35,12 @@ def test_format_converter_logic():
     """Validate that coordinates are properly converted into Label Studio's percentage-based system."""
     img_width = 1280
     img_height = 720
-    
+
     # YOLO output (absolute pixels)
     box = Box(x1=320.0, y1=180.0, x2=960.0, y2=540.0, label="Face")
-    
+
     ls_json = convert_yolo_to_ls_format(box, img_width, img_height)
-    
+
     val = ls_json["value"]
     # x = 320 / 1280 = 25%
     # y = 180 / 720 = 25%
@@ -61,13 +59,13 @@ def test_label_studio_api_push(mock_client_cls):
     # Setup mock
     mock_client = MagicMock()
     mock_client_cls.return_value = mock_client
-    
+
     mock_project = MagicMock()
     mock_client.get_project.return_value = mock_project
     mock_project.import_tasks.return_value = {"task_count": 1, "status": 201}
-    
-    manager = LabelStudioManager()
-    
+
+    LabelStudioManager()
+
     # Format to push
     ls_task = {
         "data": {"image": "http://dummy/image.jpg"},
@@ -77,10 +75,10 @@ def test_label_studio_api_push(mock_client_cls):
             ]
         }]
     }
-    
+
     # Push
     response = mock_project.import_tasks([ls_task])
-    
+
     assert response["status"] == 201
     assert response["task_count"] == 1
     mock_project.import_tasks.assert_called_once()

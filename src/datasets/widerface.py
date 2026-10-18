@@ -2,15 +2,14 @@
 
 from __future__ import annotations
 
-import os
 from collections.abc import Generator
 from pathlib import Path
 from typing import ClassVar
 
+from src.config import get_settings
 from src.core.types import Box, Sample, Task
 from src.datasets import DATASETS
 from src.datasets.base import BaseDataset
-from src.config import get_settings
 
 
 @DATASETS.register
@@ -39,25 +38,25 @@ class WIDERFaceDataset(BaseDataset):
             return []
 
         samples = []
-        with open(annot_file, "r") as f:
+        with open(annot_file) as f:
             lines = f.readlines()
-            
+
         i = 0
         while i < len(lines):
             img_path = lines[i].strip()
             i += 1
-            
+
             if i >= len(lines):
                 break
-                
+
             num_boxes_str = lines[i].strip()
             try:
                 num_boxes = int(num_boxes_str)
             except ValueError:
                 num_boxes = 0
-                
+
             i += 1
-            
+
             boxes = []
             if num_boxes == 0:
                 # WIDERFACE convention: 0 boxes is sometimes followed by a single line of zeros
@@ -76,31 +75,31 @@ class WIDERFaceDataset(BaseDataset):
                         )
                     )
                     i += 1
-            
+
             samples.append((img_path, boxes))
-            
+
         self._samples_cache = samples
         return samples
 
     def __iter__(self) -> Generator[Sample, None, None]:
         samples = self._load_annotations()
-        
+
         img_dir = self.data_root / f"WIDER_{self.split}" / "images"
-        
+
         for img_rel_path, boxes in samples:
             img_path = img_dir / img_rel_path
             if not img_path.exists():
                 continue
-                
+
             import numpy as np
             from PIL import Image
-            
+
             try:
                 img = Image.open(img_path).convert("RGB")
                 img_array = np.array(img, dtype=np.float32) / 255.0
             except Exception:
                 continue
-                
+
             yield Sample(
                 sample_id=str(Path(img_rel_path).with_suffix('')),
                 image=img_array,

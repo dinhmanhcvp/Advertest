@@ -29,18 +29,18 @@ class ErrorExtractor:
     ) -> list[ErrorCase]:
         """Extract spatial errors for PII detection."""
         errors: list[ErrorCase] = []
-        
+
         sample_map = {s.sample_id: s for s in samples}
-        
+
         for pred in predictions:
             sample = sample_map.get(pred.sample_id)
             if not sample:
                 continue
-                
+
             # Naive comparison: if a prediction has low IoU with any GT,
             # or if a GT is completely missed, it's a hard negative.
             # For brevity, this is a simplified simulation of the logic.
-            
+
             for box in pred.boxes:
                 # Find best matching GT
                 best_iou = 0.0
@@ -50,7 +50,7 @@ class ErrorExtractor:
                     if iou > best_iou:
                         best_iou = iou
                         best_gt_label = gt.label
-                        
+
                 if best_iou < self.iou_threshold:
                     error = ErrorCase(
                         case_id=f"err-pii-{pred.sample_id}-{len(errors)}",
@@ -75,7 +75,7 @@ class ErrorExtractor:
                         severity_estimate=2,  # Needs retraining
                     )
                     errors.append(error)
-                    
+
                 # NEW METRIC: High Confidence False Positive (Background Clutter)
                 # Confidence > 0.8 but IoU is exactly 0.0
                 elif box.score > 0.8 and best_iou == 0.0:
@@ -97,11 +97,11 @@ class ErrorExtractor:
         self, predictions: list[Any], gt_boundaries: list[TemporalBoundary]
     ) -> list[ErrorCase]:
         """Extract temporal errors for Video Semantic Labeling.
-        
+
         In a real implementation, predictions would be Action segments.
         """
         errors: list[ErrorCase] = []
-        
+
         # NEW METRIC: Temporal Consistency Error (Flickering)
         # If the model predicts an action, then misses it, then predicts it again.
         # This simulates comparing prediction boundary continuity against ground truth.
@@ -123,20 +123,20 @@ class ErrorExtractor:
                             severity_estimate=4,
                         )
                     )
-        
+
         return errors
 
     def classify_pii_error(self, sample: Sample) -> ErrorCategory:
         """Auto-classify the error cause based on image heuristics.
-        
+
         Falls back to 'pii_blur' if undetermined (to be corrected in Label Studio).
         """
         # A real implementation would run Laplacian variance for blur,
         # brightness histograms for exposure, or metadata analysis for fisheye.
-        
+
         if sample.meta.get("lens_type") == "fisheye":
             return "pii_fisheye"
-            
+
         # Default fallback
         return "pii_blur"
 

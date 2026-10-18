@@ -80,7 +80,7 @@ class LabelStudioManager:
             return "dummy-project-id"
 
         label_config = PII_LABEL_CONFIG if project_type == "pii" else VIDEO_LABEL_CONFIG
-        
+
         project = self.client.projects.create(
             title=name,
             label_config=label_config,
@@ -104,13 +104,13 @@ class LabelStudioManager:
                 data["image"] = f"/data/local-files/?d={error.sample_id}.jpg"
             else:
                 data["video"] = f"/data/local-files/?d={error.sample_id}.mp4"
-            
+
             data["case_id"] = error.case_id
             data["predicted_label"] = error.predicted_label
             data["ground_truth"] = error.ground_truth_label
-            
+
             tasks.append(data)
-            
+
         self.client.tasks.create_many(project_id=int(project_id), request=tasks)
 
     def push_review_tasks(self, project_id: str, pool: AttackPool) -> None:
@@ -131,7 +131,7 @@ class LabelStudioManager:
             else:
                 data["video"] = f"/data/local-files/?d={entry.entry_id}.mp4"
             tasks.append(data)
-            
+
         self.client.tasks.create_many(project_id=int(project_id), request=tasks)
 
     def get_classified_errors(self, project_id: str) -> list[dict[str, Any]]:
@@ -139,7 +139,7 @@ class LabelStudioManager:
         if self.client is None:
             logger.info(f"[Dummy] Fetched classifications from project {project_id}")
             return []
-            
+
         # Simplified: fetch tasks with annotations.
         # In a real setup, we'd parse the task JSON and extract the chosen error_category.
         tasks = self.client.tasks.list(project_id=int(project_id))

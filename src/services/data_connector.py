@@ -16,8 +16,8 @@ import urllib.error
 import urllib.request
 from collections.abc import Callable, Generator
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
 from typing import Any
+from urllib.parse import parse_qs, urlparse
 
 import numpy as np
 
@@ -133,7 +133,7 @@ class DataConnector:
                 logger.warning(f"Failed to purge {file}: {e}")
         return removed
 
-    def __enter__(self) -> "DataConnector":
+    def __enter__(self) -> DataConnector:
         return self
 
     def __exit__(self, *exc: object) -> None:
@@ -143,13 +143,13 @@ class DataConnector:
         self, video_path: str, max_frames: int | None = None
     ) -> Generator[np.ndarray, None, None]:
         """Generator that yields frames from a video as float32 numpy arrays.
-        
+
         Using PyAV to decode frames efficiently without loading the whole
         file into RAM.
         """
         if av is None:
             raise RuntimeError("Install 'av' (PyAV) for video streaming")
-            
+
         path = Path(video_path)
         if not path.exists():
             # For demonstration, yield a dummy frame if file doesn't exist
@@ -158,27 +158,27 @@ class DataConnector:
 
         container = av.open(str(path))
         stream = container.streams.video[0]
-        
+
         count = 0
         for frame in container.decode(stream):
             if max_frames is not None and count >= max_frames:
                 break
-                
+
             # Convert PyAV VideoFrame to numpy array (RGB)
             img = frame.to_ndarray(format='rgb24')
-            
+
             # Convert to standard AdverTest format: float32 [0, 1]
             img_float = img.astype(np.float32) / 255.0
             yield img_float
-            
+
             count += 1
-            
+
         container.close()
 
     def batch_process(self, items: list[Any], fn: Any, max_workers: int = 4) -> list[Any]:
         """Process items in parallel with memory management."""
         import concurrent.futures
-        
+
         results = []
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = [executor.submit(fn, item) for item in items]
@@ -187,7 +187,7 @@ class DataConnector:
                     results.append(future.result())
                 except Exception as e:
                     logger.error(f"Batch processing error: {e}")
-                    
+
         return results
 
     def clear_cache(self) -> None:

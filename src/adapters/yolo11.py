@@ -12,9 +12,9 @@ import numpy as np
 from src.adapters import MODELS
 from src.adapters.base import ModelAdapter
 from src.core.hashing import file_digest
+from src.core.memory import trim_memory as _trim_memory
 from src.core.objectives import AttackObjective, SurrogateCapability
 from src.core.types import Box, DetectionPrediction, ModelInfo, Sample
-from src.core.memory import trim_memory as _trim_memory
 
 COCO_MAP = {0: "Pedestrian", 1: "Cyclist", 2: "Car"}
 COCO_REVERSE = {label: class_id for class_id, label in COCO_MAP.items()}
@@ -91,7 +91,6 @@ class Yolo11Adapter(ModelAdapter):
     def predict(self, samples: Sequence[Sample]) -> list[DetectionPrediction]:
         backend = self._load()
         predictions: list[DetectionPrediction] = []
-        import gc
         try:
             import torch
             torch.set_num_threads(1)

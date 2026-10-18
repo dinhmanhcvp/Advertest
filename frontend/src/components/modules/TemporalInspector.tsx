@@ -4,17 +4,13 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Crosshair, ScanLine } from "lucide-react";
 import CVFrame from "@/components/ui/CVFrame";
 import { Badge, Card, cx, Eyebrow, SectionTitle, Sparkline, SPRING } from "@/components/ui/primitives";
+import { predictBox } from "@/lib/geometry";
 import { landmarksFor } from "@/lib/taxonomy";
 import type { Box, TrackFrame, WorkspaceData } from "@/lib/types";
 
 const CONF_THRESHOLD = 0.4;
 const TRACKED_CONF = 0.78;
 const TRACK_ID = "#04";
-
-/** Constant-velocity prediction step (the Kalman time-update): x̂ₜ = xₜ₋₁ + (xₜ₋₁ − xₜ₋₂). */
-export function predictBox(prev2: Box, prev1: Box): Box {
-  return prev1.map((v, i) => v + (v - prev2[i])) as Box;
-}
 
 const center = (b: Box): [number, number] => [b[0] + b[2] / 2, b[1] + b[3] / 2];
 

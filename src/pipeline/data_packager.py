@@ -34,10 +34,10 @@ class DataPackager:
         dataset_name = f"Dataset_{version}_{pool.error_category}"
         ds_path = self.output_dir / dataset_name
         ds_path.mkdir(exist_ok=True)
-        
+
         # In a real implementation, this would copy/move the physical images
         # or videos into the ds_path and write a COCO or ActivityNet JSON.
-        
+
         manifest = {
             "dataset_name": dataset_name,
             "created_at": datetime.now().isoformat(),
@@ -52,30 +52,30 @@ class DataPackager:
                 for entry in pool.entries
             ]
         }
-        
+
         manifest_path = ds_path / "manifest.json"
         with open(manifest_path, "w", encoding="utf-8") as f:
             json.dump(manifest, f, indent=2)
-            
+
         logger.info(f"Packaged {pool.size} items to {ds_path}")
         return str(ds_path)
 
     def generate_data_card(self, pool: AttackPool, dataset_path: str) -> str:
         """Generate a Markdown Data Card describing the adversarial dataset."""
-        
+
         # Analyze distribution
         attack_counts: dict[str, int] = {}
         severity_counts: dict[int, int] = {}
-        
+
         for entry in pool.entries:
             attack_counts[entry.attack_name] = attack_counts.get(entry.attack_name, 0) + 1
             severity_counts[entry.severity] = severity_counts.get(entry.severity, 0) + 1
-            
+
         attack_stats = "\n".join([f"- **{k}**: {v}" for k, v in attack_counts.items()])
         severity_stats = "\n".join([f"- **Level {k}**: {v}" for k, v in sorted(severity_counts.items())])
-        
+
         card = f"""# Data Card: Adversarial Retraining Pool
-        
+
 ## Overview
 - **Source Error Category**: {pool.error_category}
 - **Dataset Path**: `{dataset_path}`
@@ -97,7 +97,7 @@ All samples have been reviewed and approved via the Label Studio HITL gate.
         card_path = Path(dataset_path) / "DATA_CARD.md"
         with open(card_path, "w", encoding="utf-8") as f:
             f.write(card)
-            
+
         return card
 
     def create_gold_standard(self, pool: AttackPool, split_ratio: float = 0.1) -> str:
@@ -105,7 +105,7 @@ All samples have been reviewed and approved via the Label Studio HITL gate.
         # Simple simulation: take the last N items as the test set
         test_size = max(1, int(pool.size * split_ratio))
         test_entries = pool.entries[-test_size:]
-        
+
         logger.info(f"Created Gold Standard eval set with {len(test_entries)} items.")
         return f"gold_standard_eval_{len(test_entries)}_items"
 

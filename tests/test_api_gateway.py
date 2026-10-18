@@ -6,11 +6,12 @@ Covers:
 - Workflow endpoints (triage/analyze, workflow/attack, workflow/retrain)
 """
 
+import os
+import sys
+
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient, ASGITransport
-import sys
-import os
+from httpx import ASGITransport, AsyncClient
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 

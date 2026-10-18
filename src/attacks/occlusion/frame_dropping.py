@@ -21,7 +21,7 @@ from src.core.types import AttackGroup, CostClass, Sample
 
 class FrameDroppingParams(AttackParams):
     """Configuration for frame dropping.
-    
+
     ``drop_rate_per_severity`` controls the fraction of frames dropped.
     """
 
@@ -53,7 +53,7 @@ class FrameDropping(BaseAttack):
             return sample
 
         dropped = video_frames.copy()
-        
+
         # Decide which frames to drop (excluding the first frame to ensure we have a fallback for freeze)
         drop_mask = ctx.rng.random(num_frames) < drop_rate
         drop_mask[0] = False  # Never drop the first frame

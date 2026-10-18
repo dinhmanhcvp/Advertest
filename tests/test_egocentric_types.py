@@ -1,6 +1,7 @@
 """Tests for the Egocentric Engine domain types."""
 
 import numpy as np
+
 from src.core.egocentric_types import (
     ErrorCase,
     PIIAnnotation,
@@ -8,19 +9,20 @@ from src.core.egocentric_types import (
     VideoSample,
 )
 
+
 def test_temporal_boundary_overlap():
     b1 = TemporalBoundary(start_frame=10, end_frame=20, action_label="run")
     b2 = TemporalBoundary(start_frame=15, end_frame=25, action_label="jump")
     b3 = TemporalBoundary(start_frame=25, end_frame=30, action_label="stop")
-    
+
     assert b1.overlaps(b2)
     assert not b1.overlaps(b3)
     assert b1.duration_frames == 10
-    
+
 def test_temporal_iou():
     b1 = TemporalBoundary(start_frame=10, end_frame=20, action_label="run")
     b2 = TemporalBoundary(start_frame=15, end_frame=25, action_label="jump")
-    
+
     # intersection: 15-20 (5 frames)
     # union: 10-25 (15 frames)
     # IoU = 5 / 15 = 0.333...
@@ -40,7 +42,7 @@ def test_video_sample_properties():
         frames=frames,
         fps=30.0
     )
-    
+
     assert sample.num_frames == 10
     assert sample.height == 720
     assert sample.width == 1280

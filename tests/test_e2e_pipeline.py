@@ -4,7 +4,7 @@ Executes the pipeline sequentially: Inference -> Error Extractor -> Attack Facto
 Mocks external endpoints (Label Studio).
 """
 
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
@@ -19,18 +19,18 @@ def mock_micro_batch():
     """Generate 2 dummy images mimicking Ego4D constraints."""
     img1 = np.ones((720, 1280, 3), dtype=np.float32)
     img2 = np.zeros((720, 1280, 3), dtype=np.float32)
-    
+
     samples = [
         Sample(sample_id="ego4d_001", image=img1, boxes=(Box(10, 10, 50, 50, "Face"),)),
         Sample(sample_id="ego4d_002", image=img2, boxes=(Box(100, 100, 150, 150, "Face"),))
     ]
-    
+
     # Mock inference output with low confidence/IoU to trigger Error Extractor
     preds = [
         DetectionPrediction(sample_id="ego4d_001", boxes=(Box(10, 10, 50, 50, "Face", score=0.2),), latency_ms=10.0),
         DetectionPrediction(sample_id="ego4d_002", boxes=(Box(200, 200, 250, 250, "Face", score=0.9),), latency_ms=10.0)
     ]
-    
+
     return samples, preds
 
 
@@ -43,20 +43,20 @@ def mock_micro_batch():
 def test_e2e_pipeline_sanity(mock_package, mock_card, mock_export, mock_ls_client, mock_vlm_conf, mock_micro_batch):
     """Run E2E pipeline without throwing any exceptions."""
     samples, preds = mock_micro_batch
-    
+
     # Mock Label Studio client to avoid HTTP errors
     mock_project = MagicMock()
     mock_project.id = 99
     mock_ls_client().get_project.return_value = mock_project
     mock_ls_client().projects.create.return_value = mock_project
-    
+
     # Mock packager to return a dummy path
     mock_package.return_value = "/tmp/mock_dataset_v1.0"
-    
+
     from src.config import get_settings
     get_settings.cache_clear()  # pick up the patched token
     orchestrator = Orchestrator()
-    
+
     # Override orchestrator's _run_extraction to use our micro batch
     def _mock_run_extraction(config):
         errors = orchestrator.error_extractor.extract_pii_errors(preds, samples)
@@ -65,16 +65,16 @@ def test_e2e_pipeline_sanity(mock_package, mock_card, mock_export, mock_ls_clien
             ErrorCase(case_id=f"err-{i}", sample_id=e.sample_id, error_category=e.error_category)
             for i, e in enumerate(errors)
         ]
-        
+
     orchestrator._run_extraction = _mock_run_extraction
-    
+
     # Run the pipeline
     run_config = {"batch_size": 2}
     try:
         results = orchestrator.run_full_pipeline(run_config)
     except Exception as e:
         pytest.fail(f"Pipeline threw an unexpected exception: {e}")
-        
+
     # Assertions
     assert results is not None
     assert "extracted_errors" in results
@@ -82,7 +82,7 @@ def test_e2e_pipeline_sanity(mock_package, mock_card, mock_export, mock_ls_clien
     assert "generated_pools" in results
     assert "packaged_datasets" in results
     assert len(results["packaged_datasets"]) > 0
-    
+
     # Verify Label Studio interactions
     assert mock_ls_client().projects.create.called
     assert mock_ls_client().tasks.create_many.called

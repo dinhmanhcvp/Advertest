@@ -28,6 +28,7 @@ from src.api.routers import (
     catalog,
     checkpoints,
     datasets,
+    egocentric,
     exports,
     jobs,
     live_inference,
@@ -38,7 +39,6 @@ from src.api.routers import (
     sessions,
     system,
     worker_callbacks,
-    egocentric,
 )
 from src.api.routers import settings as settings_router
 from src.api.routes import router

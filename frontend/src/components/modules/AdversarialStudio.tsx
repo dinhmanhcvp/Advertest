@@ -5,6 +5,7 @@ import { Crosshair, ImagePlus, Minus, Plus, ShieldCheck } from "lucide-react";
 import CVFrame from "@/components/ui/CVFrame";
 import TerminalWindow from "@/components/ui/TerminalWindow";
 import { Badge, Card, cx, Eyebrow, SectionTitle, SPRING } from "@/components/ui/primitives";
+import { boxIntegrity } from "@/lib/geometry";
 import { makeSample } from "@/lib/mockData";
 import { imuPath, landmarksFor, LANDMARK_NAMES, TAGS, toPath } from "@/lib/taxonomy";
 import { FRAME_H, FRAME_W, type Box, type Pt, type StudioSample, type WorkspaceData } from "@/lib/types";
@@ -16,17 +17,6 @@ const LAYERS: { key: Layer; label: string }[] = [
   { key: "landmarks", label: "5-Point Landmarks" },
   { key: "imu", label: "IMU Vector Path" },
 ];
-
-/** Share of the (distorted) face box that stays inside the frame — the label-noise gate. */
-export function boxIntegrity(box: Box, fisheye: number): number {
-  const [x, y, w, h] = box;
-  const s = 1 + fisheye * 0.12;
-  const nx = FRAME_W / 2 + (x + w / 2 - FRAME_W / 2) * s - (w * s) / 2;
-  const ny = FRAME_H / 2 + (y + h / 2 - FRAME_H / 2) * s - (h * s) / 2;
-  const iw = Math.max(0, Math.min(nx + w * s, FRAME_W) - Math.max(nx, 0));
-  const ih = Math.max(0, Math.min(ny + h * s, FRAME_H) - Math.max(ny, 0));
-  return (iw * ih) / (w * s * h * s);
-}
 
 function effectsFor(sample: StudioSample, severity: number, hz: number, pan: number) {
   const k = severity / 5;

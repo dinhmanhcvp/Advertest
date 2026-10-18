@@ -31,8 +31,8 @@ class RadialBlur(BaseAttack):
 
     def apply(self, sample: Sample, severity: int, ctx: AttackContext) -> Sample:
         try:
-            import torch
             import kornia
+            import torch
         except ImportError:
             raise RuntimeError("Install 'torch' and 'kornia' for GPU-accelerated radial blur")
 
@@ -63,7 +63,7 @@ class RadialBlur(BaseAttack):
         for i in range(num_samples):
             t = (i - num_samples / 2.0) / num_samples
             scale = 1.0 + t * (max_radius / max_dist)
-            
+
             # Affine matrix
             m = torch.tensor([[
                 [scale, 0, cx * (1 - scale)],

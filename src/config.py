@@ -229,7 +229,7 @@ class Settings(BaseSettings):
     # PII Detection
     pii_classes: str = "face,credit_card,screen,license_plate,document"
     pii_confidence_threshold: float = 0.5
-    
+
     # Face Detection Integration
     yolov7_face_weights_path: str = "data/weights/yolov7-lite-t.pt"
     widerface_data_root: str = "data/widerface"

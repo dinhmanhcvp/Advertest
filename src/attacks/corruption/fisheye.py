@@ -33,8 +33,8 @@ class Fisheye(BaseAttack):
 
     def apply(self, sample: Sample, severity: int, ctx: AttackContext) -> Sample:
         try:
-            import torch
             import kornia
+            import torch
         except ImportError:
             raise RuntimeError("Install 'torch' and 'kornia' for GPU-accelerated fisheye")
 

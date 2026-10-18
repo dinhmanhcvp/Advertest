@@ -34,7 +34,7 @@ class BBoxIntegrityChecker:
             return None
 
         new_area = new_width * new_height
-        
+
         # If box lost more than 50% of its area, discard
         if new_area / orig_area < 0.5:
             return None

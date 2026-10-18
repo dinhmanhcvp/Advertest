@@ -2,15 +2,17 @@
 
 from __future__ import annotations
 
-import cv2
-import numpy as np
-import albumentations as A
 from typing import ClassVar
 
-from src.attacks import ATTACKS
-from src.attacks.base import AttackContext, BaseAttack, AttackParams
-from src.core.types import Sample, AttackGroup
+import albumentations as A
+import cv2
+import numpy as np
 from pydantic import Field
+
+from src.attacks import ATTACKS
+from src.attacks.base import AttackContext, AttackParams, BaseAttack
+from src.core.types import AttackGroup, Sample
+
 
 class MotionBlurParams(AttackParams):
     """Parameters for MultiAxisMotionBlur."""
@@ -27,18 +29,18 @@ def apply_rotational_blur(image: np.ndarray, angle: float, steps: int = 5) -> np
     """Applies a rotational (radial) blur to simulate camera twist."""
     if angle <= 0.5:
         return image
-        
+
     h, w = image.shape[:2]
     center = (w / 2, h / 2)
-    
+
     blended = np.zeros_like(image, dtype=np.float32)
     angles = np.linspace(-angle, angle, steps)
-    
+
     for a in angles:
         M = cv2.getRotationMatrix2D(center, a, 1.0)
         warped = cv2.warpAffine(image, M, (w, h), flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
         blended += warped.astype(np.float32)
-        
+
     blended /= steps
     return blended.astype(np.uint8)
 
@@ -46,7 +48,7 @@ def apply_rotational_blur(image: np.ndarray, angle: float, steps: int = 5) -> np
 @ATTACKS.register
 class MultiAxisMotionBlur(BaseAttack):
     """Simulates dynamic motion blur common in egocentric walking/running.
-    
+
     Combines linear motion blur (direction shake) and rotational blur (body twist)
     to accurately reproduce body-worn camera artifacts.
     """
@@ -60,28 +62,28 @@ class MultiAxisMotionBlur(BaseAttack):
         params = self.resolve_parameters(severity)
         blur_limit = int(params["blur_limit"])
         angle = float(params["rotation_angle"])
-        
+
         # Ensure blur_limit is odd and >= 3
         if blur_limit < 3:
             blur_limit = 3
         if blur_limit % 2 == 0:
             blur_limit += 1
-            
+
         # Ensure image is in [0, 255] uint8 format for OpenCV/Albumentations
         img_uint8 = np.clip(sample.image * 255.0, 0, 255).astype(np.uint8)
-        
+
         # Step 1: Linear Motion Blur
         transform = A.Compose([
             A.MotionBlur(blur_limit=(blur_limit, blur_limit), p=1.0)
         ])
-        
+
         # Albumentations expects (H, W, C)
         linear_blurred = transform(image=img_uint8)["image"]
-        
+
         # Step 2: Rotational Blur (Body Twist)
         final_blurred = apply_rotational_blur(linear_blurred, angle=angle, steps=severity + 2)
-        
+
         # Convert back to [0, 1] float32
         img_float = final_blurred.astype(np.float32) / 255.0
-        
+
         return sample.with_image(img_float)

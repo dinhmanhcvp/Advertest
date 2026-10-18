@@ -8,3 +8,11 @@ ignore = ["E501"]
 [format]
 quote-style = "double"
 indent-style = "space"
+
+[lint.per-file-ignores]
+# Tensor/matrix naming (B, C, H, W, K, M) and the `A` albumentations alias are CV conventions.
+"src/attacks/**" = ["N806", "N812"]
+"src/core/integrity.py" = ["N806"]
+"tests/**" = ["N806"]
+# Public exception name is part of the connector API.
+"src/services/data_connector.py" = ["N818"]

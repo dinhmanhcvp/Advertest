@@ -19,7 +19,7 @@ from src.core.types import AttackGroup, CostClass, Sample
 
 class VariableFramerateParams(AttackParams):
     """Configuration for VFR attack.
-    
+
     ``variance_per_severity`` controls the amplitude of the frame sampling distortion.
     """
 
@@ -55,14 +55,14 @@ class VariableFramerate(BaseAttack):
         # Random low-frequency phase and amplitude
         phase = ctx.rng.random() * 2 * np.pi
         freq = 1.0 + ctx.rng.random() * 2.0
-        
+
         # Calculate ideal sampling points
         distortion = np.sin(t * freq * 2 * np.pi + phase) * (variance / num_frames)
         mapped_t = t + distortion
-        
+
         # Ensure monotonicity to prevent going backwards in time
         mapped_t = np.maximum.accumulate(mapped_t)
-        
+
         # Normalize back to [0, 1] and map to frame indices
         mapped_t = (mapped_t - mapped_t.min()) / (mapped_t.max() - mapped_t.min() + 1e-6)
         indices = np.clip(np.round(mapped_t * (num_frames - 1)), 0, num_frames - 1).astype(int)
