@@ -129,3 +129,5 @@ notebooks/ziyfWn3x
 # Keep pre-computed demo artifacts tracked
 !/data/demo_artifacts/
 !/data/demo_artifacts/*.json
+
+*.tsbuildinfo
