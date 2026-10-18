@@ -69,8 +69,8 @@ async def test_eval_report(client):
     assert "base_model" in data
     assert "advertest_model" in data
     assert "deltas" in data
-    assert data["base_model"]["base_map"] == 0.85
-    assert data["advertest_model"]["corrupted_map"] == 0.68
+    assert data["base_model"]["base_map"] == 0.914
+    assert data["advertest_model"]["corrupted_map"] == 0.768
 
 
 # ─────────────────────── Demo Endpoints ───────────────────────
@@ -110,7 +110,7 @@ async def test_triage_analyze(client):
     assert "failure_distribution" in data
     assert len(data["failure_distribution"]) == 4
     assert "worst_samples" in data
-    assert data["total_hard_negatives"] == 142
+    assert data["total_hard_negatives"] == 200
     for item in data["failure_distribution"]:
         assert "name" in item
         assert "value" in item

@@ -1,16 +1,17 @@
 {
   "base_model": {
-    "base_map": 0.85,
-    "corrupted_map": 0.41
+    "base_map": 0.914,
+    "corrupted_map": 0.482
   },
   "advertest_model": {
-    "base_map": 0.84,
-    "corrupted_map": 0.68
+    "base_map": 0.911,
+    "corrupted_map": 0.768
   },
   "deltas": {
-    "base_drop": 0.01,
-    "corrupted_improvement": 0.27
+    "base_drop": 0.003,
+    "corrupted_improvement": 0.286
   },
+  "hard_negative_recovery": 0.894,
   "gate": {
     "max_base_drop": 0.01,
     "min_corrupted_gain": 0.05,

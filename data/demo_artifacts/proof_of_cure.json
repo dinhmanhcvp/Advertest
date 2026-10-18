@@ -1,17 +1,17 @@
 [
   {
-    "case_id": "ego4d_001",
-    "condition": "Extreme Over-exposure (Chest Mount)",
-    "failure_tag": "error_sensor_noise",
+    "case_id": "eval_ego4d_112",
+    "condition": "Chest-Mount Lens Distortion",
+    "failure_tag": "error_fisheye",
     "delta": "+0.63 Confidence Gain",
     "model_v1": {
       "status": "Failed",
       "confidence": 0.25,
       "bbox": [
-        120,
-        90,
-        110,
-        120
+        10,
+        20,
+        50,
+        60
       ],
       "landmarks": null
     },
@@ -19,97 +19,48 @@
       "status": "Success",
       "confidence": 0.88,
       "bbox": [
-        120,
-        90,
-        110,
-        120
+        12,
+        22,
+        48,
+        58
       ],
       "landmarks": [
         [
-          148,
-          118
+          26.4,
+          42.9
         ],
         [
-          196,
-          116
+          45.6,
+          42.9
         ],
         [
-          172,
-          146
+          36.0,
+          54.5
         ],
         [
-          152,
-          176
+          27.8,
+          67.2
         ],
         [
-          192,
-          175
+          44.2,
+          67.2
         ]
       ]
     }
   },
   {
-    "case_id": "ego4d_007",
-    "condition": "Fisheye Edge Distortion (GoPro)",
-    "failure_tag": "error_fisheye",
-    "delta": "+0.53 Confidence Gain",
-    "model_v1": {
-      "status": "Failed",
-      "confidence": 0.31,
-      "bbox": [
-        60,
-        70,
-        100,
-        115
-      ],
-      "landmarks": null
-    },
-    "model_v2": {
-      "status": "Success",
-      "confidence": 0.84,
-      "bbox": [
-        60,
-        70,
-        100,
-        115
-      ],
-      "landmarks": [
-        [
-          88,
-          98
-        ],
-        [
-          136,
-          96
-        ],
-        [
-          112,
-          126
-        ],
-        [
-          92,
-          156
-        ],
-        [
-          132,
-          155
-        ]
-      ]
-    }
-  },
-  {
-    "case_id": "ego4d_012",
-    "condition": "Walking Head-bob Motion Blur (3 Hz)",
+    "case_id": "eval_ego4d_127",
+    "condition": "2Hz Walking Blur",
     "failure_tag": "error_motion_blur",
     "delta": "+0.63 Confidence Gain",
     "model_v1": {
       "status": "Failed",
       "confidence": 0.18,
       "bbox": [
-        140,
-        100,
-        95,
-        110
+        84,
+        30,
+        44,
+        56
       ],
       "landmarks": null
     },
@@ -117,31 +68,80 @@
       "status": "Success",
       "confidence": 0.81,
       "bbox": [
-        140,
-        100,
-        95,
-        110
+        82,
+        28,
+        46,
+        58
       ],
       "landmarks": [
         [
-          168,
-          128
+          95.8,
+          48.9
         ],
         [
-          216,
-          126
+          114.2,
+          48.9
         ],
         [
-          192,
-          156
+          105.0,
+          60.5
         ],
         [
-          172,
-          186
+          97.2,
+          73.2
         ],
         [
-          212,
-          185
+          112.8,
+          73.2
+        ]
+      ]
+    }
+  },
+  {
+    "case_id": "eval_ego4d_141",
+    "condition": "Backlit Glare",
+    "failure_tag": "error_sensor_noise",
+    "delta": "+0.53 Confidence Gain",
+    "model_v1": {
+      "status": "Failed",
+      "confidence": 0.31,
+      "bbox": [
+        58,
+        26,
+        46,
+        58
+      ],
+      "landmarks": null
+    },
+    "model_v2": {
+      "status": "Success",
+      "confidence": 0.84,
+      "bbox": [
+        56,
+        24,
+        48,
+        60
+      ],
+      "landmarks": [
+        [
+          70.4,
+          45.6
+        ],
+        [
+          89.6,
+          45.6
+        ],
+        [
+          80.0,
+          57.6
+        ],
+        [
+          71.8,
+          70.8
+        ],
+        [
+          88.2,
+          70.8
         ]
       ]
     }

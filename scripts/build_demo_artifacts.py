@@ -1,7 +1,10 @@
 """Regenerate the pre-computed DEMO_MODE artifacts in data/demo_artifacts/.
 
-Deterministic (seeded). Produces 142 hard-negative audit records over the four
-canonical failure tags, so the demo UI never depends on GPU or live data.
+Deterministic (seeded). Produces 200 hard-negative audit records over the four
+canonical failure tags (42.5 / 31.0 / 18.5 / 8.0 %), three proof-of-cure cases
+and the blind-evaluation-gate report, so the UI never depends on GPU or live data.
+
+All box / landmark coordinates live in a 160x120 reference frame.
 """
 import json
 import random
@@ -10,18 +13,16 @@ from pathlib import Path
 OUT = Path("data/demo_artifacts")
 random.seed(7)
 
-tags = (["error_fisheye"] * 50 + ["error_motion_blur"] * 43
-        + ["error_sensor_noise"] * 30 + ["error_occlusion"] * 19)
+tags = (["error_motion_blur"] * 85 + ["error_fisheye"] * 62
+        + ["error_sensor_noise"] * 37 + ["error_occlusion"] * 16)
 random.shuffle(tags)
-# Keep the three Proof-of-Cure cases consistent with their audit records.
-tags[0], tags[6], tags[11] = "error_sensor_noise", "error_fisheye", "error_motion_blur"
 just = {
-    "error_fisheye": "Baseline IoU collapsed on peripheral faces; radial distortion calibrated to GoPro intrinsics (k1,k2) selected at severity {s}.",
-    "error_motion_blur": "Baseline confidence < 0.4 under head-bob; biomechanical IMU blur ({hz:.1f} Hz sine + polynomial trajectory) selected at severity {s}.",
-    "error_sensor_noise": "Exposure/ISO failure cluster dominates hard negatives; tone-curve + ISO noise (never combined with flare/low-light) selected at severity {s}.",
+    "error_fisheye": "Baseline failed on peripheral edges; GoPro Hero10 radial intrinsics (k1,k2) selected at severity {s}.",
+    "error_motion_blur": "Baseline lost the face during rapid locomotion; {hz:.1f} Hz biomechanical pitch trajectory selected at severity {s}.",
+    "error_sensor_noise": "Exposure/ISO failure cluster; tone curve + ISO noise (never combined with flare/low-light) selected at severity {s}.",
     "error_occlusion": "Partial-face misses from hands/straps; occluder patch selected at severity {s}.",
 }
-chain = {"error_fisheye": ["OpticalDistortion"], "error_motion_blur": ["BiomechanicalBlur"],
+chain = {"error_fisheye": ["OpticalDistortion"], "error_motion_blur": ["OpticalDistortion", "BiomechanicalBlur"],
          "error_sensor_noise": ["ToneCurve", "ISONoise"], "error_occlusion": ["HandOcclusion"]}
 
 audit = []
@@ -37,23 +38,29 @@ for i, t in enumerate(tags):
                         "justification": just[t].format(s=s, hz=hz)},
     })
 
-def landmarks(x, y):
-    return [[x + dx, y + dy] for dx, dy in [(28, 28), (76, 26), (52, 56), (32, 86), (72, 85)]]
 
-def case(cid, cond, tag, c1, c2, box):
+def landmarks(b):
+    x, y, w, h = b
+    return [[round(x + w * fx, 1), round(y + h * fy, 1)]
+            for fx, fy in [(0.3, 0.36), (0.7, 0.36), (0.5, 0.56), (0.33, 0.78), (0.67, 0.78)]]
+
+
+def case(cid, cond, tag, c1, c2, b1, b2):
     return {"case_id": cid, "condition": cond, "failure_tag": tag,
             "delta": f"+{c2 - c1:.2f} Confidence Gain",
-            "model_v1": {"status": "Failed" if c1 < 0.4 else "Missed", "confidence": c1, "bbox": box, "landmarks": None},
-            "model_v2": {"status": "Success", "confidence": c2, "bbox": box, "landmarks": landmarks(box[0], box[1])}}
+            "model_v1": {"status": "Failed", "confidence": c1, "bbox": b1, "landmarks": None},
+            "model_v2": {"status": "Success", "confidence": c2, "bbox": b2, "landmarks": landmarks(b2)}}
+
 
 poc = [
-    case("ego4d_001", "Extreme Over-exposure (Chest Mount)", "error_sensor_noise", 0.25, 0.88, [120, 90, 110, 120]),
-    case("ego4d_007", "Fisheye Edge Distortion (GoPro)", "error_fisheye", 0.31, 0.84, [60, 70, 100, 115]),
-    case("ego4d_012", "Walking Head-bob Motion Blur (3 Hz)", "error_motion_blur", 0.18, 0.81, [140, 100, 95, 110]),
+    case("eval_ego4d_112", "Chest-Mount Lens Distortion", "error_fisheye", 0.25, 0.88, [10, 20, 50, 60], [12, 22, 48, 58]),
+    case("eval_ego4d_127", "2Hz Walking Blur", "error_motion_blur", 0.18, 0.81, [84, 30, 44, 56], [82, 28, 46, 58]),
+    case("eval_ego4d_141", "Backlit Glare", "error_sensor_noise", 0.31, 0.84, [58, 26, 46, 58], [56, 24, 48, 60]),
 ]
-report = {"base_model": {"base_map": 0.85, "corrupted_map": 0.41},
-          "advertest_model": {"base_map": 0.84, "corrupted_map": 0.68},
-          "deltas": {"base_drop": 0.01, "corrupted_improvement": 0.27},
+report = {"base_model": {"base_map": 0.914, "corrupted_map": 0.482},
+          "advertest_model": {"base_map": 0.911, "corrupted_map": 0.768},
+          "deltas": {"base_drop": 0.003, "corrupted_improvement": 0.286},
+          "hard_negative_recovery": 0.894,
           "gate": {"max_base_drop": 0.01, "min_corrupted_gain": 0.05, "accepted": True}}
 
 OUT.mkdir(parents=True, exist_ok=True)
