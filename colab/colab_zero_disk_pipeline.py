@@ -549,26 +549,31 @@ class FaceDetector:
         self.weights = weights
 
     def predict(self, bgr) -> list[Det]:
-        from utils.general import non_max_suppression_face
+        from utils.general import non_max_suppression  # derronqi/yolov7-face: keypoint-aware NMS
 
         t = self.torch
         sq, s, px, py = letterbox_square(bgr, self.size)
         x = torch_from(sq, self.dev, t, half=self.dev.type == "cuda")
         with t.no_grad():
             pred = self.model(x)[0]
-        det = non_max_suppression_face(pred, self.conf, self.nms_iou)[0]
-        out: list[Det] = []
+        det = non_max_suppression(pred, self.conf, self.nms_iou, kpt_label=5)[0]
         if det is None or len(det) == 0:
-            return out
-        det = det.float().cpu().numpy()
-        if det.shape[1] < 15:
-            raise RuntimeError(f"unexpected NMS output shape {det.shape}; expected box(4)+conf+landmarks(10)")
-        h, w = bgr.shape[:2]
-        for row in det:
-            x1, y1, x2, y2 = [(row[0] - px) / s, (row[1] - py) / s, (row[2] - px) / s, (row[3] - py) / s]
-            lm = np.array([[(row[5 + 2 * i] - px) / s, (row[6 + 2 * i] - py) / s] for i in range(5)])
-            out.append(Det((max(0, x1), max(0, y1), min(w, x2), min(h, y2)), float(row[4]), lm))
-        return out
+            return []
+        return decode_detections(det.float().cpu().numpy(), s, px, py, bgr.shape[1], bgr.shape[0])
+
+
+def decode_detections(det: np.ndarray, s: float, px: float, py: float, w: int, h: int) -> list[Det]:
+    """Rows from yolov7-face NMS: [x1,y1,x2,y2,conf,cls, (x,y,conf) * 5] in letterboxed pixels → image pixels."""
+    if det.ndim != 2 or det.shape[1] < 21:
+        raise RuntimeError(f"unexpected NMS output {det.shape}; expected 6 + 5*3 columns (kpt_label=5)")
+    out: list[Det] = []
+    for row in det:
+        x1, y1, x2, y2 = (row[0] - px) / s, (row[1] - py) / s, (row[2] - px) / s, (row[3] - py) / s
+        lm = np.array([[(row[6 + 3 * i] - px) / s, (row[7 + 3 * i] - py) / s] for i in range(5)])
+        lm[:, 0] = lm[:, 0].clip(0, w)
+        lm[:, 1] = lm[:, 1].clip(0, h)
+        out.append(Det((max(0.0, float(x1)), max(0.0, float(y1)), min(float(w), float(x2)), min(float(h), float(y2))), float(row[4]), lm))
+    return out
 
 
 def torch_from(sq_bgr, dev, torch, half=False):
@@ -623,6 +628,30 @@ def track_sequence(dets_per_frame) -> list[dict]:
         box, rec = tr.update(ds)
         out.append(dict(frame=i, detected=bool(ds), tracked=box is not None, recovered=rec, box=box))
     return out
+
+
+def yolo_label_rows(boxes, lmks, w, h) -> list[str]:
+    """derronqi/yolov7-face label rows: `0 cx cy w h` + 5 x (x y visibility) = 20 columns, all in [0, 1].
+
+    The loader rejects negative values, so a missing/out-of-frame landmark is written as `0 0 0`.
+    """
+    rows, seen = [], set()
+    for b, lm in zip(boxes, lmks):
+        x1, y1, x2, y2 = max(0.0, b[0]), max(0.0, b[1]), min(float(w), b[2]), min(float(h), b[3])
+        if x2 - x1 < 2 or y2 - y1 < 2:
+            continue
+        vals = [0.0, (x1 + x2) / 2 / w, (y1 + y2) / 2 / h, (x2 - x1) / w, (y2 - y1) / h]
+        for i in range(5):
+            if lm is not None and 0 <= lm[i][0] <= w and 0 <= lm[i][1] <= h:
+                vals += [lm[i][0] / w, lm[i][1] / h, 2.0]
+            else:
+                vals += [0.0, 0.0, 0.0]
+        is_vis = lambda k: k >= 5 and (k - 5) % 3 == 2  # noqa: E731  (visibility is not a coordinate)
+        row = " ".join("0" if k == 0 else f"{v:.6f}" if is_vis(k) else f"{min(1.0, max(0.0, v)):.6f}" for k, v in enumerate(vals))
+        if row not in seen:  # the loader asserts there are no duplicate rows
+            seen.add(row)
+            rows.append(row)
+    return rows
 
 
 # %% [markdown]
@@ -732,12 +761,7 @@ def run_pipeline() -> Path:
     def write_sample(name, split, image, boxes, lmks):
         h, w = image.shape[:2]
         cv2.imwrite(str(ds / "images" / split / f"{name}.jpg"), image, [cv2.IMWRITE_JPEG_QUALITY, 90])
-        lines = []
-        for b, lm in zip(boxes, lmks):
-            cx, cy, bw, bh = (b[0] + b[2]) / 2 / w, (b[1] + b[3]) / 2 / h, (b[2] - b[0]) / w, (b[3] - b[1]) / h
-            kp = " ".join("-1 -1" if lm is None else f"{lm[i][0] / w:.6f} {lm[i][1] / h:.6f}" for i in range(5))
-            lines.append(f"0 {cx:.6f} {cy:.6f} {bw:.6f} {bh:.6f} {kp}")
-        (ds / "labels" / split / f"{name}.txt").write_text("\n".join(lines))
+        (ds / "labels" / split / f"{name}.txt").write_text("\n".join(yolo_label_rows(boxes, lmks, w, h)))
 
     # clean replay protects the base domain (catastrophic-forgetting guard)
     for k, ((img, gts, _), dets) in enumerate(zip(train, clean_dets)):
@@ -785,18 +809,19 @@ def run_pipeline() -> Path:
 
     # ---- fine-tune (yolov7-face's own trainer, keypoint loss on) ------------------------------------
     log(f"fine-tuning {CFG['epochs']} epochs on {n_written + len(audit)} images ...")
-    cfgs = sorted(Path(repo, "cfg").glob("*tiny*"))
-    assert cfgs, f"no tiny cfg in {repo}/cfg: {[p.name for p in Path(repo, 'cfg').glob('*')]}"
-    hyps = sorted(Path(repo, "data").glob("hyp*"))
+    cfg_yaml, hyp_yaml = Path(repo, "cfg", "yolov7-tiny-face.yaml"), Path(repo, "data", "hyp.scratch.tiny.yaml")
+    for need in (cfg_yaml, hyp_yaml):
+        assert need.exists(), f"{need} missing; repo layout changed: {[p.name for p in need.parent.glob('*')]}"
     cmd = [
-        sys.executable, "train.py", "--data", str(wd / "advertest.yaml"), "--cfg", str(cfgs[0]),
+        sys.executable, "train.py", "--data", str(wd / "advertest.yaml"), "--cfg", str(cfg_yaml), "--hyp", str(hyp_yaml),
         "--weights", weights, "--epochs", str(CFG["epochs"]), "--batch-size", str(CFG["batch"]),
-        "--img", str(CFG["img_size"]), str(CFG["img_size"]), "--kpt-label", "--name", "advertest_v2",
-        "--workers", "2", "--exist-ok",
-    ] + (["--hyp", str(hyps[0])] if hyps else [])
+        "--img-size", str(CFG["img_size"]), str(CFG["img_size"]), "--kpt-label", "5",
+        "--name", "advertest_v2", "--workers", "2", "--exist-ok", "--notest",
+    ]
     subprocess.run(cmd, cwd=repo, check=True)
-    v2_w = Path(repo, "runs", "train", "advertest_v2", "weights", "best.pt")
-    assert v2_w.exists(), f"trainer produced no checkpoint at {v2_w}"
+    wdir = Path(repo, "runs", "train", "advertest_v2", "weights")
+    v2_w = next((c for c in (wdir / "best.pt", wdir / "last.pt") if c.exists()), None)  # --notest may skip best.pt
+    assert v2_w is not None, f"trainer produced no checkpoint in {wdir}: {[p.name for p in wdir.glob('*')]}"
     v2 = FaceDetector(str(v2_w), repo, CFG["img_size"], CFG["det_conf"])
 
     # ---- blind evaluation: images never used above -------------------------------------------------

@@ -141,3 +141,30 @@ def test_wider_dir_loader_parses_official_annotation_format(tmp_path):
     img, boxes, attrs = out[0]
     assert boxes == [(10, 10, 50, 50)]
     assert attrs[0] == {"blur": 2, "illumination": 1, "occlusion": 0}
+
+
+def test_decode_yolov7_face_rows_back_to_image_pixels():
+    # image 320x240 letterboxed into 640: scale 2, pad (0, 80)
+    s, px, py = 2.0, 0.0, 80.0
+    row = [100, 180, 300, 380, 0.9, 0] + [x for i in range(5) for x in (120 + 20 * i, 200 + 10 * i, 0.99)]
+    d = cp.decode_detections(np.array([row], np.float32), s, px, py, 320, 240)[0]
+    assert d.box == (50.0, 50.0, 150.0, 150.0) and d.score == pytest.approx(0.9)
+    assert d.lmk.shape == (5, 2)
+    assert tuple(d.lmk[0]) == (60.0, 60.0) and tuple(d.lmk[4]) == (100.0, 80.0)
+    with pytest.raises(RuntimeError):
+        cp.decode_detections(np.zeros((1, 16), np.float32), s, px, py, 320, 240)
+
+
+def test_label_rows_match_yolov7_face_loader_contract():
+    lm = np.array([[30, 30], [50, 30], [40, 40], [32, 50], [48, 50]], float)
+    rows = cp.yolo_label_rows([(20, 20, 60, 60), (200, 0, 260, 10)], [lm, None], 100, 100)
+    vals = [float(v) for v in rows[0].split()]
+    assert len(vals) == 5 + 3 * 5  # class, box, 5 x (x, y, visibility)
+    coords = vals[1:5] + [v for k, v in enumerate(vals[5:]) if k % 3 != 2]  # x/y columns; visibility is exempt
+    assert all(v >= 0 for v in vals) and all(v <= 1 for v in coords)  # the loader rejects negatives / >1
+    assert vals[7] == 2.0 and vals[5] == pytest.approx(0.3)
+    assert len(rows) == 1  # second box lies outside the 100x100 frame -> dropped
+    missing = cp.yolo_label_rows([(20, 20, 60, 60)], [None], 100, 100)[0].split()
+    assert missing[5:] == ["0.000000"] * 15 or all(float(v) == 0 for v in missing[5:])
+    dup = cp.yolo_label_rows([(20, 20, 60, 60), (20, 20, 60, 60)], [None, None], 100, 100)
+    assert len(dup) == 1  # duplicate rows are asserted against by the loader
