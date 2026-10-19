@@ -168,3 +168,13 @@ def test_label_rows_match_yolov7_face_loader_contract():
     assert missing[5:] == ["0.000000"] * 15 or all(float(v) == 0 for v in missing[5:])
     dup = cp.yolo_label_rows([(20, 20, 60, 60), (20, 20, 60, 60)], [None, None], 100, 100)
     assert len(dup) == 1  # duplicate rows are asserted against by the loader
+
+
+def test_run_logged_streams_output_and_reports_the_tail(capsys):
+    import sys as _sys
+
+    cp.run_logged([_sys.executable, "-c", "print('hello from child')"])
+    assert "hello from child" in capsys.readouterr().out
+    with pytest.raises(cp.CommandFailed) as ei:
+        cp.run_logged([_sys.executable, "-c", "import sys; print('boom detail'); sys.exit(3)"])
+    assert "boom detail" in str(ei.value) and "exited with 3" in str(ei.value)

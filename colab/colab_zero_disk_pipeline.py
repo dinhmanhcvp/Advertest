@@ -74,6 +74,24 @@ def log(*a):
     print(f"[{time.strftime('%H:%M:%S')}]", *a, flush=True)
 
 
+class CommandFailed(RuntimeError):
+    """A subprocess failed; the message carries the tail of its output so notebook users can see why."""
+
+
+def run_logged(cmd, cwd=None, tail_lines: int = 40) -> None:
+    """Run a command, streaming its output into the notebook cell (a bare subprocess.run would send it to the kernel log)."""
+    proc = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+    tail: list[str] = []
+    assert proc.stdout is not None
+    for line in proc.stdout:
+        print(line, end="", flush=True)
+        tail.append(line)
+        del tail[:-tail_lines]
+    code = proc.wait()
+    if code:
+        raise CommandFailed(f"command exited with {code}: {' '.join(map(str, cmd[:3]))} ...\n--- last output ---\n" + "".join(tail))
+
+
 def setup_environment() -> Path:
     """Colab only: install light deps, shallow-clone the model repo, fetch weights into /content."""
     wd = Path(CFG["workdir"])
@@ -818,7 +836,7 @@ def run_pipeline() -> Path:
         "--img-size", str(CFG["img_size"]), str(CFG["img_size"]), "--kpt-label", "5",
         "--name", "advertest_v2", "--workers", "2", "--exist-ok", "--notest",
     ]
-    subprocess.run(cmd, cwd=repo, check=True)
+    run_logged(cmd, cwd=repo)
     wdir = Path(repo, "runs", "train", "advertest_v2", "weights")
     v2_w = next((c for c in (wdir / "best.pt", wdir / "last.pt") if c.exists()), None)  # --notest may skip best.pt
     assert v2_w is not None, f"trainer produced no checkpoint in {wdir}: {[p.name for p in wdir.glob('*')]}"
