@@ -186,3 +186,17 @@ def test_run_logged_passes_extra_env():
     with pytest.raises(cp.CommandFailed) as ei:
         cp.run_logged([_sys.executable, "-c", "import os,sys; print(os.environ['X_FLAG']); sys.exit(1)"], env={"X_FLAG": "on"})
     assert "on" in str(ei.value)
+
+
+def test_numpy_compat_shim_restores_removed_aliases(tmp_path, capsys):
+    import sys as _sys
+
+    script = tmp_path / "train.py"
+    script.write_text(
+        "import numpy as np, sys\n"
+        "print('argv', sys.argv[1:])\n"
+        "print('floor', np.floor(np.arange(5) / 2).astype(np.int).tolist(), np.float(1.5), np.bool(1))\n"
+    )
+    cp.run_logged([_sys.executable, "-c", cp.NUMPY_COMPAT_SHIM, "train.py", "--epochs", "3"], cwd=tmp_path)
+    out = capsys.readouterr().out
+    assert "floor [0, 0, 1, 1, 2] 1.5 True" in out and "argv ['--epochs', '3']" in out

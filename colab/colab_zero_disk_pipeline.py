@@ -74,6 +74,18 @@ def log(*a):
     print(f"[{time.strftime('%H:%M:%S')}]", *a, flush=True)
 
 
+# yolov7-face predates NumPy 2 and uses removed aliases such as `np.int`. This shim restores them in the trainer
+# process (and its dataloader workers) and then runs the real script, so no file of the repo is modified.
+NUMPY_COMPAT_SHIM = (
+    "import sys, runpy, numpy as np\n"
+    "for _n, _t in (('int', int), ('float', float), ('bool', bool), ('object', object), ('str', str), ('complex', complex)):\n"
+    "    if not hasattr(np, _n):\n"
+    "        setattr(np, _n, _t)\n"
+    "sys.argv = sys.argv[1:]\n"
+    "runpy.run_path(sys.argv[0], run_name='__main__')\n"
+)
+
+
 class CommandFailed(RuntimeError):
     """A subprocess failed; the message carries the tail of its output so notebook users can see why."""
 
@@ -833,7 +845,7 @@ def run_pipeline() -> Path:
     for need in (cfg_yaml, hyp_yaml):
         assert need.exists(), f"{need} missing; repo layout changed: {[p.name for p in need.parent.glob('*')]}"
     cmd = [
-        sys.executable, "train.py", "--data", str(wd / "advertest.yaml"), "--cfg", str(cfg_yaml), "--hyp", str(hyp_yaml),
+        sys.executable, "-c", NUMPY_COMPAT_SHIM, "train.py", "--data", str(wd / "advertest.yaml"), "--cfg", str(cfg_yaml), "--hyp", str(hyp_yaml),
         "--weights", weights, "--epochs", str(CFG["epochs"]), "--batch-size", str(CFG["batch"]),
         "--img-size", str(CFG["img_size"]), str(CFG["img_size"]), "--kpt-label", "5",
         "--name", "advertest_v2", "--workers", "2", "--exist-ok", "--notest",
