@@ -78,9 +78,11 @@ class CommandFailed(RuntimeError):
     """A subprocess failed; the message carries the tail of its output so notebook users can see why."""
 
 
-def run_logged(cmd, cwd=None, tail_lines: int = 40) -> None:
+def run_logged(cmd, cwd=None, tail_lines: int = 40, env: dict | None = None) -> None:
     """Run a command, streaming its output into the notebook cell (a bare subprocess.run would send it to the kernel log)."""
-    proc = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1)
+    proc = subprocess.Popen(
+        cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, env={**os.environ, **(env or {})}
+    )
     tail: list[str] = []
     assert proc.stdout is not None
     for line in proc.stdout:
@@ -836,7 +838,11 @@ def run_pipeline() -> Path:
         "--img-size", str(CFG["img_size"]), str(CFG["img_size"]), "--kpt-label", "5",
         "--name", "advertest_v2", "--workers", "2", "--exist-ok", "--notest",
     ]
-    run_logged(cmd, cwd=repo)
+    # The repo's train.py runs check_requirements() against requirements.txt, which pins versions that no longer
+    # exist for Colab's Python (e.g. onnxruntime==1.10.0). Dependencies are preinstalled, so neutralise the pins
+    # in the Colab clone only. Official checkpoints are pickled models, so allow full unpickling for the trainer.
+    Path(repo, "requirements.txt").write_text("# pins removed on the Colab worker (deps preinstalled)\n")
+    run_logged(cmd, cwd=repo, env={"TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD": "1"})
     wdir = Path(repo, "runs", "train", "advertest_v2", "weights")
     v2_w = next((c for c in (wdir / "best.pt", wdir / "last.pt") if c.exists()), None)  # --notest may skip best.pt
     assert v2_w is not None, f"trainer produced no checkpoint in {wdir}: {[p.name for p in wdir.glob('*')]}"

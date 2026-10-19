@@ -178,3 +178,11 @@ def test_run_logged_streams_output_and_reports_the_tail(capsys):
     with pytest.raises(cp.CommandFailed) as ei:
         cp.run_logged([_sys.executable, "-c", "import sys; print('boom detail'); sys.exit(3)"])
     assert "boom detail" in str(ei.value) and "exited with 3" in str(ei.value)
+
+
+def test_run_logged_passes_extra_env():
+    import sys as _sys
+
+    with pytest.raises(cp.CommandFailed) as ei:
+        cp.run_logged([_sys.executable, "-c", "import os,sys; print(os.environ['X_FLAG']); sys.exit(1)"], env={"X_FLAG": "on"})
+    assert "on" in str(ei.value)
