@@ -184,6 +184,38 @@ def average_precision(dets_per_img, gts_per_img, iou_thr: float = 0.5) -> float:
     return float(np.sum((mrec[idx + 1] - mrec[idx]) * mpre[idx + 1]))
 
 
+def recall_at_fppi(dets_per_img, gts_per_img, targets=(0.1, 1.0), iou_thr: float = 0.5) -> dict:
+    """Recall at fixed False-Positives-Per-Image — the operating-point metric for PII redaction.
+
+    Detections are ranked by score across all images (greedy one-to-one matching per image); for each target the
+    recall is read at the lowest score threshold whose cumulative FP/image stays <= target.
+    """
+    n_img = max(1, len(gts_per_img))
+    n_gt = sum(len(g) for g in gts_per_img)
+    flat = sorted(((d.score, i, d.box) for i, ds in enumerate(dets_per_img) for d in ds), key=lambda t: -t[0])
+    used = [np.zeros(len(g), bool) for g in gts_per_img]
+    tp = fp = 0
+    curve = []  # (fp_per_image, recall) after each detection
+    for _, i, box in flat:
+        best, bj = 0.0, -1
+        for j, g in enumerate(gts_per_img[i]):
+            if used[i][j]:
+                continue
+            v = iou_xyxy(box, g)
+            if v > best:
+                best, bj = v, j
+        if bj >= 0 and best >= iou_thr:
+            used[i][bj] = True
+            tp += 1
+        else:
+            fp += 1
+        curve.append((fp / n_img, tp / n_gt if n_gt else 0.0))
+    out = {}
+    for t in targets:
+        out[f"recall@fppi={t}"] = round(max([r for f, r in curve if f <= t], default=0.0), 4)
+    return out
+
+
 def match_gt(gt_boxes, dets):
     """For every GT: (best IoU, score of that detection or 0)."""
     out = []
@@ -423,6 +455,66 @@ def explain(tag: str, dist: dict, n_hard: int, med_conf: float, att: Attacked) -
     )
 
 
+PIPELINE_VERSION = "2026-10-19.3"
+
+
+def rng_for(seed: int, *key) -> np.random.Generator:
+    """Independent, reproducible RNG for one (seed, key) pair — lets any single sample be regenerated exactly."""
+    digest = hashlib.sha256(repr((int(seed), *key)).encode()).digest()
+    return np.random.default_rng(int.from_bytes(digest[:8], "big"))
+
+
+def draw_attack(seed: int, key, weights=None, tags=CANONICAL_TAGS):
+    """Plan an attack for `key`: returns (tag, severity). Uses its own RNG stream ("plan")."""
+    r = rng_for(seed, *key, "plan")
+    if weights is None:
+        tag = tags[int(r.integers(0, len(tags)))]
+    else:
+        p = np.asarray(weights, float)
+        tag = tags[int(r.choice(len(tags), p=p / p.sum()))]
+    return tag, int(r.integers(2, 6))
+
+
+def apply_attack(img, boxes, lmks, seed: int, key, tag: str, severity: int) -> Attacked:
+    """Apply a planned attack with its own RNG stream ("apply") — pure function of (inputs, seed, key, tag, severity)."""
+    return synthesize(img, boxes, lmks, tag, severity, rng_for(seed, *key, "apply"))
+
+
+def reproduce_sample(img, boxes, lmks, record: dict) -> Attacked:
+    """Rebuild a synthesized image from its audit record + the source image (no stored pixels needed)."""
+    rp = record["reproduce"]
+    return apply_attack(img, boxes, lmks, rp["seed"], rp["key"], rp["tag"], rp["severity"])
+
+
+def dhash(img, size: int = 8) -> int:
+    """64-bit difference hash used to detect near-duplicate images across splits."""
+    g = cv2.cvtColor(cv2.resize(img, (size + 1, size), interpolation=cv2.INTER_AREA), cv2.COLOR_BGR2GRAY)
+    bits = (g[:, 1:] > g[:, :-1]).flatten()
+    return int("".join("1" if b else "0" for b in bits), 2)
+
+
+def find_leaks(train_imgs, blind_imgs, max_dist: int = 6) -> set:
+    """Indices of train images that are near-duplicates of any blind image (Hamming distance <= max_dist)."""
+    bh = [dhash(b) for b in blind_imgs]
+    leaks = set()
+    for i, t in enumerate(train_imgs):
+        h = dhash(t)
+        if any(bin(h ^ x).count("1") <= max_dist for x in bh):
+            leaks.add(i)
+    return leaks
+
+
+def env_versions() -> dict:
+    out = {"python": sys.version.split()[0], "numpy": np.__version__, "opencv": cv2.__version__}
+    try:
+        import torch
+
+        out["torch"] = torch.__version__
+    except Exception:
+        pass
+    return out
+
+
 # %% [markdown]
 # ## 3 · Data: stream WIDER FACE, stream Ego4D (presigned, in RAM)
 
@@ -630,8 +722,11 @@ def torch_from(sq_bgr, dev, torch, half=False):
 class VelocityTracker:
     """Single-target tracker: persists the box via velocity extrapolation while the detector drops out."""
 
-    def __init__(self, iou_gate=0.2, max_age=4):
+    def __init__(self, iou_gate=0.2, max_age=4, damping=0.7, frame_wh=None):
+        """`damping` shrinks the velocity on every coasted frame (a lost face must not keep sliding on inertia);
+        the track ends after `max_age` coasted frames or when its centre leaves `frame_wh` (the person left the view)."""
         self.box, self.vel, self.age, self.iou_gate, self.max_age = None, np.zeros(4), 0, iou_gate, max_age
+        self.damping, self.frame_wh = damping, frame_wh
 
     def update(self, dets: list[Det]):
         """Returns (box, recovered_flag) or (None, False)."""
@@ -656,6 +751,12 @@ class VelocityTracker:
         if self.box is not None and self.age < self.max_age:
             self.age += 1
             self.box = tuple(np.array(self.box) + self.vel)
+            self.vel = self.vel * self.damping
+            if self.frame_wh is not None:
+                cx, cy = (self.box[0] + self.box[2]) / 2, (self.box[1] + self.box[3]) / 2
+                if not (0 <= cx <= self.frame_wh[0] and 0 <= cy <= self.frame_wh[1]):
+                    self.box = None  # left the frame: terminate instead of chasing a ghost
+                    return None, False
             return self.box, True
         self.box = None
         return None, False
@@ -801,7 +902,6 @@ def best_conf_for(gt_box, dets):
 
 
 def run_pipeline() -> Path:
-    rng = np.random.default_rng(CFG["seed"])
     random.seed(CFG["seed"])
     wd = Path(CFG["workdir"])
     repo, weights = str(wd / "yolov7_face"), str(wd / "yolov7-tiny-face.pt")
@@ -811,10 +911,15 @@ def run_pipeline() -> Path:
     log("streaming WIDER FACE micro-subset ...")
     pool = list(stream_wider(CFG["n_pool"]))
     assert len(pool) >= CFG["n_blind"] + 20, f"only {len(pool)} images streamed"
-    blind, train = pool[: CFG["n_blind"]], pool[CFG["n_blind"] :]
-    log(f"{len(train)} train / {len(blind)} blind images")
+    blind, train_all = pool[: CFG["n_blind"]], pool[CFG["n_blind"] :]
+    # Leakage guard: WIDER images of one event can be near-identical; drop any train image that duplicates a blind one.
+    leaks = find_leaks([t[0] for t in train_all], [b[0] for b in blind])
+    train_idx = [i for i in range(len(train_all)) if i not in leaks]  # position in train_all (source_index = n_blind + i)
+    train = [train_all[i] for i in train_idx]
+    log(f"{len(train)} train / {len(blind)} blind images; {len(leaks)} near-duplicate train images removed")
 
     v1 = FaceDetector(weights, repo, CFG["img_size"], CFG["det_conf"])
+    v1_sha = sha256_file(weights)
 
     # ---- baseline + triage on the TRAIN split (clean and physically corrupted) -------------------
     clean_dets = [v1.predict(im) for im, _, _ in train]
@@ -824,12 +929,12 @@ def run_pipeline() -> Path:
     # Corrupt every train image with a random tag to expose the egocentric domain gap, then triage again.
     insight_rows, corrupted_train = [], []
     for k, ((img, gts, attrs), dets) in enumerate(zip(train, clean_dets)):
-        tag = random.choice(CANONICAL_TAGS)
         lm = []
         for g in gts:
             iou, sc, best = best_conf_for(g, dets)
             lm.append(best.lmk if best is not None and iou >= 0.5 and sc >= CFG["hard_conf"] else None)
-        att = synthesize(img, gts, lm, tag, int(rng.integers(2, 6)), rng)
+        tag, sev = draw_attack(CFG["seed"], ("corrupt", k))
+        att = apply_attack(img, gts, lm, CFG["seed"], ("corrupt", k), tag, sev)
         if att.discarded:
             continue
         d2 = v1.predict(att.image)
@@ -868,13 +973,13 @@ def run_pipeline() -> Path:
     tags_w = [max(dist[t], 1e-3) for t in CANONICAL_TAGS]
     for j in range(2 * n_hard):
         k = random.choice(hard_ids)
-        tag = random.choices(CANONICAL_TAGS, weights=tags_w)[0]
+        tag, sev = draw_attack(CFG["seed"], ("adv", j), weights=tags_w)
         img, gts, _ = train[k]
         lm = []
         for g in gts:
             iou, sc, best = best_conf_for(g, clean_dets[k])
             lm.append(best.lmk if best is not None and iou >= 0.5 and sc >= CFG["hard_conf"] else None)
-        att = synthesize(img, gts, lm, tag, int(rng.integers(2, 6)), rng)
+        att = apply_attack(img, gts, lm, CFG["seed"], ("adv", j), tag, sev)
         if att.discarded:
             continue
         write_sample(f"adv_{j:04d}", "train", att.image, att.boxes, att.lmk)
@@ -890,6 +995,11 @@ def run_pipeline() -> Path:
                     severity_level=att.severity,
                     justification=explain(tag, dist, n_hard, med_conf, att),
                     parameters=att.params,
+                ),
+                reproduce=dict(
+                    seed=CFG["seed"], key=["adv", j], tag=tag, severity=att.severity,
+                    source=dict(split="wider_val_stream", index=CFG["n_blind"] + train_idx[k]),
+                    v1_sha256=v1_sha, pipeline_version=PIPELINE_VERSION,
                 ),
             )
         )
@@ -927,16 +1037,24 @@ def run_pipeline() -> Path:
     clean_items = [(im, g) for im, g, _ in blind]
     base1, bdets1 = evaluate(v1, clean_items)
     base2, bdets2 = evaluate(v2, clean_items)
-    blind_corr = []
+    blind_corr, blind_skipped = [], []
     for im, g, attrs in blind:
-        tag = random.choice(CANONICAL_TAGS)
-        att = synthesize(im, g, [None] * len(g), tag, int(rng.integers(2, 6)), rng)
-        if not att.discarded:
+        key = ("blind", len(blind_corr) + len(blind_skipped))
+        tag, sev = draw_attack(CFG["seed"], key)
+        att = apply_attack(im, g, [None] * len(g), CFG["seed"], key, tag, sev)
+        if att.discarded:
+            blind_skipped.append(key)
+        else:
             blind_corr.append((tag, im, att))
     corr_items = [(a.image, a.boxes) for _, _, a in blind_corr]
     corr1, cdets1 = evaluate(v1, corr_items)
     corr2, cdets2 = evaluate(v2, corr_items)
     gate = blind_gate(base1, base2, corr1, corr2, CFG["max_base_drop"], CFG["min_corrupted_gain"])
+    fppi = dict(
+        clean=dict(v1=recall_at_fppi(bdets1, [g for _, g in clean_items]), v2=recall_at_fppi(bdets2, [g for _, g in clean_items])),
+        corrupted=dict(v1=recall_at_fppi(cdets1, [g for _, g in corr_items]), v2=recall_at_fppi(cdets2, [g for _, g in corr_items])),
+    )
+    log("recall @ fixed FPPI:", fppi)
     log("gate:", gate, f"base {base1:.3f}->{base2:.3f}  corrupted {corr1:.3f}->{corr2:.3f}")
 
     # hard-negative recovery on the blind corrupted set
@@ -1002,18 +1120,25 @@ def run_pipeline() -> Path:
         advertest_model=dict(base_map=round(base2, 4), corrupted_map=round(corr2, 4)),
         deltas=dict(base_drop=gate["base_drop"], corrupted_improvement=gate["corrupted_gain"]),
         hard_negative_recovery=round(recovery, 4),
+        recall_at_fppi=fppi,
         gate=gate,
         provenance=dict(
             source="colab_zero_disk_pipeline", model="derronqi/yolov7-face (yolov7-tiny-face)",
             base_dataset="WIDER FACE (validation, streamed)", n_train=len(train), n_blind=len(blind),
             target_domain="Ego4D (real, streamed)" if ego else "WIDER FACE through the physical attack engine (proxy; no Ego4D URLs supplied)",
-            ego4d_real=ego, seed=CFG["seed"], epochs=CFG["epochs"], generated_at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            ego4d_real=ego, seed=CFG["seed"], epochs=CFG["epochs"], pipeline_version=PIPELINE_VERSION,
+            v1_sha256=v1_sha, versions=env_versions(), leaks_removed=len(leaks),
+            split="image-level, near-duplicate guarded (dHash); blind images are never used for synthesis or training", generated_at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         ),
     )
     tri = sorted(
         [dict(id=f"wider_{k:04d}", iou=round(t["worst_iou"], 2), confidence=round(t["worst_conf"], 2),
               audit_trail=dict(insight_source=tag, applied_chain=att.chain, severity_level=att.severity,
-                               justification=explain(tag, dist, n_hard, med_conf, att)), image_url="")
+                               justification=explain(tag, dist, n_hard, med_conf, att), parameters=att.params),
+              reproduce=dict(seed=CFG["seed"], key=["corrupt", k], tag=tag, severity=att.severity,
+                             source=dict(split="wider_val_stream", index=CFG["n_blind"] + train_idx[k]),
+                             v1_sha256=v1_sha, pipeline_version=PIPELINE_VERSION),
+              image_url="")
          for k, tag, att, t in insight_rows],
         key=lambda r: r["iou"],
     )

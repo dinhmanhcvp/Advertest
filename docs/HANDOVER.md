@@ -16,7 +16,7 @@ model only if it passes a blind gate (base mAP drop ≤ 1 pt **and** corrupted m
 | API (FastAPI) | `backend/app/` — `GET /api/v1/demo/audit-trail`, `/demo/proof-of-cure`, `/eval-report`, `POST /api/v1/triage/analyze`, `/attack/generate` |
 | Canonical failure taxonomy | `advertest/core/taxonomy.py` (`error_fisheye`, `error_motion_blur`, `error_sensor_noise`, `error_occlusion`) |
 | Presigned-URL ingestion | `src/services/data_connector.py` (TTL check + one re-sign, retries, cache purge) |
-| Documents | `docs/advertest_executive_report.html` (Ctrl+P → PDF), `docs/beautiful_architecture.html`, this file |
+| Documents | `docs/advertest_executive_report.html` (Ctrl+P → PDF), `docs/beautiful_architecture.html`, `docs/MENTOR_QA.md` (hard questions, answers, evidence, gaps), this file |
 
 ## 2. Measured results (one run)
 
@@ -88,3 +88,5 @@ Docker: `docker compose up --build` (see `.env.example`).
 | V2 weights saved with a verifiable hash | Done: `MyDrive/advertest/yolov7-face-v2.pt`, 15.99 MB, SHA-256 `8c6461c2fd9e9a7320fa75df26e632129ab316be1cce6b804a5709f97b6ec133` |
 | Weights transferred to the Core Data Lake | **Pending** (copy from Drive, or rerun with `WEIGHTS_PUT_URL`) |
 | Statistical confidence (more seeds / larger blind set) | **Pending** |
+| Per-sample reproducibility record, leak guard, Recall@FPPI | Implemented and unit-tested; **artifacts need one Colab rerun to contain them** |
+| Clean-only control experiment, official WIDER Easy/Medium/Hard, event-level split | **Pending** (see `docs/MENTOR_QA.md`) |

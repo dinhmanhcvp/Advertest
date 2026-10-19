@@ -237,3 +237,81 @@ def test_export_weights_records_hash_and_size(tmp_path):
     assert info["sha256"] == hashlib.sha256(ckpt.read_bytes()).hexdigest()
     assert info["bytes"] == 1500 and info["accepted_by_gate"] is True
     assert "worker-only" in info["location"]  # outside Colab and without a PUT URL nothing is uploaded
+
+
+# ---- mentor Q&A coverage: reproducibility, leakage, FPPI, ghost boxes, landmark geometry -------------------------
+
+
+def test_any_synthesized_sample_is_reproducible_from_its_record():
+    img = np.random.default_rng(5).integers(0, 255, (240, 320, 3), dtype=np.uint8)
+    boxes = [(120.0, 80.0, 200.0, 170.0)]
+    lm = [np.array([[140, 100], [180, 100], [160, 125], [145, 150], [175, 150]], float)]
+    tag, sev = cp.draw_attack(7, ("adv", 3))
+    a = cp.apply_attack(img, boxes, lm, 7, ("adv", 3), tag, sev)
+    record = {"reproduce": {"seed": 7, "key": ["adv", 3], "tag": tag, "severity": sev}}
+    b = cp.reproduce_sample(img, boxes, lm, record)
+    assert np.array_equal(a.image, b.image) and a.boxes == b.boxes and a.params == b.params
+    other = cp.apply_attack(img, boxes, lm, 7, ("adv", 4), tag, sev)
+    assert other.params != a.params or not np.array_equal(other.image, a.image)  # different key => different draw
+
+
+def test_draw_attack_is_deterministic_and_respects_weights():
+    assert cp.draw_attack(1, ("k", 1)) == cp.draw_attack(1, ("k", 1))
+    only_blur = [0, 1, 0, 0]
+    assert all(cp.draw_attack(1, ("k", i), weights=only_blur)[0] == "error_motion_blur" for i in range(20))
+
+
+def test_leak_guard_finds_near_duplicates_only():
+    rng = np.random.default_rng(0)
+    a = rng.integers(0, 255, (120, 160, 3), dtype=np.uint8)
+    near = np.clip(a.astype(int) + rng.integers(-3, 3, a.shape), 0, 255).astype(np.uint8)  # same scene, sensor noise
+    far = rng.integers(0, 255, (120, 160, 3), dtype=np.uint8)
+    assert cp.find_leaks([near, far], [a]) == {0}
+
+
+def test_recall_at_fppi_is_an_operating_point_metric():
+    gts = [[(0, 0, 10, 10)], [(0, 0, 10, 10)]]
+    dets = [
+        [cp.Det((0, 0, 10, 10), 0.9)],
+        [cp.Det((50, 50, 60, 60), 0.8), cp.Det((0, 0, 10, 10), 0.4)],  # a confident false positive outranks the hit
+    ]
+    out = cp.recall_at_fppi(dets, gts, targets=(0.0, 0.4, 0.5))
+    assert out["recall@fppi=0.0"] == pytest.approx(0.5)  # only the first hit before any false positive
+    assert out["recall@fppi=0.4"] == pytest.approx(0.5)  # the second hit costs 0.5 FP/image: over budget
+    assert out["recall@fppi=0.5"] == pytest.approx(1.0)  # one FP over two images is allowed at 0.5
+
+
+def test_tracker_does_not_chase_a_ghost():
+    seq = [[cp.Det((10 + 8 * i, 20, 50 + 8 * i, 80), 0.9)] for i in range(4)] + [[] for _ in range(8)]
+    out = cp.track_sequence(seq)
+    coasted = [o for o in out if o["recovered"]]
+    assert 0 < len(coasted) <= 4  # max_age: the track terminates, it does not coast forever
+    assert not out[-1]["tracked"]
+    steps = [coasted[i + 1]["box"][0] - coasted[i]["box"][0] for i in range(len(coasted) - 1)]
+    assert all(steps[i + 1] < steps[i] for i in range(len(steps) - 1))  # velocity damping: motion decays
+    tr = cp.VelocityTracker(frame_wh=(100, 100))
+    for i in range(3):
+        tr.update([cp.Det((60 + 15 * i, 20, 90 + 15 * i, 60), 0.9)])
+    assert (tr.update([])[0] is None) or tr.box is not None  # leaving the frame terminates the track
+
+
+def test_landmarks_follow_the_exact_radial_model_not_bbox_interpolation():
+    """Evidence for the keypoint-integrity answer: at severity 5 a face near the edge is warped non-linearly."""
+    w, h = 640, 480
+    k1, k2 = 0.10 * 5, 0.04 * 5  # what synthesize() uses for error_fisheye at severity 5
+    box = (480.0, 120.0, 600.0, 260.0)  # right edge of a chest-mount frame
+    lm = np.array([[510, 160], [570, 160], [540, 195], [515, 230], [565, 230]], float)
+    exact = cp.distort_points(lm, w, h, k1, k2)
+    nb = cp.box_after_distortion(box, w, h, k1, k2)
+    # naive alternative: keep each landmark at the same relative position inside the transformed bbox
+    rel = (lm - [box[0], box[1]]) / [box[2] - box[0], box[3] - box[1]]
+    naive = [nb[0], nb[1]] + rel * [nb[2] - nb[0], nb[3] - nb[1]]
+    err = np.linalg.norm(exact - naive, axis=1)
+    assert err.max() > 3.0, f"bbox interpolation would already be accurate ({err.max():.1f}px); the exact map matters"
+    # and the exact map agrees with where the warped pixels really go
+    img = np.zeros((h, w, 3), np.uint8)
+    x, y = int(lm[0][0]), int(lm[0][1])
+    img[y - 1 : y + 2, x - 1 : x + 2] = 255
+    out = cp.distort_image(img, k1, k2)
+    ys, xs = np.nonzero(out[..., 0] > 100)
+    assert abs(xs.mean() - exact[0][0]) < 3 and abs(ys.mean() - exact[0][1]) < 3
