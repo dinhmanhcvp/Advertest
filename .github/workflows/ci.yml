@@ -49,9 +49,8 @@ jobs:
           node-version: "22"
 
       - name: Install frontend dependencies
-        run: |
-          rm -f package-lock.json
-          npm install
+        # A committed lockfile avoids npm's dependency re-resolution bug ("edgesOut") seen without one.
+        run: npm ci
         working-directory: frontend
 
       - name: Run frontend tests
