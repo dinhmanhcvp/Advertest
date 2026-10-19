@@ -30,7 +30,7 @@ jobs:
       - name: Setup Node.js (for Frontend)
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Install Python Dependencies
         run: |
@@ -47,8 +47,8 @@ jobs:
       - name: Run Frontend Linting (ESLint)
         working-directory: ./frontend
         run: |
-          rm -f package-lock.json
-          npm install
+          # Committed lockfile + `npm ci`: re-resolving without one hits npm's "edgesOut" bug.
+          npm ci
           npm run lint
 
       - name: Execute PyTest Suite
