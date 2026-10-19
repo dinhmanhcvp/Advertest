@@ -185,7 +185,9 @@ async def analyze_triage(request: AnalyzeRequest, db: Session = Depends(get_db))
 
         reason_counts = {}
         worst_samples = []
-        for item in audit_data:
+        # audit_trail.json lists measured hard negatives, then synthesized samples ("wider_adv_*"): triage counts the former.
+        measured = [it for it in audit_data if not str(it.get("id", "")).startswith("wider_adv_")] or audit_data
+        for item in measured:
             trail = item.get("audit_trail", {})
             reason = normalize_tag(trail.get("insight_source", "Unknown"))
             reason_counts[reason] = reason_counts.get(reason, 0) + 1

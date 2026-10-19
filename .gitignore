@@ -131,3 +131,5 @@ notebooks/ziyfWn3x
 !/data/demo_artifacts/*.json
 
 *.tsbuildinfo
+
+advertest_artifacts.zip

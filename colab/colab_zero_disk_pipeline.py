@@ -713,6 +713,21 @@ def to_ref(box, w, h):
     return [round(x1, 1), round(y1, 1), round(x2 - x1, 1), round(y2 - y1, 1)]
 
 
+def crop_around(img, box, factor: float = 5.0, min_side: int = 96):
+    """Crop a square-ish window centred on `box` (clipped to the image). Returns (crop, x0, y0)."""
+    h, w = img.shape[:2]
+    bw, bh = box[2] - box[0], box[3] - box[1]
+    side = max(min_side, factor * max(bw, bh))
+    cx, cy = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
+    x0, y0 = int(max(0, min(w - 1, cx - side / 2))), int(max(0, min(h - 1, cy - side / 2 * 0.75)))
+    x1, y1 = int(min(w, x0 + side)), int(min(h, y0 + side * 0.75))
+    return img[y0:y1, x0:x1], x0, y0
+
+
+def shift_box(box, x0, y0):
+    return (box[0] - x0, box[1] - y0, box[2] - x0, box[3] - y0)
+
+
 def lmk_to_ref(lm, w, h):
     s = min(320 / w, 240 / h)
     px, py = (320 - w * s) / 2, (240 - h * s) / 2
@@ -926,19 +941,23 @@ def run_pipeline() -> Path:
         if tag in seen or len(poc) >= 3:
             continue
         seen.add(tag)
-        h, w = att.image.shape[:2]
-        v1box = to_ref(b1.box if b1 is not None else gb, w, h)
+        # Zoom on the face: WIDER faces are tiny in crowd scenes, so crop a window around the ground-truth box.
+        crop, x0, y0 = crop_around(att.image, gb)
+        h, w = crop.shape[:2]
+        sh = lambda b: shift_box(b, x0, y0)  # noqa: E731
+        v1_hit = b1 is not None and i1 >= 0.1  # a detection on a *different* face is not a V1 result for this face
         poc.append(dict(
             case_id=f"eval_wider_{len(poc) + 1:03d}",
             condition={"error_fisheye": "Chest-Mount Lens Distortion", "error_motion_blur": "Walking Head-Bob Blur",
                        "error_sensor_noise": "Extreme Exposure / ISO", "error_occlusion": "Hand Occlusion"}[tag],
             failure_tag=tag,
             delta=f"+{c2 - c1:.2f} Confidence Gain",
-            image=thumb_data_uri(att.image),
-            model_v1=dict(status="Failed" if c1 < CFG["hard_conf"] else "Missed", confidence=round(c1, 2), bbox=v1box,
-                          landmarks=lmk_to_ref(b1.lmk, w, h) if (b1 is not None and b1.lmk is not None and i1 > 0.1) else None),
-            model_v2=dict(status="Success", confidence=round(c2, 2), bbox=to_ref(b2.box, w, h),
-                          landmarks=lmk_to_ref(b2.lmk, w, h) if b2.lmk is not None else None),
+            image=thumb_data_uri(crop),
+            model_v1=dict(status="Failed" if c1 < CFG["hard_conf"] else "Missed", confidence=round(c1, 2),
+                          bbox=to_ref(sh(b1.box if v1_hit else gb), w, h),
+                          landmarks=lmk_to_ref(np.asarray(b1.lmk) - [x0, y0], w, h) if (v1_hit and b1.lmk is not None) else None),
+            model_v2=dict(status="Success", confidence=round(c2, 2), bbox=to_ref(sh(b2.box), w, h),
+                          landmarks=lmk_to_ref(np.asarray(b2.lmk) - [x0, y0], w, h) if b2.lmk is not None else None),
         ))
     report = dict(
         base_model=dict(base_map=round(base1, 4), corrupted_map=round(corr1, 4)),

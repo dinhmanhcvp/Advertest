@@ -18,6 +18,21 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspa
 from backend.app.main import app
 
 
+def _report():
+    import json
+
+    with open("data/demo_artifacts/eval_report.json", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def _measured_count():
+    import json
+
+    with open("data/demo_artifacts/audit_trail.json", encoding="utf-8") as f:
+        rows = json.load(f)
+    return len([r for r in rows if not r["id"].startswith("wider_adv_")]) or len(rows)
+
+
 @pytest_asyncio.fixture
 async def client():
     from backend.app.db.session import init_db
@@ -70,8 +85,8 @@ async def test_eval_report(client):
     assert "base_model" in data
     assert "advertest_model" in data
     assert "deltas" in data
-    assert data["base_model"]["base_map"] == 0.914
-    assert data["advertest_model"]["corrupted_map"] == 0.768
+    assert data["base_model"]["base_map"] == _report()["base_model"]["base_map"]
+    assert data["advertest_model"]["corrupted_map"] == _report()["advertest_model"]["corrupted_map"]
 
 
 # ─────────────────────── Demo Endpoints ───────────────────────
@@ -111,7 +126,7 @@ async def test_triage_analyze(client):
     assert "failure_distribution" in data
     assert len(data["failure_distribution"]) == 4
     assert "worst_samples" in data
-    assert data["total_hard_negatives"] == 200
+    assert data["total_hard_negatives"] == _measured_count()
     for item in data["failure_distribution"]:
         assert "name" in item
         assert "value" in item

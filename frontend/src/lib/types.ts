@@ -66,6 +66,7 @@ export interface EvalReport {
   advertest_model: { base_map: number; corrupted_map: number };
   hard_negative_recovery: number;
   gate: { max_base_drop: number; min_corrupted_gain: number; accepted: boolean };
+  provenance?: { target_domain?: string; n_blind?: number; n_train?: number; epochs?: number; ego4d_real?: unknown };
 }
 
 export interface TrackFrame {

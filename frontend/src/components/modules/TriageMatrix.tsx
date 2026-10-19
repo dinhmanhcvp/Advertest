@@ -7,7 +7,7 @@ import { Badge, Card, Eyebrow, PrimaryButton, SectionTitle, Skeleton, SPRING } f
 import { pct, TAGS } from "@/lib/taxonomy";
 import type { WorkspaceData } from "@/lib/types";
 
-const FIELDS = [
+const DEMO_FIELDS = [
   { label: "Source", value: "Data Block Presigned Stream: ego4d_social_val.tar" },
   { label: "Base reference", value: "wider_face_val.pt" },
   { label: "Model", value: "yolov7-face-baseline.pt" },
@@ -54,6 +54,15 @@ export default function TriageMatrix({
   };
 
   const total = data.slices.reduce((a, s) => a + s.count, 0);
+  const prov = data.source === "api" ? data.report.provenance : undefined;
+  const measured = !!prov?.n_train; // real Colab run: show what was actually used instead of the spec text
+  const fields = measured
+    ? [
+        { label: "Source", value: `WIDER FACE validation (streamed) · ${prov?.n_train} train / ${prov?.n_blind} blind images` },
+        { label: "Base reference", value: "WIDER FACE · clean (no corruption)" },
+        { label: "Model", value: "derronqi/yolov7-face · yolov7-tiny-face (baseline V1)" },
+      ]
+    : DEMO_FIELDS;
 
   return (
     <section className="space-y-4">
@@ -65,7 +74,7 @@ export default function TriageMatrix({
 
       <Card className="p-4">
         <div className="grid gap-3 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end">
-          {FIELDS.map((f) => (
+          {fields.map((f) => (
             <label key={f.label} className="block min-w-0">
               <Eyebrow>{f.label}</Eyebrow>
               <input
@@ -136,7 +145,7 @@ export default function TriageMatrix({
         {/* Hard negative table */}
         <Card className="overflow-hidden">
           <div className="flex items-center justify-between border-b border-white/[0.08] px-5 py-3">
-            <Eyebrow>Hard negative isolation · worst Ego4D frames</Eyebrow>
+            <Eyebrow>Hard negative isolation · {measured ? "worst frames (measured)" : "worst Ego4D frames"}</Eyebrow>
             <span className="font-mono text-[11px] text-zinc-500">{data.hardNegatives.length} shown</span>
           </div>
           <div className="max-h-[420px] overflow-auto">
@@ -197,9 +206,19 @@ export default function TriageMatrix({
       <Card className="relative overflow-hidden p-5" active>
         <div className="flex flex-wrap items-center justify-between gap-4">
           <p className="max-w-3xl text-sm text-zinc-300">
-            Instead of downloading <span className="font-mono text-white">2.4 TB</span> of raw video, isolate the top{" "}
-            <span className="font-mono text-white">500</span> hard negative frames (<span className="font-mono text-white">48 MB</span>) for
-            targeted adversarial synthesis. Raw frames are purged from the temporary cache after extraction.
+            {measured ? (
+              <>
+                The baseline failed on <span className="font-mono text-white">{total}</span> of{" "}
+                <span className="font-mono text-white">{prov?.n_train}</span> streamed images (IoU &lt; 0.50 or conf &lt; 0.40).
+                Only these hard negatives go to targeted synthesis; the raw dataset is streamed and never stored on the laptop.
+              </>
+            ) : (
+              <>
+                Instead of downloading <span className="font-mono text-white">2.4 TB</span> of raw video, isolate the top{" "}
+                <span className="font-mono text-white">500</span> hard negative frames (<span className="font-mono text-white">48 MB</span>) for
+                targeted adversarial synthesis. Raw frames are purged from the temporary cache after extraction.
+              </>
+            )}
           </p>
           <button
             onClick={onProceed}

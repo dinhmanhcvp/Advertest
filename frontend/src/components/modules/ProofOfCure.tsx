@@ -8,6 +8,8 @@ import { Badge, Card, cx, Eyebrow, PrimaryButton, SectionTitle, SPRING } from "@
 import { landmarksFor, pct, TAGS } from "@/lib/taxonomy";
 import type { CureCase, FailureTag, WorkspaceData } from "@/lib/types";
 
+const signed = (v: number, d = 1) => `${v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(d)}%`;
+
 function effects(tag: FailureTag) {
   switch (tag) {
     case "error_fisheye":
@@ -24,14 +26,15 @@ function effects(tag: FailureTag) {
 function Scene({ c, side }: { c: CureCase; side: "v1" | "v2" }) {
   const m = side === "v1" ? c.model_v1 : c.model_v2;
   const face = c.model_v2.bbox;
-  const [x, y, w, h] = m.bbox;
+  const noDet = side === "v1" && m.confidence <= 0; // V1 produced nothing for this face: show where it should be
+  const [x, y, w, h] = noDet ? face : m.bbox;
   const color = side === "v1" ? "#ef4444" : "#10b981";
   return (
     <CVFrame box={face} {...(c.image ? {} : effects(c.failure_tag))} imageUrl={c.image} hud={`${c.case_id} · ${c.condition.toUpperCase()}`} className="h-full w-full">
       <g>
         <rect x={x} y={y} width={w} height={h} fill="none" stroke={color} strokeWidth="1" strokeDasharray={side === "v1" ? "3 2" : undefined} />
         <text x={x} y={y - 1.8} fill={color} fontSize="3.4" fontFamily="var(--font-jb-mono), monospace">
-          {side === "v1" ? "V1" : "V2"} · conf {m.confidence.toFixed(2)} [{side === "v1" ? "FAILED" : "SUCCESS"}]
+          {side === "v1" ? "V1" : "V2"} · {noDet ? "no detection" : `conf ${m.confidence.toFixed(2)}`} [{side === "v1" ? "FAILED" : "SUCCESS"}]
         </text>
         {side === "v2" &&
           (m.landmarks ?? landmarksFor(m.bbox)).map(([lx, ly], i) => (
@@ -121,18 +124,18 @@ export default function ProofOfCure({ data }: { data: WorkspaceData }) {
           eyebrow="Base domain mAP · WIDER FACE"
           from={pct(report.base_model.base_map)}
           to={pct(report.advertest_model.base_map)}
-          badge={`Δ -${baseDrop.toFixed(1)}% | ${baseDrop <= 1 ? "PASSED ≤ 1.0% DROP GATE" : "FAILED GATE"}`}
+          badge={`Δ ${signed(-baseDrop)} | ${baseDrop <= 1 ? "PASSED ≤ 1.0% DROP GATE" : "FAILED GATE"}`}
           tone={baseDrop <= 1 ? "cure" : "fail"}
-          up={false}
+          up={baseDrop > 0}
         />
         <Metric
-          eyebrow="Target egocentric mAP · Ego4D corrupted"
+          eyebrow={`Target mAP · ${report.provenance?.target_domain?.includes("proxy") ? "egocentric proxy (WIDER + physical attacks)" : "Ego4D"}`}
           from={pct(report.base_model.corrupted_map)}
           to={pct(report.advertest_model.corrupted_map)}
-          badge={`▲ +${gain.toFixed(1)}% robustness gain`}
+          badge={`▲ ${signed(gain)} robustness gain`}
           tone="cure"
         />
-        <Metric eyebrow="Hard negatives cured" to={pct(report.hard_negative_recovery)} badge={`recovery across ${total} isolated frames`} tone="neutral" />
+        <Metric eyebrow="Hard negatives cured" to={pct(report.hard_negative_recovery)} badge={`of ${total} isolated hard negatives`} tone="neutral" />
       </div>
 
       <Card className="p-4">

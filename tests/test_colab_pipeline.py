@@ -214,3 +214,15 @@ def test_shim_blocks_wandb_and_stubs_repo_validation(tmp_path, capsys):
     cp.run_logged([_sys.executable, "-c", cp.NUMPY_COMPAT_SHIM, "train.py"], cwd=tmp_path)
     out = capsys.readouterr().out
     assert "wandb blocked" in out and "val 7 1 3" in out
+
+
+def test_crop_around_zooms_on_the_face_and_keeps_boxes_inside():
+    img = np.zeros((600, 800, 3), np.uint8)
+    gb = (400.0, 300.0, 420.0, 325.0)  # a tiny crowd-scene face
+    crop, x0, y0 = cp.crop_around(img, gb)
+    h, w = crop.shape[:2]
+    sb = cp.shift_box(gb, x0, y0)
+    assert w <= 130 and h <= 100 and w >= 90  # zoomed window, not the whole 800x600 frame
+    assert 0 <= sb[0] < sb[2] <= w and 0 <= sb[1] < sb[3] <= h
+    ref = cp.to_ref(sb, w, h)
+    assert ref[2] > 8  # the face is no longer a few reference units wide

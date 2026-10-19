@@ -39,14 +39,20 @@ const isReport = (v: unknown): v is EvalReport => {
   return !!r && typeof r.base_model?.base_map === "number" && typeof r.advertest_model?.corrupted_map === "number";
 };
 
-function fromAudit(records: AuditRecord[]): { slices: FailureSlice[]; negatives: HardNegative[]; samples: StudioSample[] } {
+const isSynth = (r: AuditRecord) => r.id.startsWith("wider_adv_");
+
+function fromAudit(all: AuditRecord[]): { slices: FailureSlice[]; negatives: HardNegative[]; samples: StudioSample[] } {
+  // The artifact lists measured hard negatives first and the synthesized adversarial samples after them.
+  const hard = all.filter((r) => !isSynth(r));
+  const synth = all.filter(isSynth);
+  const records = hard.length ? hard : all;
   const counts = new Map<string, number>();
   const negatives: HardNegative[] = records.map((r) => {
     const tag = asTag(r.audit_trail.insight_source);
     counts.set(tag, (counts.get(tag) ?? 0) + 1);
     return {
       id: r.id,
-      mount: TAGS[tag].mount,
+      mount: isSynth(r) || r.id.startsWith("wider_") ? "WIDER FACE · simulated" : TAGS[tag].mount,
       tag,
       conf: r.confidence ?? 0.2,
       iou: r.iou ?? 0.2,
@@ -61,12 +67,13 @@ function fromAudit(records: AuditRecord[]): { slices: FailureSlice[]; negatives:
   negatives.sort((a, b) => a.iou - b.iou);
 
   // Studio samples: first record of each tag, then fill — keeps the sample list diverse.
+  const pool = synth.length ? synth : records;
   const picked: AuditRecord[] = [];
   for (const tag of TAG_ORDER) {
-    const hit = records.find((r) => asTag(r.audit_trail.insight_source) === tag);
+    const hit = pool.find((r) => asTag(r.audit_trail.insight_source) === tag);
     if (hit) picked.push(hit);
   }
-  for (const r of records) if (picked.length < 6 && !picked.includes(r)) picked.push(r);
+  for (const r of pool) if (picked.length < 6 && !picked.includes(r)) picked.push(r);
 
   const samples = picked.map((r, i) => {
     const tag = asTag(r.audit_trail.insight_source);

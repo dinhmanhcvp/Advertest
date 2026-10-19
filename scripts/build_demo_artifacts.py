@@ -1,4 +1,9 @@
-"""Regenerate the pre-computed DEMO_MODE artifacts in data/demo_artifacts/.
+"""SYNTHETIC placeholder artifacts for DEMO_MODE (NOT measured results).
+
+The committed files in data/demo_artifacts/ are real outputs of colab/colab_zero_disk_pipeline.py; this script only
+exists to restore a plausible demo if those files are ever deleted.
+
+Regenerate placeholder artifacts in data/demo_artifacts/.
 
 Deterministic (seeded). Produces 200 hard-negative audit records over the four
 canonical failure tags (42.5 / 31.0 / 18.5 / 8.0 %), three proof-of-cure cases
