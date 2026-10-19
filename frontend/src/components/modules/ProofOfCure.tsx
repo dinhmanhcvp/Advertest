@@ -80,6 +80,55 @@ function Metric({
   );
 }
 
+function CheckCard({ ok, label, detail }: { ok: boolean | undefined; label: string; detail: string }) {
+  const tone = ok === undefined ? "neutral" : ok ? "cure" : "fail";
+  return (
+    <div className="rounded-md border border-white/[0.08] p-3">
+      <Badge tone={tone}>{ok === undefined ? "n/a" : ok ? "yes" : "no"}</Badge>
+      <p className="mt-2 text-xs text-zinc-300">{label}</p>
+      <p className="mt-1 font-mono text-[11px] text-zinc-500">{detail}</p>
+    </div>
+  );
+}
+
+/** Validity evidence beyond the headline gate: control experiment, confidence interval, repeated draws, FPPI. */
+function ValidityChecks({ report }: { report: WorkspaceData["report"] }) {
+  const g = report.gate;
+  const ci = g.corrupted_gain_ci95;
+  const ctrl = report.control_model;
+  const rep = report.corruption_repeats;
+  const f = report.recall_at_fppi?.corrupted;
+  if (!ci && !ctrl && !rep && !f) return null;
+  const pts = (v: number) => `${(v * 100).toFixed(1)}`;
+  return (
+    <Card className="p-5">
+      <Eyebrow>Validity checks · is the gain real?</Eyebrow>
+      <div className="mt-3 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+        <CheckCard
+          ok={g.gain_statistically_supported}
+          label="Gain excludes zero (95% bootstrap CI over blind images)"
+          detail={ci ? `[${pts(ci[0])}, ${pts(ci[1])}] pts` : "not computed"}
+        />
+        <CheckCard
+          ok={g.beats_clean_only_control}
+          label="Beats a clean-only fine-tune with the same budget"
+          detail={ctrl ? `control corrupted mAP ${pct(ctrl.corrupted_map)} vs V2 ${pct(report.advertest_model.corrupted_map)}` : "control not run"}
+        />
+        <CheckCard
+          ok={rep ? rep.v2_minus_v1_mean - 2 * rep.v2_minus_v1_std > 0 : undefined}
+          label="Stable across repeated random corruption draws"
+          detail={rep ? `${(rep.v2_minus_v1_mean * 100).toFixed(1)} ± ${(rep.v2_minus_v1_std * 100).toFixed(1)} pts (${rep.draws.length} draws)` : "not computed"}
+        />
+        <CheckCard
+          ok={f ? (f.v2["recall@fppi=1.0"] ?? 0) >= (f.v1["recall@fppi=1.0"] ?? 0) : undefined}
+          label="Recall at a fixed false-positive budget (1 FP / image), corrupted set"
+          detail={f ? `V1 ${pct(f.v1["recall@fppi=1.0"] ?? 0)} → V2 ${pct(f.v2["recall@fppi=1.0"] ?? 0)}` : "not computed"}
+        />
+      </div>
+    </Card>
+  );
+}
+
 export default function ProofOfCure({ data }: { data: WorkspaceData }) {
   const { report, cases } = data;
   const [caseIdx, setCaseIdx] = useState(0);
@@ -137,6 +186,8 @@ export default function ProofOfCure({ data }: { data: WorkspaceData }) {
         />
         <Metric eyebrow="Hard negatives cured" to={pct(report.hard_negative_recovery)} badge={`of ${total} isolated hard negatives`} tone="neutral" />
       </div>
+
+      <ValidityChecks report={report} />
 
       <Card className="p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">

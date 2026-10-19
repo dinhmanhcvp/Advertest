@@ -315,3 +315,95 @@ def test_landmarks_follow_the_exact_radial_model_not_bbox_interpolation():
     out = cp.distort_image(img, k1, k2)
     ys, xs = np.nonzero(out[..., 0] > 100)
     assert abs(xs.mean() - exact[0][0]) < 3 and abs(ys.mean() - exact[0][1]) < 3
+
+
+# ---- control experiment, bootstrap CIs and a full dry run of run_pipeline() ---------------------------------------
+
+
+def test_bootstrap_ci_separates_a_real_gain_from_noise():
+    gts = [[(0, 0, 10, 10)] for _ in range(40)]
+    miss = [[] for _ in range(40)]
+    hit = [[cp.Det((0, 0, 10, 10), 0.9)] for _ in range(40)]
+    real = cp.bootstrap_diff_ci(miss, hit, gts, n_boot=50, seed=1)
+    assert real["lo"] > 0.9 and real["mean"] == pytest.approx(1.0)
+    same = cp.bootstrap_diff_ci(hit, hit, gts, n_boot=50, seed=1)
+    assert same["lo"] <= 0 <= same["hi"] and same["mean"] == 0.0
+    assert cp.bootstrap_diff_ci(miss, hit, gts, n_boot=50, seed=1) == real  # deterministic
+
+
+class _FakeDetector:
+    """Finds the bright 'face' square; confidence = its contrast. 'v2'/'ctrl' checkpoints get a small boost."""
+
+    def __init__(self, weights, repo, img_size=640, conf=0.25, nms_iou=0.45):
+        self.boost = 0.15 if "v2" in str(weights) else 0.05 if "ctrl" in str(weights) else 0.0
+
+    def predict(self, bgr):
+        import cv2
+
+        g = cv2.GaussianBlur(cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY), (15, 15), 0)
+        _, mx, _, loc = cv2.minMaxLoc(g)
+        x, y = loc
+        x1, y1, x2, y2 = max(0, x - 20), max(0, y - 20), min(bgr.shape[1], x + 20), min(bgr.shape[0], y + 20)
+        contrast = float(g[y1:y2, x1:x2].mean() - g.mean())
+        score = float(min(1.0, max(0.0, contrast / 120.0 + self.boost)))
+        lm = np.array([[x - 8, y - 6], [x + 8, y - 6], [x, y], [x - 6, y + 8], [x + 6, y + 8]], float)
+        return [cp.Det((float(x1), float(y1), float(x2), float(y2)), score, lm)]
+
+
+def _fake_stream(n):
+    rng = np.random.default_rng(11)
+    for _ in range(n):
+        img = rng.integers(40, 80, (240, 320, 3), dtype=np.uint8)
+        x, y = int(rng.integers(60, 240)), int(rng.integers(50, 170))
+        img[y - 20 : y + 20, x - 20 : x + 20] = 255
+        yield img, [(float(x - 20), float(y - 20), float(x + 20), float(y + 20))], [{}]
+
+
+def test_full_pipeline_dry_run_produces_every_artifact_and_reproducible_samples(tmp_path, monkeypatch):
+    import json
+    import zipfile
+
+    import cv2
+
+    wd = tmp_path / "wd"
+    (wd / "yolov7_face").mkdir(parents=True)
+    (wd / "yolov7-tiny-face.pt").write_bytes(b"weights")
+    for k, v in dict(workdir=str(wd), n_pool=44, n_blind=14, epochs=1, n_boot=20, corruption_repeats=2, run_control=True).items():
+        monkeypatch.setitem(cp.CFG, k, v)
+    monkeypatch.setattr(cp, "stream_wider", lambda n: _fake_stream(n))
+    monkeypatch.setattr(cp, "FaceDetector", _FakeDetector)
+    trained = []
+
+    def fake_finetune(repo, weights, data_yaml, name):
+        assert Path(data_yaml).exists()
+        trained.append(name)
+        p = tmp_path / f"{name}.pt"
+        p.write_bytes(name.encode())
+        return p
+
+    monkeypatch.setattr(cp, "finetune", fake_finetune)
+    zpath = cp.run_pipeline()
+
+    assert trained == ["advertest_v2", "advertest_ctrl"]
+    out = zipfile.ZipFile(zpath)
+    assert sorted(out.namelist()) == ["audit_trail.json", "eval_report.json", "manifest.json", "proof_of_cure.json"]
+    rep = json.loads(out.read("eval_report.json"))
+    assert rep["control_model"]["note"] and "v2_minus_control" in rep["stats"]["corrupted"]
+    assert "gain_statistically_supported" in rep["gate"] and "beats_clean_only_control" in rep["gate"]
+    assert len(rep["corruption_repeats"]["draws"]) == 2
+    assert set(rep["recall_at_fppi"]) == {"clean", "corrupted"}
+    assert rep["provenance"]["v1_sha256"] and "leaks_removed" in rep["provenance"]
+    manifest = json.loads(out.read("manifest.json"))
+    assert manifest["weights"]["sha256"] and manifest["weights"]["bytes"] > 0
+
+    audit = json.loads(out.read("audit_trail.json"))
+    adv = [r for r in audit if r["id"].startswith("wider_adv_")]
+    assert adv and all("reproduce" in r and r["audit_trail"]["parameters"] for r in audit if "reproduce" in r)
+    # rebuild the first synthesized sample from its record + source image: must equal what was written to disk
+    rec = adv[0]
+    src_img, gts, _ = list(_fake_stream(44))[rec["reproduce"]["source"]["index"]]
+    rebuilt = cp.reproduce_sample(src_img, gts, [None] * len(gts), rec)
+    ok, buf = cv2.imencode(".jpg", rebuilt.image, [cv2.IMWRITE_JPEG_QUALITY, 90])
+    on_disk = cv2.imread(str(wd / "ds" / "images" / "train" / f"adv_{int(rec['id'].split('_')[-1]):04d}.jpg"))
+    assert np.array_equal(cv2.imdecode(buf, cv2.IMREAD_COLOR), on_disk)
+    assert rebuilt.params == rec["audit_trail"]["parameters"]

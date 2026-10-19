@@ -65,7 +65,19 @@ export interface EvalReport {
   base_model: { base_map: number; corrupted_map: number };
   advertest_model: { base_map: number; corrupted_map: number };
   hard_negative_recovery: number;
-  gate: { max_base_drop: number; min_corrupted_gain: number; accepted: boolean };
+  gate: {
+    max_base_drop: number;
+    min_corrupted_gain: number;
+    accepted: boolean;
+    corrupted_gain_ci95?: [number, number];
+    gain_statistically_supported?: boolean;
+    beats_clean_only_control?: boolean;
+  };
+  /** Same init / epochs / clean images as V2 but without adversarial samples: rules out "just more WIDER data". */
+  control_model?: { base_map: number; corrupted_map: number; note?: string } | null;
+  stats?: Record<"clean" | "corrupted", Record<string, { mean: number; lo: number; hi: number; n_images: number }>>;
+  corruption_repeats?: { v2_minus_v1_mean: number; v2_minus_v1_std: number; draws: unknown[] };
+  recall_at_fppi?: Record<"clean" | "corrupted", Record<"v1" | "v2", Record<string, number>>>;
   provenance?: { target_domain?: string; n_blind?: number; n_train?: number; epochs?: number; ego4d_real?: unknown };
 }
 

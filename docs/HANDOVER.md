@@ -43,8 +43,8 @@ WIDER FACE validation, streamed: 160 images for training, **80 held-out images**
 ## 4. Reproduce the measured run (Colab, no local disk)
 
 1. Colab → File → Open notebook → GitHub → `dinhmanhcvp/Advertest` → `colab/colab_zero_disk_pipeline.ipynb`; Runtime → T4 GPU.
-2. Optional env before running: `EPOCHS`, `WIDER_DIR` (if Hugging Face streaming is unavailable the notebook downloads the official WIDER archive to the VM disk), `EGO4D_PRESIGNED_URLS` (comma-separated), `ARTIFACT_PUT_URL`, `WEIGHTS_PUT_URL`.
-3. Run all (~10–25 min estimated). Download `advertest_artifacts.zip` (< 1 MB).
+2. Optional env before running: `EPOCHS`, `N_POOL` (default 400 images streamed), `N_BLIND` (default 150 held-out), `RUN_CONTROL` (1 = also train the clean-only control), `N_BOOT` (bootstrap resamples), `CORRUPTION_REPEATS` (independent corruption draws of the blind set), `WIDER_DIR` (if Hugging Face streaming is unavailable the notebook downloads the official WIDER archive to the VM disk), `EGO4D_PRESIGNED_URLS` (comma-separated), `ARTIFACT_PUT_URL`, `WEIGHTS_PUT_URL`.
+3. Run all (estimated 30–60 min with the control model; set `RUN_CONTROL=0` and `EPOCHS=10` for a quick check). Download `advertest_artifacts.zip` (< 1 MB).
 4. Unzip into `data/demo_artifacts/`, copy the three JSON files to `frontend/public/demo/`, commit, push → Vercel redeploys.
 5. The V2 checkpoint is copied to Google Drive (`MyDrive/advertest/yolov7-face-v2.pt`) or PUT to `WEIGHTS_PUT_URL`; its SHA-256 is in `manifest.json` → `weights`.
 
@@ -89,4 +89,5 @@ Docker: `docker compose up --build` (see `.env.example`).
 | Weights transferred to the Core Data Lake | **Pending** (copy from Drive, or rerun with `WEIGHTS_PUT_URL`) |
 | Statistical confidence (more seeds / larger blind set) | **Pending** |
 | Per-sample reproducibility record, leak guard, Recall@FPPI | Implemented and unit-tested; **artifacts need one Colab rerun to contain them** |
-| Clean-only control experiment, official WIDER Easy/Medium/Hard, event-level split | **Pending** (see `docs/MENTOR_QA.md`) |
+| Clean-only control model, 95% bootstrap CI, repeated corruption draws, larger blind set (150) | Implemented; the whole pipeline is covered by an offline dry-run test (fake detector); **needs one Colab rerun to produce numbers** — the UI then shows a "Validity checks" panel |
+| Official WIDER Easy/Medium/Hard, event-level split, training-seed variance | **Pending** (see `docs/MENTOR_QA.md`) |

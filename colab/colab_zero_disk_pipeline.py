@@ -49,8 +49,8 @@ CFG = dict(
     weights_gdrive_id="1Mona-I4PclJr5mjX1qb8dgDeMpYyBcwM",  # yolov7-tiny-face, from the repo README
     wider_hf_id="CUHK-CSE/wider_face",
     wider_dir=os.environ.get("WIDER_DIR", ""),  # optional: extracted WIDER_val + wider_face_split
-    n_pool=240,  # images streamed from WIDER (train/blind are carved out of this)
-    n_blind=80,  # held-out images never used for synthesis or training
+    n_pool=int(os.environ.get("N_POOL", "400")),  # images streamed from WIDER (train/blind are carved out of this)
+    n_blind=int(os.environ.get("N_BLIND", "150")),  # held-out images never used for synthesis or training
     img_size=640,
     det_conf=0.25,  # detector output threshold
     hard_conf=0.40,  # hard negative: best matched confidence below this ...
@@ -60,9 +60,12 @@ CFG = dict(
     ego4d_stride=2,
     epochs=int(os.environ.get("EPOCHS", "30")),
     batch=16,
+    run_control=os.environ.get("RUN_CONTROL", "1") == "1",  # clean-only fine-tune with the same budget
+    n_boot=int(os.environ.get("N_BOOT", "300")),
+    corruption_repeats=int(os.environ.get("CORRUPTION_REPEATS", "3")),
     max_base_drop=0.01,
     min_corrupted_gain=0.05,
-    seed=7,
+    seed=int(os.environ.get("SEED", "7")),
     artifact_put_url=os.environ.get("ARTIFACT_PUT_URL", ""),  # optional presigned PUT to the Core Data Lake
 )
 
@@ -806,6 +809,50 @@ def evaluate(detector, items):
     return average_precision(dets, [g for _, g in items], CFG["hard_iou"]), dets
 
 
+def bootstrap_diff_ci(dets_a, dets_b, gts, n_boot: int = 300, seed: int = 0, iou_thr: float = 0.5, alpha: float = 0.05) -> dict:
+    """Paired bootstrap over images of AP(b) - AP(a): mean and (1 - alpha) percentile interval, in AP units."""
+    rng = np.random.default_rng(seed)
+    n = len(gts)
+    diffs = []
+    for _ in range(n_boot):
+        idx = rng.integers(0, n, n)
+        g = [gts[i] for i in idx]
+        diffs.append(
+            average_precision([dets_b[i] for i in idx], g, iou_thr) - average_precision([dets_a[i] for i in idx], g, iou_thr)
+        )
+    d = np.asarray(diffs)
+    return dict(
+        mean=round(float(d.mean()), 4),
+        lo=round(float(np.percentile(d, 100 * alpha / 2)), 4),
+        hi=round(float(np.percentile(d, 100 * (1 - alpha / 2))), 4),
+        n_boot=n_boot,
+        n_images=n,
+    )
+
+
+def finetune(repo: str, weights: str, data_yaml, name: str) -> Path:
+    """Run yolov7-face's own trainer (keypoint loss on) and return the resulting checkpoint."""
+    cfg_yaml, hyp_yaml = Path(repo, "cfg", "yolov7-tiny-face.yaml"), Path(repo, "data", "hyp.scratch.tiny.yaml")
+    for need in (cfg_yaml, hyp_yaml):
+        assert need.exists(), f"{need} missing; repo layout changed: {[p.name for p in need.parent.glob('*')]}"
+    cmd = [
+        sys.executable, "-c", NUMPY_COMPAT_SHIM, "train.py", "--data", str(data_yaml), "--cfg", str(cfg_yaml), "--hyp", str(hyp_yaml),
+        "--weights", weights, "--epochs", str(CFG["epochs"]), "--batch-size", str(CFG["batch"]),
+        "--img-size", str(CFG["img_size"]), str(CFG["img_size"]), "--kpt-label", "5",
+        "--name", name, "--workers", "2", "--exist-ok", "--notest",
+    ]
+    # The repo's train.py runs check_requirements() against requirements.txt, which pins versions that no longer
+    # exist for Colab's Python (e.g. onnxruntime==1.10.0). Dependencies are preinstalled, so neutralise the pins
+    # in the Colab clone only. Official checkpoints are pickled models, so allow full unpickling for the trainer.
+    Path(repo, "requirements.txt").write_text("# pins removed on the Colab worker (deps preinstalled)\n")
+    # W&B would demand an API key; experiment tracking is not needed on the worker.
+    run_logged(cmd, cwd=repo, env={"TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD": "1", "WANDB_MODE": "disabled", "WANDB_DISABLED": "true"})
+    wdir = Path(repo, "runs", "train", name, "weights")
+    ckpt = next((c for c in (wdir / "best.pt", wdir / "last.pt") if c.exists()), None)  # --notest may skip best.pt
+    assert ckpt is not None, f"trainer produced no checkpoint in {wdir}: {[p.name for p in wdir.glob('*')]}"
+    return ckpt
+
+
 def to_ref(box, w, h):
     """Map an image-pixel xyxy box to [x,y,w,h] in the UI's 160x120 letterboxed reference frame."""
     s = min(320 / w, 240 / h)
@@ -1010,27 +1057,23 @@ def run_pipeline() -> Path:
         f"train: {ds / 'images' / 'train'}\nval: {ds / 'images' / 'val'}\nnc: 1\nnames: ['face']\n"
     )
 
-    # ---- fine-tune (yolov7-face's own trainer, keypoint loss on) ------------------------------------
-    log(f"fine-tuning {CFG['epochs']} epochs on {n_written + len(audit)} images ...")
-    cfg_yaml, hyp_yaml = Path(repo, "cfg", "yolov7-tiny-face.yaml"), Path(repo, "data", "hyp.scratch.tiny.yaml")
-    for need in (cfg_yaml, hyp_yaml):
-        assert need.exists(), f"{need} missing; repo layout changed: {[p.name for p in need.parent.glob('*')]}"
-    cmd = [
-        sys.executable, "-c", NUMPY_COMPAT_SHIM, "train.py", "--data", str(wd / "advertest.yaml"), "--cfg", str(cfg_yaml), "--hyp", str(hyp_yaml),
-        "--weights", weights, "--epochs", str(CFG["epochs"]), "--batch-size", str(CFG["batch"]),
-        "--img-size", str(CFG["img_size"]), str(CFG["img_size"]), "--kpt-label", "5",
-        "--name", "advertest_v2", "--workers", "2", "--exist-ok", "--notest",
-    ]
-    # The repo's train.py runs check_requirements() against requirements.txt, which pins versions that no longer
-    # exist for Colab's Python (e.g. onnxruntime==1.10.0). Dependencies are preinstalled, so neutralise the pins
-    # in the Colab clone only. Official checkpoints are pickled models, so allow full unpickling for the trainer.
-    Path(repo, "requirements.txt").write_text("# pins removed on the Colab worker (deps preinstalled)\n")
-    # W&B would demand an API key; experiment tracking is not needed on the worker.
-    run_logged(cmd, cwd=repo, env={"TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD": "1", "WANDB_MODE": "disabled", "WANDB_DISABLED": "true"})
-    wdir = Path(repo, "runs", "train", "advertest_v2", "weights")
-    v2_w = next((c for c in (wdir / "best.pt", wdir / "last.pt") if c.exists()), None)  # --notest may skip best.pt
-    assert v2_w is not None, f"trainer produced no checkpoint in {wdir}: {[p.name for p in wdir.glob('*')]}"
+    # ---- fine-tune V2 (clean replay + targeted adversarial samples) ---------------------------------
+    log(f"fine-tuning V2: {CFG['epochs']} epochs on {n_written + len(audit)} images ...")
+    v2_w = finetune(repo, weights, wd / "advertest.yaml", "advertest_v2")
     v2 = FaceDetector(str(v2_w), repo, CFG["img_size"], CFG["det_conf"])
+
+    # ---- control: same init, same epochs, same clean images, but NO adversarial samples ---------------
+    # If V2 only beats V1 because it saw more WIDER data, the control improves just as much.
+    ctrl = None
+    if CFG["run_control"]:
+        clean_list = sorted((ds / "images" / "train").glob("clean_*.jpg"))
+        (wd / "train_clean.txt").write_text("\n".join(str(p) for p in clean_list))
+        (wd / "advertest_clean.yaml").write_text(
+            f"train: {wd / 'train_clean.txt'}\nval: {ds / 'images' / 'val'}\nnc: 1\nnames: ['face']\n"
+        )
+        log(f"fine-tuning clean-only control: {CFG['epochs']} epochs on {len(clean_list)} images ...")
+        ctrl_w = finetune(repo, weights, wd / "advertest_clean.yaml", "advertest_ctrl")
+        ctrl = FaceDetector(str(ctrl_w), repo, CFG["img_size"], CFG["det_conf"])
 
     # ---- blind evaluation: images never used above -------------------------------------------------
     log("blind evaluation ...")
@@ -1050,6 +1093,47 @@ def run_pipeline() -> Path:
     corr1, cdets1 = evaluate(v1, corr_items)
     corr2, cdets2 = evaluate(v2, corr_items)
     gate = blind_gate(base1, base2, corr1, corr2, CFG["max_base_drop"], CFG["min_corrupted_gain"])
+    gts_clean, gts_corr = [g for _, g in clean_items], [g for _, g in corr_items]
+    base3 = corr3 = None
+    stats = dict(
+        corrupted=dict(v2_minus_v1=bootstrap_diff_ci(cdets1, cdets2, gts_corr, CFG["n_boot"], CFG["seed"])),
+        clean=dict(v2_minus_v1=bootstrap_diff_ci(bdets1, bdets2, gts_clean, CFG["n_boot"], CFG["seed"])),
+    )
+    control_report = None
+    if ctrl is not None:
+        base3, bdets3 = evaluate(ctrl, clean_items)
+        corr3, cdets3 = evaluate(ctrl, corr_items)
+        stats["corrupted"]["v2_minus_control"] = bootstrap_diff_ci(cdets3, cdets2, gts_corr, CFG["n_boot"], CFG["seed"])
+        stats["clean"]["v2_minus_control"] = bootstrap_diff_ci(bdets3, bdets2, gts_clean, CFG["n_boot"], CFG["seed"])
+        control_report = dict(base_map=round(base3, 4), corrupted_map=round(corr3, 4),
+                              note="same init, epochs and clean images as V2, without the adversarial samples")
+        log(f"control: base {base3:.3f}  corrupted {corr3:.3f}  (V2 corrupted {corr2:.3f})")
+    ci = stats["corrupted"]["v2_minus_v1"]
+    gate["corrupted_gain_ci95"] = [ci["lo"], ci["hi"]]
+    gate["gain_statistically_supported"] = bool(ci["lo"] > 0)
+    if ctrl is not None:
+        gate["beats_clean_only_control"] = bool(stats["corrupted"]["v2_minus_control"]["lo"] > 0)
+
+    # Sensitivity to the specific random corruption: repeat the corrupted blind set with fresh draws.
+    repeats = [dict(rep=0, v2_minus_v1=round(corr2 - corr1, 4), **({"v2_minus_control": round(corr2 - corr3, 4)} if ctrl else {}))]
+    for rep_i in range(1, CFG["corruption_repeats"]):
+        items = []
+        for idx, (im, g, _) in enumerate(blind):
+            key = ("blind", rep_i, idx)
+            t_, sv_ = draw_attack(CFG["seed"], key)
+            a_ = apply_attack(im, g, [None] * len(g), CFG["seed"], key, t_, sv_)
+            if not a_.discarded:
+                items.append((a_.image, a_.boxes))
+        m1, _ = evaluate(v1, items)
+        m2, _ = evaluate(v2, items)
+        row = dict(rep=rep_i, v2_minus_v1=round(m2 - m1, 4))
+        if ctrl is not None:
+            m3, _ = evaluate(ctrl, items)
+            row["v2_minus_control"] = round(m2 - m3, 4)
+        repeats.append(row)
+    gains = [r["v2_minus_v1"] for r in repeats]
+    repeats_summary = dict(draws=repeats, v2_minus_v1_mean=round(float(np.mean(gains)), 4), v2_minus_v1_std=round(float(np.std(gains)), 4))
+    log("repeated corruption draws:", repeats_summary)
     fppi = dict(
         clean=dict(v1=recall_at_fppi(bdets1, [g for _, g in clean_items]), v2=recall_at_fppi(bdets2, [g for _, g in clean_items])),
         corrupted=dict(v1=recall_at_fppi(cdets1, [g for _, g in corr_items]), v2=recall_at_fppi(cdets2, [g for _, g in corr_items])),
@@ -1121,6 +1205,9 @@ def run_pipeline() -> Path:
         deltas=dict(base_drop=gate["base_drop"], corrupted_improvement=gate["corrupted_gain"]),
         hard_negative_recovery=round(recovery, 4),
         recall_at_fppi=fppi,
+        control_model=control_report,
+        stats=stats,
+        corruption_repeats=repeats_summary,
         gate=gate,
         provenance=dict(
             source="colab_zero_disk_pipeline", model="derronqi/yolov7-face (yolov7-tiny-face)",

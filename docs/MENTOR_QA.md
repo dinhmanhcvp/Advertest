@@ -35,8 +35,16 @@ Các số đo lấy từ lần chạy Colab đã nộp (`data/demo_artifacts/`).
 - Cổng bảo vệ miền gốc: base mAP trên ảnh sạch không được giảm quá 1 điểm. Lần chạy: tăng 2,4 điểm.
 - Mẫu "+Δ confidence" trên các case là số **đo thật** từ lần chạy (ví dụ +0,76; +0,66; +0,64). Con số `+0.63` và mã `eval_ego4d_112` trong bản thiết kế ban đầu chỉ là giá trị minh hoạ, không còn trong artifact.
 
+**Đã bổ sung trong code (chờ chạy lại để có số).**
+- **Mô hình đối chứng** chỉ fine-tune bằng ảnh sạch, cùng khởi tạo, số epoch và ảnh sạch như V2. V2 chỉ được coi là có tác dụng nếu *thắng đối chứng* (khoảng tin cậy 95% của hiệu corrupted-mAP V2 − control nằm trên 0): `gate.beats_clean_only_control`.
+- **Khoảng tin cậy bootstrap có cặp** theo ảnh blind cho V2 − V1 và V2 − control (`stats`), và cờ `gate.gain_statistically_supported`.
+- **Lặp nhiều lần bốc hỏng** của tập blind (`corruption_repeats`, trung bình ± độ lệch) để xem kết quả có phụ thuộc vào lần bốc ngẫu nhiên cụ thể không.
+- Tập blind lớn hơn: 150 ảnh (trước đây 80).
+- Toàn bộ luồng được kiểm tra bằng test chạy thử `run_pipeline()` với detector giả (`test_full_pipeline_dry_run_...`), không cần weights.
+- Giao diện có panel **Validity checks** hiển thị bốn kiểm chứng này khi artifact có dữ liệu.
+
 **Còn thiếu (cần làm trước khi nói "chống shortcut").**
-1. **Đối chứng**: fine-tune chỉ bằng ảnh sạch cùng số epoch. Nếu V2 vẫn hơn rõ ở corrupted mAP thì mới kết luận được do học hỏng chứ không phải do học thêm trên WIDER.
+1. ~~Đối chứng~~ đã có trong code; **cần chạy lại Colab để có số**. Lưu ý: nó chưa đo phương sai theo seed *huấn luyện* (chỉ theo ảnh blind và lần bốc hỏng).
 2. **Hỏng khác họ**: đánh giá bằng bộ hỏng không dùng khi train (ví dụ `imagecorruptions`, tham số k1/k2 ngoài khoảng train) và **ảnh egocentric thật** (Ego4D).
 3. **Easy/Medium/Hard chính thức của WIDER FACE**: chưa làm. Cần danh sách `wider_{easy,medium,hard}_val.mat` của bộ eval chính thức; HF dataset hiện dùng không có sẵn. Hiện em chỉ báo mAP trên toàn tập sạch (không tách).
 4. **False Positive**: em chưa liệt kê riêng FP hay phân loại (bóng cây, đầu gối…). Em đã thêm **Recall tại FPPI cố định** (mục 3) để thấy FP tăng hay không, nhưng chưa có số.
@@ -94,7 +102,7 @@ Ngoại suy tuyến tính: 1 triệu khung ≈ **20 core-giờ** trên một lõ
 
 ## Việc cần làm để các câu trả lời "đủ số"
 
-1. **Chạy lại notebook một lần** (`colab_zero_disk_pipeline.ipynb` từ GitHub) để artifact có: `recall_at_fppi`, `reproduce`, `v1_sha256`, `leaks_removed`.
-2. Thêm thí nghiệm **đối chứng chỉ-ảnh-sạch** và **nhiều seed / tập blind lớn hơn**, báo cáo trung bình ± độ lệch (mục 2).
+1. **Chạy lại notebook một lần** (`colab_zero_disk_pipeline.ipynb` từ GitHub) để artifact có: `recall_at_fppi`, `reproduce`, `v1_sha256`, `leaks_removed`, `control_model`, `stats` (CI), `corruption_repeats`. Ước lượng 30–60 phút (có mô hình đối chứng).
+2. Nếu muốn phương sai theo seed huấn luyện: chạy lại với `SEED` khác nhau và so sánh các `eval_report.json` (chưa tự động hoá).
 3. Khi có khóa AWS: đưa **Ego4D thật** vào (mục 2, 3).
 4. Làm **Easy/Medium/Hard** chính thức và tách theo **event** (mục 2, 4).
