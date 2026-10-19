@@ -200,3 +200,17 @@ def test_numpy_compat_shim_restores_removed_aliases(tmp_path, capsys):
     cp.run_logged([_sys.executable, "-c", cp.NUMPY_COMPAT_SHIM, "train.py", "--epochs", "3"], cwd=tmp_path)
     out = capsys.readouterr().out
     assert "floor [0, 0, 1, 1, 2] 1.5 True" in out and "argv ['--epochs', '3']" in out
+
+
+def test_shim_blocks_wandb_and_stubs_repo_validation(tmp_path, capsys):
+    import sys as _sys
+
+    (tmp_path / "train.py").write_text(
+        "try:\n    import wandb\n    print('wandb importable')\nexcept ImportError:\n    print('wandb blocked')\n"
+        "import test\n"
+        "res, maps, times = test.test({}, batch_size=2)\n"
+        "print('val', len(res), len(maps), len(times))\n"
+    )
+    cp.run_logged([_sys.executable, "-c", cp.NUMPY_COMPAT_SHIM, "train.py"], cwd=tmp_path)
+    out = capsys.readouterr().out
+    assert "wandb blocked" in out and "val 7 1 3" in out

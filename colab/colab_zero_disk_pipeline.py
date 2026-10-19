@@ -81,6 +81,14 @@ NUMPY_COMPAT_SHIM = (
     "for _n, _t in (('int', int), ('float', float), ('bool', bool), ('object', object), ('str', str), ('complex', complex)):\n"
     "    if not hasattr(np, _n):\n"
     "        setattr(np, _n, _t)\n"
+    # No W&B (it needs an API key and its image logging crashes with keypoint outputs): make `import wandb` fail.
+    "sys.modules['wandb'] = None\n"
+    # The repo's per-epoch validation (test.py) is replaced by a no-op: its keypoint logging is broken and the real
+    # accuracy numbers come from this pipeline's own blind evaluation on held-out images.
+    "import types\n"
+    "_stub = types.ModuleType('test')\n"
+    "_stub.test = lambda *a, **k: ((0.0,) * 7, np.zeros(1), (0.0, 0.0, 0.0))\n"
+    "sys.modules['test'] = _stub\n"
     "sys.argv = sys.argv[1:]\n"
     "runpy.run_path(sys.argv[0], run_name='__main__')\n"
 )
