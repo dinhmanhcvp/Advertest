@@ -60,7 +60,8 @@ jobs:
     name: Build and Push to AWS ECR
     needs: test
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Opt-in: set the repository variable ENABLE_AWS_DEPLOY=true (and the AWS secrets) to enable this job.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.ENABLE_AWS_DEPLOY == 'true'
     
     steps:
       - name: Checkout Code
@@ -106,7 +107,8 @@ jobs:
     name: Continuous Deployment (AWS ECS Rolling Update)
     needs: build-and-push
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Opt-in: set the repository variable ENABLE_AWS_DEPLOY=true (and the AWS secrets) to enable this job.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.ENABLE_AWS_DEPLOY == 'true'
     
     steps:
       - name: Configure AWS Credentials
