@@ -226,3 +226,14 @@ def test_crop_around_zooms_on_the_face_and_keeps_boxes_inside():
     assert 0 <= sb[0] < sb[2] <= w and 0 <= sb[1] < sb[3] <= h
     ref = cp.to_ref(sb, w, h)
     assert ref[2] > 8  # the face is no longer a few reference units wide
+
+
+def test_export_weights_records_hash_and_size(tmp_path):
+    import hashlib
+
+    ckpt = tmp_path / "best.pt"
+    ckpt.write_bytes(b"fake-checkpoint" * 100)
+    info = cp.export_weights(ckpt, tmp_path, accepted=True)
+    assert info["sha256"] == hashlib.sha256(ckpt.read_bytes()).hexdigest()
+    assert info["bytes"] == 1500 and info["accepted_by_gate"] is True
+    assert "worker-only" in info["location"]  # outside Colab and without a PUT URL nothing is uploaded

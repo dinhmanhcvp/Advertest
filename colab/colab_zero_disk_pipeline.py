@@ -745,6 +745,44 @@ def thumb_data_uri(img) -> str:
     return "data:image/jpeg;base64," + base64.b64encode(buf.tobytes()).decode()
 
 
+def sha256_file(path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def export_weights(src, workdir, accepted: bool, drive_dir: str = "advertest", put_url: str | None = None) -> dict:
+    """Hand the V2 checkpoint over without ever touching the laptop.
+
+    Copies it to the user's Google Drive when running in Colab (and/or PUTs it to a presigned URL from
+    WEIGHTS_PUT_URL) and returns {name, bytes, sha256, accepted_by_gate, location} for the manifest.
+    """
+    src = Path(src)
+    info = dict(
+        name="yolov7-face-v2.pt",
+        bytes=src.stat().st_size,
+        sha256=sha256_file(src),
+        accepted_by_gate=bool(accepted),
+        location=f"worker-only (ephemeral): {src}",
+    )
+    put_url = put_url or os.environ.get("WEIGHTS_PUT_URL", "")
+    if put_url:
+        urllib.request.urlopen(urllib.request.Request(put_url, data=src.read_bytes(), method="PUT"), timeout=120).read()
+        info["location"] = "uploaded via presigned PUT (WEIGHTS_PUT_URL)"
+    elif "google.colab" in sys.modules:
+        from google.colab import drive  # type: ignore
+
+        drive.mount("/content/drive")
+        dest = Path("/content/drive/MyDrive") / drive_dir
+        dest.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, dest / info["name"])
+        info["location"] = f"Google Drive: MyDrive/{drive_dir}/{info['name']}"
+    log("weights:", info["location"], info["sha256"][:12])
+    return info
+
+
 def blind_gate(base_v1, base_v2, corr_v1, corr_v2, max_drop, min_gain) -> dict:
     drop, gain = base_v1 - base_v2, corr_v2 - corr_v1
     return dict(
@@ -981,10 +1019,11 @@ def run_pipeline() -> Path:
     )
     # audit_trail.json = the hard negatives (what the UI triages) followed by synthesized samples
     audit_out = tri + audit[:200]
+    weights_info = export_weights(v2_w, wd, report["gate"]["accepted"])
     manifest = dict(files=["audit_trail.json", "proof_of_cure.json", "eval_report.json", "manifest.json"],
                     failure_distribution={t: counts[t] for t in CANONICAL_TAGS}, hard_negatives=n_hard,
                     synthesized=len(audit), schema="ENTERPRISE_PII_V2",
-                    weights_path_on_worker=str(v2_w), note="weights stay on the worker / Core Data Lake; not exported")
+                    weights=weights_info, note="weights are never bundled in the zip; see weights.location")
     for name, obj in [("audit_trail.json", audit_out), ("proof_of_cure.json", poc), ("eval_report.json", report), ("manifest.json", manifest)]:
         (out_dir / name).write_text(json.dumps(obj, indent=1))
     zpath = wd / "advertest_artifacts.zip"

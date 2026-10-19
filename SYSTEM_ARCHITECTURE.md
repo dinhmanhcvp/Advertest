@@ -2,7 +2,7 @@
 
 **Version:** 2.0 (Continuous Training / Zero-HITL Edition)  
 **Author:** Principal Staff Engineer  
-**Status:** Production-Ready (Handover)
+**Status:** Prototype. The measured results come from the Colab zero-disk pipeline (`colab/colab_zero_disk_pipeline.py`, see `docs/HANDOVER.md`). The Kafka / Ray / 3D-Gaussian-Splatting modules described below exist in the codebase but were **not** exercised in the measured run.
 
 ---
 
