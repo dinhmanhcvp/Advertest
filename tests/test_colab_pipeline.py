@@ -120,3 +120,24 @@ def test_presigned_url_ttl():
     soon = int(time.time()) + 600
     assert cp.url_seconds_remaining(f"https://x/y?Expires={soon}") > 0
     assert cp.url_seconds_remaining("https://x/y") is None
+
+
+def test_wider_dir_loader_parses_official_annotation_format(tmp_path):
+    import cv2
+
+    img_dir = tmp_path / "WIDER_val" / "images" / "0--Parade"
+    img_dir.mkdir(parents=True)
+    split = tmp_path / "wider_face_split"
+    split.mkdir()
+    cv2.imwrite(str(img_dir / "a.jpg"), np.full((120, 160, 3), 90, np.uint8))
+    cv2.imwrite(str(img_dir / "b.jpg"), np.full((120, 160, 3), 90, np.uint8))
+    # x y w h blur expression illumination invalid occlusion pose
+    (split / "wider_face_val_bbx_gt.txt").write_text(
+        "0--Parade/a.jpg\n3\n10 10 40 40 2 0 1 0 0 0\n60 60 8 8 0 0 0 0 0 0\n80 20 30 30 0 0 0 1 0 0\n"
+        "0--Parade/b.jpg\n0\n0 0 0 0 0 0 0 0 0 0\n"
+    )
+    out = list(cp._wider_from_dir(tmp_path, 5))
+    assert len(out) == 1  # b.jpg has no faces; tiny and invalid faces in a.jpg are dropped
+    img, boxes, attrs = out[0]
+    assert boxes == [(10, 10, 50, 50)]
+    assert attrs[0] == {"blur": 2, "illumination": 1, "occlusion": 0}

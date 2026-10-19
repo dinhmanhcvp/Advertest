@@ -389,27 +389,79 @@ def explain(tag: str, dist: dict, n_hard: int, med_conf: float, att: Attacked) -
 
 # %%
 def stream_wider(n: int):
-    """Yield (image_bgr, gt_xyxy list, attrs list) for n images without downloading the dataset."""
+    """Yield (image_bgr, gt_xyxy list, attrs list) for n WIDER FACE validation images.
+
+    Order: user-provided WIDER_DIR → Hugging Face parquet streaming → official archive on the Colab VM disk.
+    """
     if CFG["wider_dir"]:
         yield from _wider_from_dir(Path(CFG["wider_dir"]), n)
         return
-    from datasets import load_dataset  # lightweight; streaming=True never materialises the dataset
+    try:
+        it = _hf_wider()
+    except Exception as e:  # script-based HF datasets are no longer loadable with recent `datasets`
+        log(f"HF streaming unavailable ({type(e).__name__}); using the official WIDER archive on the Colab VM disk")
+        yield from _wider_from_dir(download_wider_val(), n)
+        return
+    yield from _convert_hf(it, n)
 
-    ds = load_dataset(CFG["wider_hf_id"], split="validation", streaming=True)
-    for k, ex in enumerate(ds):
-        if k >= n:
+
+def _hf_wider():
+    import itertools
+
+    from datasets import load_dataset  # streaming=True never materialises the dataset
+
+    last = None
+    for kw in ({"revision": "refs/convert/parquet"}, {}):
+        try:
+            ds = load_dataset(CFG["wider_hf_id"], split="validation", streaming=True, **kw)
+            it = iter(ds)
+            first = next(it)  # force the request now so a failure surfaces here, not mid-pipeline
+            return itertools.chain([first], it)
+        except Exception as e:
+            last = e
+            log(f"HF load {kw or 'default'} failed: {type(e).__name__}: {str(e)[:120]}")
+    raise RuntimeError("no loadable WIDER FACE on the Hub") from last
+
+
+def _convert_hf(it, n: int):
+    emitted = 0
+    for ex in it:
+        if emitted >= n:
             break
         pil = ex["image"].convert("RGB")
         img = cv2.cvtColor(np.array(pil), cv2.COLOR_RGB2BGR)
         boxes, attrs = [], []
         faces = ex["faces"]
+        invalid = faces.get("invalid", [0] * len(faces["bbox"]))
         for j, (x, y, bw, bh) in enumerate(faces["bbox"]):
-            if bw < 16 or bh < 16 or faces.get("invalid", [0] * len(faces["bbox"]))[j]:
+            if bw < 16 or bh < 16 or invalid[j]:
                 continue  # tiny/invalid faces are excluded from the evaluation protocol
             boxes.append((float(x), float(y), float(x + bw), float(y + bh)))
-            attrs.append({k2: int(faces[k2][j]) for k2 in ("blur", "illumination", "occlusion") if k2 in faces})
+            attrs.append({k: int(faces[k][j]) for k in ("blur", "illumination", "occlusion") if k in faces})
         if boxes:
+            emitted += 1
             yield img, boxes, attrs
+
+
+def download_wider_val(dest: Path | None = None) -> Path:
+    """Fetch WIDER_val (~360 MB) + annotations into the Colab VM disk (never the laptop)."""
+    import gdown
+
+    dest = dest or Path(CFG["workdir"]) / "wider"
+    if list(dest.rglob("wider_face_val_bbx_gt.txt")) and list(dest.rglob("WIDER_val")):
+        return dest
+    dest.mkdir(parents=True, exist_ok=True)
+    val_zip, split_zip = dest / "WIDER_val.zip", dest / "wider_face_split.zip"
+    if not val_zip.exists():
+        gdown.download(id="0B6eKvaijfFUDd3dIRmpvSk8tLUk", output=str(val_zip), quiet=False)
+    if not split_zip.exists():
+        urllib.request.urlretrieve("http://shuoyang1213.me/WIDERFACE/support/bbx_annotation/wider_face_split.zip", split_zip)
+    for z in (val_zip, split_zip):
+        if not zipfile.is_zipfile(z):
+            raise RuntimeError(f"{z.name} is not a valid zip (Drive quota page?). Download it manually from the WIDER FACE site and set WIDER_DIR.")
+        with zipfile.ZipFile(z) as zf:
+            zf.extractall(dest)
+    return dest
 
 
 def _wider_from_dir(root: Path, n: int):
