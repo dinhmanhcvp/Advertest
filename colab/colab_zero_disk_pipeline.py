@@ -842,7 +842,8 @@ def run_pipeline() -> Path:
     # exist for Colab's Python (e.g. onnxruntime==1.10.0). Dependencies are preinstalled, so neutralise the pins
     # in the Colab clone only. Official checkpoints are pickled models, so allow full unpickling for the trainer.
     Path(repo, "requirements.txt").write_text("# pins removed on the Colab worker (deps preinstalled)\n")
-    run_logged(cmd, cwd=repo, env={"TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD": "1"})
+    # W&B would demand an API key; experiment tracking is not needed on the worker.
+    run_logged(cmd, cwd=repo, env={"TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD": "1", "WANDB_MODE": "disabled", "WANDB_DISABLED": "true"})
     wdir = Path(repo, "runs", "train", "advertest_v2", "weights")
     v2_w = next((c for c in (wdir / "best.pt", wdir / "last.pt") if c.exists()), None)  # --notest may skip best.pt
     assert v2_w is not None, f"trainer produced no checkpoint in {wdir}: {[p.name for p in wdir.glob('*')]}"
