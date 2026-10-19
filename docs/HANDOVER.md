@@ -25,7 +25,7 @@ WIDER FACE validation, streamed: 160 images for training, **80 held-out images**
 | | V1 | V2 | Change |
 |---|---|---|---|
 | Base mAP (clean) | 71.1% | 73.5% | +2.4 pts (gate: drop ≤ 1 pt → pass) |
-| Corrupted mAP (proxy) | 55.0% | 60.8% | +5.8 pts (gate: gain ≥ 5 pts → pass) |
+| Corrupted mAP (proxy) | 55.0% | 60.7% | +5.8 pts (gate: gain ≥ 5 pts → pass) |
 | Hard negatives recovered | | 16.5% | |
 
 91 of 160 images were baseline hard negatives (fisheye 24, motion blur 22, sensor/ISO 21, occlusion 24).
@@ -36,7 +36,7 @@ WIDER FACE validation, streamed: 160 images for training, **80 held-out images**
 2. **Thin evidence.** 80 blind images, one seed; the gain clears the gate by < 1 pt and has no confidence interval.
 3. **Low recovery.** 16.5% of baseline hard negatives are recovered.
 4. **Landmarks are pseudo-labels** (WIDER FACE has boxes only), taken from the baseline and transformed with the image geometry.
-5. **The Studio view draws synthetic frames** (procedural SVG) to show the physics controls; only Stage 4 shows real images (an older run, uncropped — rerun the pipeline for zoomed crops).
+5. **The Studio view draws synthetic frames** (procedural SVG) to show the physics controls; only Stage 4 shows real images (face crops from the measured run).
 6. **Per-epoch validation inside the repo trainer is disabled** (its keypoint logging crashes); all accuracy numbers come from the pipeline's own blind evaluation.
 7. **Not exercised in the measured run:** Kafka streaming, Ray training, 3D Gaussian Splatting, RL policy, Label Studio round-trip (code and unit tests exist; see `SYSTEM_ARCHITECTURE.md`).
 
@@ -85,5 +85,6 @@ Docker: `docker compose up --build` (see `.env.example`).
 | Temporal tracker | Implemented + unit-tested; **not evaluated on real sequences** |
 | UI: 4 stages, runs without any backend | Done |
 | Ego4D real-data validation | **Pending** (licence keys) |
-| Weights handed to the Data Lake | **Pending** (needs a Colab run with Drive/PUT URL; hash recorded in the manifest) |
+| V2 weights saved with a verifiable hash | Done: `MyDrive/advertest/yolov7-face-v2.pt`, 15.99 MB, SHA-256 `8c6461c2fd9e9a7320fa75df26e632129ab316be1cce6b804a5709f97b6ec133` |
+| Weights transferred to the Core Data Lake | **Pending** (copy from Drive, or rerun with `WEIGHTS_PUT_URL`) |
 | Statistical confidence (more seeds / larger blind set) | **Pending** |

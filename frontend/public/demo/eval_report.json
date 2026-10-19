@@ -4,19 +4,19 @@
   "corrupted_map": 0.5498
  },
  "advertest_model": {
-  "base_map": 0.7346,
-  "corrupted_map": 0.6078
+  "base_map": 0.7352,
+  "corrupted_map": 0.6074
  },
  "deltas": {
-  "base_drop": -0.0241,
-  "corrupted_improvement": 0.058
+  "base_drop": -0.0248,
+  "corrupted_improvement": 0.0577
  },
  "hard_negative_recovery": 0.1648,
  "gate": {
   "max_base_drop": 0.01,
   "min_corrupted_gain": 0.05,
-  "base_drop": -0.0241,
-  "corrupted_gain": 0.058,
+  "base_drop": -0.0248,
+  "corrupted_gain": 0.0577,
   "accepted": true
  },
  "provenance": {
@@ -29,6 +29,6 @@
   "ego4d_real": null,
   "seed": 7,
   "epochs": 30,
-  "generated_at": "2026-10-19T02:53:50Z"
+  "generated_at": "2026-10-19T03:45:29Z"
  }
 }

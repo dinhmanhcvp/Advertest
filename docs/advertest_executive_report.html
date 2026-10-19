@@ -96,8 +96,8 @@
                 <table>
                     <thead><tr><th>Metric</th><th>V1 baseline</th><th>V2 retrained</th><th>Change</th><th>Gate</th></tr></thead>
                     <tbody>
-                        <tr><td>Base mAP (clean WIDER FACE)</td><td>71.0%</td><td>73.5%</td><td>+2.4 pts</td><td>drop &le; 1.0 pt &mdash; passed</td></tr>
-                        <tr><td>Corrupted mAP (egocentric proxy)</td><td>55.0%</td><td>60.8%</td><td>+5.8 pts</td><td>gain &ge; 5.0 pts &mdash; passed</td></tr>
+                        <tr><td>Base mAP (clean WIDER FACE)</td><td>71.0%</td><td>73.5%</td><td>+2.5 pts</td><td>drop &le; 1.0 pt &mdash; passed</td></tr>
+                        <tr><td>Corrupted mAP (egocentric proxy)</td><td>55.0%</td><td>60.7%</td><td>+5.8 pts</td><td>gain &ge; 5.0 pts &mdash; passed</td></tr>
                         <tr><td>Hard negatives recovered</td><td colspan="2">16.5% of blind-set failures</td><td colspan="2">&nbsp;</td></tr>
                     </tbody>
                 </table>
@@ -110,7 +110,7 @@
                         <li><strong>Small sample.</strong> 80 blind images and a single run: the corrupted-mAP gain clears the 5-point gate by under one point and has no confidence interval.</li>
                         <li><strong>Modest recovery.</strong> 16% of the baseline hard negatives are recovered; most remain failures.</li>
                         <li><strong>Landmarks are pseudo-labels.</strong> WIDER FACE has boxes only; training landmarks come from the baseline model, transformed with the same geometry as the image.</li>
-                        <li>Model weights live on the Colab worker until exported to the Core Data Lake (see the handover notes).</li>
+                        <li>Model weights (16.0 MB, SHA-256 8c6461c2fd9e&hellip;) are stored at Google Drive: MyDrive/advertest/yolov7-face-v2.pt; transfer to the Core Data Lake is pending.</li>
                     </ul>
                 </div>
             </div>
@@ -123,7 +123,7 @@
                     <li><strong>Ego4D validation:</strong> supply presigned URLs for a few Social-benchmark clips; the pipeline reports confidence, dropout and tracker recovery on real frames.</li>
                     <li><strong>Statistical confidence:</strong> repeat with larger blind sets and several seeds; report confidence intervals for the gate.</li>
                     <li><strong>Temporal tracker on real sequences:</strong> the velocity tracker is implemented and unit-tested; evaluate recovery on Ego4D clips.</li>
-                    <li><strong>Weights handover:</strong> publish the accepted V2 checkpoint (hash recorded in the manifest) together with the lineage bundle.</li>
+                    <li><strong>Weights handover:</strong> move the accepted V2 checkpoint (hash recorded in the manifest) to the Core Data Lake together with the lineage bundle.</li>
                 </ol>
             </div>
 

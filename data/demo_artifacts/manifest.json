@@ -14,6 +14,12 @@
  "hard_negatives": 91,
  "synthesized": 182,
  "schema": "ENTERPRISE_PII_V2",
- "weights_path_on_worker": "/content/advertest/yolov7_face/runs/train/advertest_v2/weights/best.pt",
- "note": "weights stay on the worker / Core Data Lake; not exported"
+ "weights": {
+  "name": "yolov7-face-v2.pt",
+  "bytes": 15989605,
+  "sha256": "8c6461c2fd9e9a7320fa75df26e632129ab316be1cce6b804a5709f97b6ec133",
+  "accepted_by_gate": true,
+  "location": "Google Drive: MyDrive/advertest/yolov7-face-v2.pt"
+ },
+ "note": "weights are never bundled in the zip; see weights.location"
 }
