@@ -60,10 +60,10 @@ export default function TopNav({
         <div className="ml-auto flex items-center gap-4">
           <div className="flex items-center gap-2 font-mono text-[11px] text-zinc-400">
             <span className="relative flex h-2 w-2">
-              <span className={cx("absolute inline-flex h-full w-full animate-ping2 rounded-full", source === "api" ? "bg-cyan-400" : "bg-amber-400")} />
-              <span className={cx("relative inline-flex h-2 w-2 rounded-full", source === "api" ? "bg-cyan-400" : "bg-amber-400")} />
+              <span className={cx("absolute inline-flex h-full w-full animate-ping2 rounded-full", source !== "local" ? "bg-cyan-400" : "bg-amber-400")} />
+              <span className={cx("relative inline-flex h-2 w-2 rounded-full", source !== "local" ? "bg-cyan-400" : "bg-amber-400")} />
             </span>
-            {source === "api" ? "DATA BLOCK: CONNECTED" : "DATA BLOCK: LOCAL CACHE"}
+            {source === "api" ? "DATA BLOCK: CONNECTED" : source === "artifact" ? "ARTIFACTS: MEASURED RUN" : "DATA BLOCK: LOCAL CACHE"}
           </div>
           <button
             role="switch"

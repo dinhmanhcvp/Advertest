@@ -65,6 +65,22 @@ describe("loadWorkspace", () => {
     expect(data.cases.length).toBeGreaterThan(0);
   });
 
+  it("reads the measured artifacts as static files when the API is down", async () => {
+    const audit = [
+      { id: "wider_0001", iou: 0.1, confidence: 0.2, audit_trail: { insight_source: "error_fisheye", applied_chain: ["OpticalDistortion"], severity_level: 3, justification: "x" } },
+    ];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url: string) => {
+        const ok = url.startsWith("/demo/audit_trail");
+        return { ok, status: ok ? 200 : 404, json: async () => audit };
+      }),
+    );
+    const data = await loadWorkspace(true);
+    expect(data.source).toBe("artifact");
+    expect(data.hardNegatives[0].id).toBe("wider_0001");
+  });
+
   it("uses API artifacts when available", async () => {
     const audit = [
       { id: "ego4d_001", iou: 0.1, confidence: 0.2, audit_trail: { insight_source: "error_fisheye", applied_chain: ["OpticalDistortion"], severity_level: 3, justification: "x" } },

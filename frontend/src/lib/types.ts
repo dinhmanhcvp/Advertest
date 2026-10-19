@@ -78,7 +78,8 @@ export interface TrackFrame {
   detected: boolean;
 }
 
-export type DataSource = "api" | "local";
+/** api = FastAPI, artifact = measured Colab run served as static files, local = built-in placeholder store. */
+export type DataSource = "api" | "artifact" | "local";
 
 export interface WorkspaceData {
   source: DataSource;

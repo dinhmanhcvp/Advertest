@@ -60,7 +60,7 @@ export default function Workspace() {
             ← Previous stage
           </button>
           <span className="text-zinc-600">
-            {stage + 1} / 4 · {data.source === "api" ? "FastAPI artifacts" : "local fallback store"}
+            {stage + 1} / 4 · {data.source === "api" ? "FastAPI artifacts" : data.source === "artifact" ? "measured Colab run (static artifacts)" : "local placeholder store"}
           </span>
           <button disabled={stage === 3} onClick={() => setStage((s) => s + 1)} className="rounded-md border border-white/10 px-3 py-1.5 text-zinc-300 hover:bg-white/5 disabled:opacity-30">
             Next stage →

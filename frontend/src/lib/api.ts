@@ -28,6 +28,19 @@ async function http<T>(path: string, init?: RequestInit): Promise<T> {
   }
 }
 
+/** Try the API path; if it is unreachable, read the same artifact as a static file (served from /demo). */
+async function artifact<T>(apiPath: string, staticFile: string): Promise<{ data: T; from: "api" | "artifact" } | null> {
+  try {
+    return { data: await http<T>(apiPath), from: "api" };
+  } catch {
+    try {
+      return { data: await http<T>(`/demo/${staticFile}`), from: "artifact" };
+    } catch {
+      return null;
+    }
+  }
+}
+
 const isAudit = (v: unknown): v is AuditRecord[] =>
   Array.isArray(v) && v.length > 0 && typeof v[0] === "object" && v[0] !== null && "audit_trail" in v[0];
 
@@ -100,11 +113,10 @@ function fromAudit(all: AuditRecord[]): { slices: FailureSlice[]; negatives: Har
  */
 export async function loadWorkspace(demo: boolean): Promise<WorkspaceData> {
   let audit: AuditRecord[] | null = null;
-  try {
-    if (demo) {
-      const r = await http<unknown>("/api/v1/demo/audit-trail");
-      if (isAudit(r)) audit = r;
-    } else {
+  let auditFrom: "api" | "artifact" = "api";
+  if (!demo) {
+    // Live-capable path first; any failure falls through to the artifacts below.
+    try {
       const triage = await http<{ worst_samples: { id: string }[] }>("/api/v1/triage/analyze", {
         method: "POST",
         body: JSON.stringify({}),
@@ -115,24 +127,31 @@ export async function loadWorkspace(demo: boolean): Promise<WorkspaceData> {
         body: JSON.stringify({ sample_ids: ids }),
       });
       if (isAudit(gen.audit_trail)) audit = gen.audit_trail;
+    } catch {
+      audit = null;
     }
-  } catch {
-    audit = null;
+  }
+  if (!audit) {
+    const r = await artifact<unknown>("/api/v1/demo/audit-trail", "audit_trail.json");
+    if (r && isAudit(r.data)) {
+      audit = r.data;
+      auditFrom = r.from;
+    }
   }
 
   const [cases, report] = await Promise.all([
-    http<unknown>("/api/v1/demo/proof-of-cure").catch(() => null),
-    http<unknown>("/api/v1/eval-report").catch(() => null),
+    artifact<unknown>("/api/v1/demo/proof-of-cure", "proof_of_cure.json"),
+    artifact<unknown>("/api/v1/eval-report", "eval_report.json"),
   ]);
 
   const fromApi = audit ? fromAudit(audit) : null;
   return {
-    source: fromApi ? "api" : "local",
+    source: fromApi ? auditFrom : "local",
     slices: fromApi?.slices ?? MOCK_SLICES,
     hardNegatives: fromApi?.negatives ?? MOCK_HARD_NEGATIVES,
     samples: fromApi?.samples ?? MOCK_SAMPLES,
-    cases: isCases(cases) ? cases : MOCK_CASES,
-    report: isReport(report) ? { ...MOCK_REPORT, ...report } : MOCK_REPORT,
+    cases: cases && isCases(cases.data) ? cases.data : MOCK_CASES,
+    report: report && isReport(report.data) ? { ...MOCK_REPORT, ...report.data } : MOCK_REPORT,
     track: MOCK_TRACK,
   };
 }

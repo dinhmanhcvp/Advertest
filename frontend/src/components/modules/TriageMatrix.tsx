@@ -54,7 +54,7 @@ export default function TriageMatrix({
   };
 
   const total = data.slices.reduce((a, s) => a + s.count, 0);
-  const prov = data.source === "api" ? data.report.provenance : undefined;
+  const prov = data.source !== "local" ? data.report.provenance : undefined;
   const measured = !!prov?.n_train; // real Colab run: show what was actually used instead of the spec text
   const fields = measured
     ? [
