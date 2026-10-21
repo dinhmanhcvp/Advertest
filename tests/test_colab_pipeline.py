@@ -599,3 +599,54 @@ def test_a_failing_ego4d_stage_keeps_the_run_and_hides_the_signature(tmp_path, m
     assert rep["provenance"]["ego4d_real"] is None
     assert "ModuleNotFoundError" in rep["provenance"]["ego4d_error"]
     assert all("TOPSECRET" not in out.read(n).decode() for n in out.namelist())
+
+
+# ---- Drive problems must not cost the run; a version bump must not cost a trained checkpoint -----------------------
+
+
+def _fake_colab(monkeypatch, mount):
+    import types
+
+    drive = types.ModuleType("google.colab.drive")
+    drive.mount = mount
+    colab = types.ModuleType("google.colab")
+    colab.drive = drive
+    monkeypatch.setitem(sys.modules, "google", types.ModuleType("google"))
+    monkeypatch.setitem(sys.modules, "google.colab", colab)
+    monkeypatch.setitem(sys.modules, "google.colab.drive", drive)
+
+
+def test_export_weights_survives_a_failed_drive_mount(tmp_path, monkeypatch):
+    ckpt = tmp_path / "best.pt"
+    ckpt.write_bytes(b"w" * 50)
+
+    def broken_mount(path):
+        raise ValueError("mount failed")
+
+    _fake_colab(monkeypatch, broken_mount)
+    info = cp.export_weights(ckpt, tmp_path, True, drive_root=str(tmp_path / "nodrive" / "MyDrive"))
+    assert info["sha256"] and "copy failed: ValueError" in info["location"]  # recorded, not raised
+
+
+def test_export_weights_skips_the_mount_when_drive_is_already_attached(tmp_path, monkeypatch):
+    ckpt = tmp_path / "best.pt"
+    ckpt.write_bytes(b"w" * 50)
+    mounted = tmp_path / "drive" / "MyDrive"
+    mounted.mkdir(parents=True)
+    _fake_colab(monkeypatch, lambda p: (_ for _ in ()).throw(AssertionError("must not mount again")))
+    info = cp.export_weights(ckpt, tmp_path, True, drive_root=str(mounted))
+    assert (mounted / "advertest" / "yolov7-face-v2.pt").read_bytes() == b"w" * 50
+    assert info["location"].startswith("Google Drive")
+
+
+def test_finetune_stamp_ignores_the_pipeline_version(tmp_path, monkeypatch):
+    import json
+
+    repo = _fake_repo(tmp_path)
+    w = Path(repo, "runs", "train", "m", "weights")
+    w.mkdir(parents=True)
+    (w / "best.pt").write_bytes(b"ckpt")
+    old_stamp = dict(epochs=cp.CFG["epochs"], batch=cp.CFG["batch"], img=cp.CFG["img_size"], seed=cp.CFG["seed"], version="1999-01-01.0", data="sig")
+    Path(repo, "runs", "train", "m", "advertest_stamp.json").write_text(json.dumps(old_stamp))
+    monkeypatch.setattr(cp, "run_logged", lambda *a, **k: (_ for _ in ()).throw(AssertionError("must reuse, not retrain")))
+    assert cp.finetune(repo, "w.pt", "d.yaml", "m", data_sig="sig").name == "best.pt"

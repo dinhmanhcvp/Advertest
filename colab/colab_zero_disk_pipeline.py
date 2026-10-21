@@ -466,7 +466,7 @@ def explain(tag: str, dist: dict, n_hard: int, med_conf: float, att: Attacked) -
     )
 
 
-PIPELINE_VERSION = "2026-10-21.2"
+PIPELINE_VERSION = "2026-10-21.3"
 
 
 def rng_for(seed: int, *key) -> np.random.Generator:
@@ -981,16 +981,18 @@ def files_signature(files) -> str:
 def finetune(repo: str, weights: str, data_yaml, name: str, data_sig: str | None = None) -> Path:
     """Run yolov7-face's own trainer (keypoint loss on) and return the resulting checkpoint.
 
-    If a checkpoint with the same recipe (epochs, batch, size, seed, pipeline version, training-set fingerprint) already
+    If a checkpoint with the same recipe (epochs, batch, size, seed, training-set fingerprint) already
     exists it is reused, so a crash after training costs minutes instead of a re-train. A checkpoint without a stamp is
     reused only when REUSE_CHECKPOINTS=1 (you assert the configuration is unchanged).
     """
     wdir = Path(repo, "runs", "train", name, "weights")
     stamp = Path(repo, "runs", "train", name, "advertest_stamp.json")
-    want = dict(epochs=CFG["epochs"], batch=CFG["batch"], img=CFG["img_size"], seed=CFG["seed"], version=PIPELINE_VERSION, data=data_sig)
+    want = dict(epochs=CFG["epochs"], batch=CFG["batch"], img=CFG["img_size"], seed=CFG["seed"], data=data_sig)
     existing = next((c for c in (wdir / "best.pt", wdir / "last.pt") if c.exists()), None)
     if existing is not None:
         have = json.loads(stamp.read_text()) if stamp.exists() else None
+        if have is not None:
+            have.pop("version", None)  # older stamps recorded the pipeline version; it does not change the recipe
         if have == want:
             log(f"reusing the matching checkpoint for {name} (same recipe and data)")
             return existing
@@ -1066,11 +1068,13 @@ def sha256_file(path) -> str:
     return h.hexdigest()
 
 
-def export_weights(src, workdir, accepted: bool, drive_dir: str = "advertest", put_url: str | None = None) -> dict:
+def export_weights(src, workdir, accepted: bool, drive_dir: str = "advertest", put_url: str | None = None,
+                   drive_root: str = "/content/drive/MyDrive") -> dict:
     """Hand the V2 checkpoint over without ever touching the laptop.
 
     Copies it to the user's Google Drive when running in Colab (and/or PUTs it to a presigned URL from
     WEIGHTS_PUT_URL) and returns {name, bytes, sha256, accepted_by_gate, location} for the manifest.
+    Any failure is recorded in `location` and never raised: the metrics and artifacts must not be lost over a mount.
     """
     src = Path(src)
     info = dict(
@@ -1081,17 +1085,26 @@ def export_weights(src, workdir, accepted: bool, drive_dir: str = "advertest", p
         location=f"worker-only (ephemeral): {src}",
     )
     put_url = put_url or os.environ.get("WEIGHTS_PUT_URL", "")
-    if put_url:
-        urllib.request.urlopen(urllib.request.Request(put_url, data=src.read_bytes(), method="PUT"), timeout=120).read()
-        info["location"] = "uploaded via presigned PUT (WEIGHTS_PUT_URL)"
-    elif "google.colab" in sys.modules:
-        from google.colab import drive  # type: ignore
+    try:
+        if put_url:
+            urllib.request.urlopen(urllib.request.Request(put_url, data=src.read_bytes(), method="PUT"), timeout=120).read()
+            info["location"] = "uploaded via presigned PUT (WEIGHTS_PUT_URL)"
+        elif "google.colab" in sys.modules:
+            root = Path(drive_root)
+            if not root.exists():  # skip the interactive mount when Drive is already attached
+                from google.colab import drive  # type: ignore
 
-        drive.mount("/content/drive")
-        dest = Path("/content/drive/MyDrive") / drive_dir
-        dest.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(src, dest / info["name"])
-        info["location"] = f"Google Drive: MyDrive/{drive_dir}/{info['name']}"
+                drive.mount(str(root.parent))
+            dest = root / drive_dir
+            dest.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(src, dest / info["name"])
+            info["location"] = f"Google Drive: MyDrive/{drive_dir}/{info['name']}"
+    except Exception as exc:
+        info["location"] = (
+            f"worker-only (copy failed: {type(exc).__name__}); copy {src} manually before the session ends "
+            "(mount Drive in a cell first, then run: !cp <path> /content/drive/MyDrive/advertest/yolov7-face-v2.pt)"
+        )
+        log("weights export failed, continuing:", type(exc).__name__, str(exc)[:120])
     log("weights:", info["location"], info["sha256"][:12])
     return info
 
