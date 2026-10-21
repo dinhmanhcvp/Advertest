@@ -6,18 +6,18 @@
   "manifest.json"
  ],
  "failure_distribution": {
-  "error_fisheye": 24,
-  "error_motion_blur": 22,
-  "error_sensor_noise": 21,
-  "error_occlusion": 24
+  "error_fisheye": 27,
+  "error_motion_blur": 35,
+  "error_sensor_noise": 33,
+  "error_occlusion": 27
  },
- "hard_negatives": 91,
- "synthesized": 182,
+ "hard_negatives": 122,
+ "synthesized": 244,
  "schema": "ENTERPRISE_PII_V2",
  "weights": {
   "name": "yolov7-face-v2.pt",
   "bytes": 15989605,
-  "sha256": "8c6461c2fd9e9a7320fa75df26e632129ab316be1cce6b804a5709f97b6ec133",
+  "sha256": "8205c66ae07d13543d8338640b5b33ea35df8ad941731c4c0ffb616c017c3860",
   "accepted_by_gate": true,
   "location": "Google Drive: MyDrive/advertest/yolov7-face-v2.pt"
  },

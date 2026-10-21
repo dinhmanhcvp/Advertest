@@ -428,17 +428,68 @@ def test_pick_keys_is_deterministic_and_spread():
     assert cp.pick_keys(keys[:2], 5) == sorted(keys[:2])
 
 
-def test_presigning_uses_the_client_and_never_logs_urls(capsys):
-    class FakeS3:
-        def list_objects_v2(self, Bucket, Prefix, MaxKeys):  # noqa: N803  (mirrors the boto3 signature)
-            return {"Contents": [{"Key": f"{Prefix}clip{i}.mp4"} for i in range(6)]}
+MANIFEST = (
+    "video_uid,s3_path,type,benchmarks\n"
+    'u1,s3://ego4d-consortium-sharing/public/v2_1/clips/a.mp4,mp4,"av, social"\n'
+    'u2,s3://ego4d-unc/v2/clips/b.mp4,mp4,"fho"\n'
+    'u3,s3://ego4d-consortium-sharing/public/v2_1/clips/c.mp4,mp4,"av, social"\n'
+    'u4,s3://ego4d-consortium-sharing/public/v2_1/clips/meta.json,json,""\n'
+)
 
-        def generate_presigned_url(self, op, Params, ExpiresIn):  # noqa: N803
-            return f"https://s3.example/{Params['Key']}?X-Amz-Signature=TOPSECRET&Expires={ExpiresIn}"
 
-    urls = cp.ego4d_presigned_urls(3, expires=600, client=FakeS3())
-    assert len(urls) == 3 and all("TOPSECRET" in u for u in urls)
+def test_parse_ego_manifest_prefers_the_social_benchmark_and_skips_non_videos():
+    picks = cp.parse_ego_manifest(MANIFEST, 5, "social")
+    assert picks == [("ego4d-consortium-sharing", "public/v2_1/clips/a.mp4"), ("ego4d-consortium-sharing", "public/v2_1/clips/c.mp4")]
+    # no row matches the benchmark -> fall back to every video rather than returning nothing
+    assert len(cp.parse_ego_manifest(MANIFEST, 5, "nonexistent")) == 3
+    assert cp.split_s3_path("s3://b/k/x.mp4") == ("b", "k/x.mp4")
+    with pytest.raises(ValueError):
+        cp.split_s3_path("https://not-s3")
+
+
+class _FakeS3:
+    """Mirrors the boto3 calls we use; only `allowed` manifests/objects succeed (the licence key cannot ListBucket)."""
+
+    def __init__(self, manifests, readable):
+        self.manifests, self.readable, self.calls = manifests, readable, []
+
+    def list_objects_v2(self, **kw):
+        raise AssertionError("the Ego4D licence keys cannot list the bucket; the code must not try")
+
+    def get_object(self, Bucket, Key):  # noqa: N803
+        self.calls.append(Key)
+        if Key not in self.manifests:
+            raise PermissionError("AccessDenied")
+        import io
+
+        return {"Body": io.BytesIO(self.manifests[Key].encode())}
+
+    def head_object(self, Bucket, Key):  # noqa: N803
+        if Key not in self.readable:
+            raise PermissionError("403")
+
+    def generate_presigned_url(self, op, Params, ExpiresIn):  # noqa: N803
+        return f"https://s3.example/{Params['Bucket']}/{Params['Key']}?X-Amz-Signature=TOPSECRET&Expires={ExpiresIn}"
+
+
+def test_presigning_reads_the_manifest_not_the_bucket_and_never_logs_urls(capsys, monkeypatch):
+    monkeypatch.setitem(cp.CFG, "ego4d_versions", ["v2_1", "v1"])
+    monkeypatch.setitem(cp.CFG, "ego4d_datasets", ["clips"])
+    fake = _FakeS3({"public/v1/clips/manifest.csv": MANIFEST}, {"public/v2_1/clips/a.mp4", "public/v2_1/clips/c.mp4"})
+    urls = cp.ego4d_presigned_urls(2, expires=600, client=fake)
+    assert fake.calls == ["public/v2_1/clips/manifest.csv", "public/v1/clips/manifest.csv"]  # v2_1 denied -> falls back to v1
+    assert len(urls) == 2 and all("TOPSECRET" in u for u in urls)
     assert "TOPSECRET" not in capsys.readouterr().out  # only object names are logged
+
+
+def test_presigning_skips_unreadable_videos_and_explains_when_none_work(monkeypatch):
+    monkeypatch.setitem(cp.CFG, "ego4d_versions", ["v2_1"])
+    monkeypatch.setitem(cp.CFG, "ego4d_datasets", ["clips"])
+    man = {"public/v2_1/clips/manifest.csv": MANIFEST}
+    urls = cp.ego4d_presigned_urls(2, client=_FakeS3(man, {"public/v2_1/clips/c.mp4"}))
+    assert len(urls) == 1 and "c.mp4" in urls[0]  # a.mp4 was denied, c.mp4 usable
+    with pytest.raises(RuntimeError, match="no readable Ego4D video"):
+        cp.ego4d_presigned_urls(2, client=_FakeS3(man, set()))
 
 
 def test_aws_credentials_error_explains_where_keys_go(monkeypatch):

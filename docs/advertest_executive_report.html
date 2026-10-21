@@ -92,25 +92,31 @@
 
             <div class="print:break-inside-avoid">
                 <h2>3. Empirical Results (measured run)</h2>
-                <p>One run of the pipeline on 160 streamed WIDER FACE validation images for training and <strong>80 held-out images</strong> for the blind evaluation (seed 7, 30 epochs, yolov7-tiny-face). mAP is AP@IoU 0.5 over faces of at least 16&nbsp;px.</p>
+                <p>One run of the pipeline: 250 streamed WIDER FACE validation images for training and <strong>150 held-out images</strong> for the blind evaluation (seed 7, 30 epochs, yolov7-tiny-face). mAP is AP@IoU 0.5 over faces of at least 16&nbsp;px. A <strong>clean-only control</strong> (same initialisation, epochs and clean images, no adversarial samples) tests whether the gain is just &ldquo;more WIDER data&rdquo;.</p>
                 <table>
-                    <thead><tr><th>Metric</th><th>V1 baseline</th><th>V2 retrained</th><th>Change</th><th>Gate</th></tr></thead>
+                    <thead><tr><th>Metric</th><th>V1 baseline</th><th>V2 retrained</th><th>Clean-only control</th><th>V2 vs V1</th></tr></thead>
                     <tbody>
-                        <tr><td>Base mAP (clean WIDER FACE)</td><td>71.0%</td><td>73.5%</td><td>+2.5 pts</td><td>drop &le; 1.0 pt &mdash; passed</td></tr>
-                        <tr><td>Corrupted mAP (egocentric proxy)</td><td>55.0%</td><td>60.7%</td><td>+5.8 pts</td><td>gain &ge; 5.0 pts &mdash; passed</td></tr>
-                        <tr><td>Hard negatives recovered</td><td colspan="2">16.5% of blind-set failures</td><td colspan="2">&nbsp;</td></tr>
+                        <tr><td>Base mAP (clean WIDER FACE)</td><td>75.9%</td><td>75.8%</td><td>75.2%</td><td>-0.1 pts (gate: drop &le; 1.0 &mdash; passed)</td></tr>
+                        <tr><td>Corrupted mAP (egocentric proxy)</td><td>53.2%</td><td>61.4%</td><td>51.5%</td><td>+8.3 pts (gate: gain &ge; 5.0 &mdash; passed)</td></tr>
+                        <tr><td>Recall @ 1 FP/image &mdash; corrupted</td><td>35.9%</td><td>47.6%</td><td>&mdash;</td><td>+11.6 pts</td></tr>
+                        <tr><td>Recall @ 1 FP/image &mdash; clean</td><td>55.5%</td><td>59.7%</td><td>&mdash;</td><td>+4.2 pts</td></tr>
+                        <tr><td>Recall @ 0.1 FP/image &mdash; corrupted</td><td>21.0%</td><td>24.6%</td><td>&mdash;</td><td>+3.6 pts</td></tr>
+                        <tr><td>Recall @ 0.1 FP/image &mdash; clean</td><td>40.1%</td><td>36.7%</td><td>&mdash;</td><td>-3.3 pts</td></tr>
+                        <tr><td>Hard negatives recovered</td><td colspan="4">21.0% of blind-set failures</td></tr>
                     </tbody>
                 </table>
-                <p>Baseline failures (91 hard negatives) split into: fisheye 24, motion blur 22, sensor exposure/ISO 21, occlusion 24. These tags follow one canonical taxonomy so they map directly onto the central metadata registry.</p>
+                <p><strong>Is the gain real?</strong> The 95% paired-bootstrap interval of the corrupted-mAP gain over V1 is [3.6, 11.9] points and excludes zero. V2 beats the clean-only control by +9.8 points (95% CI [6.0, 13.5]). Over 3 independent random corruption draws of the blind set the gain is 9.4 &plusmn; 1.3 points.</p>
+                <p>Baseline failures (122 hard negatives) split into: fisheye 27, motion blur 35, sensor exposure/ISO 33, occlusion 27. The tags follow one canonical taxonomy so they map directly onto the central metadata registry. Every synthesized sample carries a reproducibility record (seed, key, source index, parameters, baseline checkpoint hash), so it can be regenerated bit-exactly without storing the image.</p>
 
                 <div class="bg-amber-50 border-l-4 border-amber-500 p-6 rounded-r-lg mt-8 not-prose">
                     <h4 class="font-bold text-amber-900 mb-2">Limitations &mdash; read before relying on these numbers</h4>
                     <ul class="text-sm text-amber-900 list-disc pl-5 space-y-1">
-                        <li><strong>Target domain is a proxy.</strong> No Ego4D footage was used yet (licence keys pending). &ldquo;Corrupted&rdquo; means WIDER FACE passed through the physical attack engine, which has exact ground truth. Real Ego4D frames are supported (streamed from presigned URLs) but not yet evaluated.</li>
-                        <li><strong>Small sample.</strong> 80 blind images and a single run: the corrupted-mAP gain clears the 5-point gate by under one point and has no confidence interval.</li>
-                        <li><strong>Modest recovery.</strong> 16% of the baseline hard negatives are recovered; most remain failures.</li>
+                        <li><strong>Target domain is a proxy.</strong> &ldquo;Corrupted&rdquo; means WIDER FACE passed through the physical attack engine, which has exact ground truth. Ego4D access was not usable in the measured run (AccessDenied); real Ego4D frames are supported but not yet evaluated.</li>
+                        <li><strong>One training run.</strong> The intervals above capture variation over blind images and corruption draws, not over training seeds.</li>
+                        <li><strong>Recovery is partial.</strong> 21% of the baseline hard negatives are recovered; most remain failures.</li>
+                        <li><strong>Strict false-positive budget.</strong> On clean images, recall at 0.1 FP/image is lower for V2 than for V1; the gain appears at the more permissive 1 FP/image operating point. Choose the operating point for the redaction use case explicitly.</li>
                         <li><strong>Landmarks are pseudo-labels.</strong> WIDER FACE has boxes only; training landmarks come from the baseline model, transformed with the same geometry as the image.</li>
-                        <li>Model weights (16.0 MB, SHA-256 8c6461c2fd9e&hellip;) are stored at Google Drive: MyDrive/advertest/yolov7-face-v2.pt; transfer to the Core Data Lake is pending.</li>
+                        <li>Model weights (16.0 MB, SHA-256 8205c66ae07d&hellip;) are stored at Google Drive: MyDrive/advertest/yolov7-face-v2.pt; transfer to the Core Data Lake is pending.</li>
                     </ul>
                 </div>
             </div>

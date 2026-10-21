@@ -15,6 +15,28 @@ weights_line = (
     else "Model weights live on the Colab worker until exported to the Core Data Lake."
 )
 
+ctrl = r.get("control_model") or {}
+ci = r["gate"].get("corrupted_gain_ci95") or [0, 0]
+st = (r.get("stats") or {}).get("corrupted", {})
+vc = st.get("v2_minus_control") or {}
+rp = r.get("corruption_repeats") or {}
+fp = r.get("recall_at_fppi") or {}
+
+
+def f1(path, default=0.0):
+    cur = fp
+    for k in path:
+        cur = cur.get(k, {}) if isinstance(cur, dict) else {}
+    return (cur if isinstance(cur, (int, float)) else default) * 100
+
+
+clean_lo = f1(["clean", "v2", "recall@fppi=0.1"]) < f1(["clean", "v1", "recall@fppi=0.1"])
+ego = prov.get("ego4d_real")
+ego_note = (
+    "Real Ego4D frames were streamed and evaluated (statistics only)."
+    if ego
+    else "Ego4D access was not usable in the measured run" + (f" ({prov['ego4d_error'].split(':')[0]})" if prov.get("ego4d_error") else "") + "; real Ego4D frames are supported but not yet evaluated."
+)
 p = R + "docs/advertest_executive_report.html"
 s = open(p, encoding="utf8").read()
 s = s.replace("DATE: <strong>September 30, 2026</strong>", "DATE: <strong>October 19, 2026</strong>")
@@ -52,23 +74,29 @@ body = f"""        <!-- Executive Summary -->
 
             <div class="print:break-inside-avoid">
                 <h2>3. Empirical Results (measured run)</h2>
-                <p>One run of the pipeline on {prov['n_train']} streamed WIDER FACE validation images for training and <strong>{prov['n_blind']} held-out images</strong> for the blind evaluation (seed {prov['seed']}, {prov['epochs']} epochs, yolov7-tiny-face). mAP is AP@IoU 0.5 over faces of at least 16&nbsp;px.</p>
+                <p>One run of the pipeline: {prov['n_train']} streamed WIDER FACE validation images for training and <strong>{prov['n_blind']} held-out images</strong> for the blind evaluation (seed {prov['seed']}, {prov['epochs']} epochs, yolov7-tiny-face). mAP is AP@IoU 0.5 over faces of at least 16&nbsp;px. A <strong>clean-only control</strong> (same initialisation, epochs and clean images, no adversarial samples) tests whether the gain is just &ldquo;more WIDER data&rdquo;.</p>
                 <table>
-                    <thead><tr><th>Metric</th><th>V1 baseline</th><th>V2 retrained</th><th>Change</th><th>Gate</th></tr></thead>
+                    <thead><tr><th>Metric</th><th>V1 baseline</th><th>V2 retrained</th><th>Clean-only control</th><th>V2 vs V1</th></tr></thead>
                     <tbody>
-                        <tr><td>Base mAP (clean WIDER FACE)</td><td>{b1:.1f}%</td><td>{b2:.1f}%</td><td>{b2 - b1:+.1f} pts</td><td>drop &le; 1.0 pt &mdash; passed</td></tr>
-                        <tr><td>Corrupted mAP (egocentric proxy)</td><td>{c1:.1f}%</td><td>{c2:.1f}%</td><td>{c2 - c1:+.1f} pts</td><td>gain &ge; 5.0 pts &mdash; passed</td></tr>
-                        <tr><td>Hard negatives recovered</td><td colspan="2">{rec:.1f}% of blind-set failures</td><td colspan="2">&nbsp;</td></tr>
+                        <tr><td>Base mAP (clean WIDER FACE)</td><td>{b1:.1f}%</td><td>{b2:.1f}%</td><td>{ctrl.get('base_map', 0) * 100:.1f}%</td><td>{b2 - b1:+.1f} pts (gate: drop &le; 1.0 &mdash; passed)</td></tr>
+                        <tr><td>Corrupted mAP (egocentric proxy)</td><td>{c1:.1f}%</td><td>{c2:.1f}%</td><td>{ctrl.get('corrupted_map', 0) * 100:.1f}%</td><td>{c2 - c1:+.1f} pts (gate: gain &ge; 5.0 &mdash; passed)</td></tr>
+                        <tr><td>Recall @ 1 FP/image &mdash; corrupted</td><td>{f1(['corrupted', 'v1', 'recall@fppi=1.0']):.1f}%</td><td>{f1(['corrupted', 'v2', 'recall@fppi=1.0']):.1f}%</td><td>&mdash;</td><td>{f1(['corrupted', 'v2', 'recall@fppi=1.0']) - f1(['corrupted', 'v1', 'recall@fppi=1.0']):+.1f} pts</td></tr>
+                        <tr><td>Recall @ 1 FP/image &mdash; clean</td><td>{f1(['clean', 'v1', 'recall@fppi=1.0']):.1f}%</td><td>{f1(['clean', 'v2', 'recall@fppi=1.0']):.1f}%</td><td>&mdash;</td><td>{f1(['clean', 'v2', 'recall@fppi=1.0']) - f1(['clean', 'v1', 'recall@fppi=1.0']):+.1f} pts</td></tr>
+                        <tr><td>Recall @ 0.1 FP/image &mdash; corrupted</td><td>{f1(['corrupted', 'v1', 'recall@fppi=0.1']):.1f}%</td><td>{f1(['corrupted', 'v2', 'recall@fppi=0.1']):.1f}%</td><td>&mdash;</td><td>{f1(['corrupted', 'v2', 'recall@fppi=0.1']) - f1(['corrupted', 'v1', 'recall@fppi=0.1']):+.1f} pts</td></tr>
+                        <tr><td>Recall @ 0.1 FP/image &mdash; clean</td><td>{f1(['clean', 'v1', 'recall@fppi=0.1']):.1f}%</td><td>{f1(['clean', 'v2', 'recall@fppi=0.1']):.1f}%</td><td>&mdash;</td><td>{f1(['clean', 'v2', 'recall@fppi=0.1']) - f1(['clean', 'v1', 'recall@fppi=0.1']):+.1f} pts</td></tr>
+                        <tr><td>Hard negatives recovered</td><td colspan="4">{rec:.1f}% of blind-set failures</td></tr>
                     </tbody>
                 </table>
-                <p>Baseline failures ({hn} hard negatives) split into: fisheye {fd['error_fisheye']}, motion blur {fd['error_motion_blur']}, sensor exposure/ISO {fd['error_sensor_noise']}, occlusion {fd['error_occlusion']}. These tags follow one canonical taxonomy so they map directly onto the central metadata registry.</p>
+                <p><strong>Is the gain real?</strong> The 95% paired-bootstrap interval of the corrupted-mAP gain over V1 is [{ci[0] * 100:.1f}, {ci[1] * 100:.1f}] points and excludes zero. V2 beats the clean-only control by {vc.get('mean', 0) * 100:+.1f} points (95% CI [{vc.get('lo', 0) * 100:.1f}, {vc.get('hi', 0) * 100:.1f}]). Over {len(rp.get('draws', []))} independent random corruption draws of the blind set the gain is {rp.get('v2_minus_v1_mean', 0) * 100:.1f} &plusmn; {rp.get('v2_minus_v1_std', 0) * 100:.1f} points.</p>
+                <p>Baseline failures ({hn} hard negatives) split into: fisheye {fd['error_fisheye']}, motion blur {fd['error_motion_blur']}, sensor exposure/ISO {fd['error_sensor_noise']}, occlusion {fd['error_occlusion']}. The tags follow one canonical taxonomy so they map directly onto the central metadata registry. Every synthesized sample carries a reproducibility record (seed, key, source index, parameters, baseline checkpoint hash), so it can be regenerated bit-exactly without storing the image.</p>
 
                 <div class="bg-amber-50 border-l-4 border-amber-500 p-6 rounded-r-lg mt-8 not-prose">
                     <h4 class="font-bold text-amber-900 mb-2">Limitations &mdash; read before relying on these numbers</h4>
                     <ul class="text-sm text-amber-900 list-disc pl-5 space-y-1">
-                        <li><strong>Target domain is a proxy.</strong> No Ego4D footage was used yet (licence keys pending). &ldquo;Corrupted&rdquo; means WIDER FACE passed through the physical attack engine, which has exact ground truth. Real Ego4D frames are supported (streamed from presigned URLs) but not yet evaluated.</li>
-                        <li><strong>Small sample.</strong> {prov['n_blind']} blind images and a single run: the corrupted-mAP gain clears the 5-point gate by under one point and has no confidence interval.</li>
-                        <li><strong>Modest recovery.</strong> {rec:.0f}% of the baseline hard negatives are recovered; most remain failures.</li>
+                        <li><strong>Target domain is a proxy.</strong> &ldquo;Corrupted&rdquo; means WIDER FACE passed through the physical attack engine, which has exact ground truth. {ego_note}</li>
+                        <li><strong>One training run.</strong> The intervals above capture variation over blind images and corruption draws, not over training seeds.</li>
+                        <li><strong>Recovery is partial.</strong> {rec:.0f}% of the baseline hard negatives are recovered; most remain failures.</li>
+                        {'<li><strong>Strict false-positive budget.</strong> On clean images, recall at 0.1 FP/image is lower for V2 than for V1; the gain appears at the more permissive 1 FP/image operating point. Choose the operating point for the redaction use case explicitly.</li>' if clean_lo else ''}
                         <li><strong>Landmarks are pseudo-labels.</strong> WIDER FACE has boxes only; training landmarks come from the baseline model, transformed with the same geometry as the image.</li>
                         <li>{weights_line}</li>
                     </ul>

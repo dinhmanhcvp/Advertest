@@ -60,7 +60,10 @@ CFG = dict(
     ego4d_auto=os.environ.get("EGO4D_AUTO_PRESIGN", "0") == "1",  # presign clips with AWS keys kept in Colab Secrets
     ego4d_clips=int(os.environ.get("EGO4D_CLIPS", "4")),
     ego4d_bucket=os.environ.get("EGO4D_BUCKET", "ego4d-consortium-sharing"),
-    ego4d_prefix=os.environ.get("EGO4D_PREFIX", "public/v1/clips/"),
+    # The Ego4D CLI never lists the bucket: it reads public/<version>/<dataset>/manifest.csv (GetObject only).
+    ego4d_versions=[v for v in os.environ.get("EGO4D_VERSION", "v2_1,v2,v1").split(",") if v.strip()],
+    ego4d_datasets=[d for d in os.environ.get("EGO4D_DATASETS", "clips,full_scale").split(",") if d.strip()],
+    ego4d_benchmark=os.environ.get("EGO4D_BENCHMARK", "social"),
     ego4d_frames=48,
     ego4d_stride=2,
     epochs=int(os.environ.get("EPOCHS", "30")),
@@ -674,15 +677,46 @@ def aws_credentials() -> dict:
 
 
 def pick_keys(keys, n: int) -> list:
-    """Deterministic, evenly spread choice of n clip keys (sorted so the same run picks the same clips)."""
+    """Deterministic, evenly spread choice of n items (sorted so the same run picks the same clips)."""
     keys = sorted(k for k in keys if k.lower().endswith(".mp4"))
     if len(keys) <= n:
         return keys
     return keys[:: max(1, len(keys) // n)][:n]
 
 
+def split_s3_path(path: str):
+    """'s3://bucket/some/key.mp4' -> ('bucket', 'some/key.mp4')."""
+    m = re.match(r"^s3://([^/]+)/(.+)$", path.strip())
+    if not m:
+        raise ValueError(f"not an s3:// path: {path[:60]!r}")
+    return m.group(1), m.group(2)
+
+
+def parse_ego_manifest(csv_text: str, n: int, benchmark: str | None = "social") -> list:
+    """Pick n (bucket, key) videos from an Ego4D manifest.csv (columns: s3_path | canonical_s3_location, type, benchmarks).
+
+    If `benchmark` matches no row (or the manifest has no such column) all videos are considered instead.
+    """
+    import csv
+    import io
+
+    rows = list(csv.DictReader(io.StringIO(csv_text)))
+    videos = []
+    for r in rows:
+        path = (r.get("canonical_s3_location") or r.get("s3_path") or "").strip()
+        kind = (r.get("type") or "").strip().lower()
+        if path.lower().endswith(".mp4") and kind in ("", "mp4", "video"):
+            videos.append((path, re.sub(r"\s+", "", (r.get("benchmarks") or "").lower())))
+    chosen = [p for p, b in videos if benchmark and benchmark.lower() in b] or [p for p, _ in videos]
+    return [split_s3_path(p) for p in pick_keys(chosen, n)]
+
+
 def ego4d_presigned_urls(n: int = 4, expires: int = 6 * 3600, client=None) -> list:
-    """List the Ego4D clips the licence allows and presign `n` of them. Only object keys are logged — never the URLs."""
+    """Presign `n` Ego4D videos using the manifest the Ego4D CLI itself reads (needs GetObject only, not ListBucket).
+
+    Tries each EGO4D_VERSION x EGO4D_DATASETS until a manifest is readable and yields videos we may fetch.
+    Only object names are logged — never the signed URLs.
+    """
     if client is None:
         try:
             import boto3
@@ -691,12 +725,29 @@ def ego4d_presigned_urls(n: int = 4, expires: int = 6 * 3600, client=None) -> li
             import boto3
 
         client = boto3.client("s3", **aws_credentials())
-    resp = client.list_objects_v2(Bucket=CFG["ego4d_bucket"], Prefix=CFG["ego4d_prefix"], MaxKeys=1000)
-    keys = pick_keys([o["Key"] for o in resp.get("Contents", [])], n)
-    if not keys:
-        raise RuntimeError(f"no .mp4 objects under s3://{CFG['ego4d_bucket']}/{CFG['ego4d_prefix']} (check the prefix in your licence email)")
-    log(f"presigning {len(keys)} Ego4D clips:", [k.rsplit("/", 1)[-1] for k in keys])
-    return [client.generate_presigned_url("get_object", Params={"Bucket": CFG["ego4d_bucket"], "Key": k}, ExpiresIn=expires) for k in keys]
+    problems = []
+    for version in CFG["ego4d_versions"]:
+        for dataset in CFG["ego4d_datasets"]:
+            key = f"public/{version}/{dataset}/manifest.csv"
+            try:
+                text = client.get_object(Bucket=CFG["ego4d_bucket"], Key=key)["Body"].read().decode("utf-8", "replace")
+            except Exception as exc:
+                problems.append(f"{version}/{dataset}: {type(exc).__name__}")
+                continue
+            picks = parse_ego_manifest(text, n * 3, CFG["ego4d_benchmark"])  # over-pick, then keep what is readable
+            usable = []
+            for bucket, k in picks:
+                try:
+                    client.head_object(Bucket=bucket, Key=k)
+                    usable.append((bucket, k))
+                except Exception as exc:
+                    problems.append(f"{bucket}/{k.rsplit('/', 1)[-1]}: {type(exc).__name__}")
+                if len(usable) >= n:
+                    break
+            if usable:
+                log(f"Ego4D manifest {version}/{dataset}: presigning {len(usable)} videos:", [k.rsplit("/", 1)[-1] for _, k in usable])
+                return [client.generate_presigned_url("get_object", Params={"Bucket": b, "Key": k}, ExpiresIn=expires) for b, k in usable]
+    raise RuntimeError("no readable Ego4D video: " + "; ".join(problems[:6]))
 
 
 def ego_stats(clips: list) -> dict | None:

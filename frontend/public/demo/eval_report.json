@@ -1,34 +1,133 @@
 {
  "base_model": {
-  "base_map": 0.7105,
-  "corrupted_map": 0.5498
+  "base_map": 0.7591,
+  "corrupted_map": 0.5317
  },
  "advertest_model": {
-  "base_map": 0.7352,
-  "corrupted_map": 0.6074
+  "base_map": 0.758,
+  "corrupted_map": 0.6143
  },
  "deltas": {
-  "base_drop": -0.0248,
-  "corrupted_improvement": 0.0577
+  "base_drop": 0.001,
+  "corrupted_improvement": 0.0826
  },
- "hard_negative_recovery": 0.1648,
+ "hard_negative_recovery": 0.21,
+ "recall_at_fppi": {
+  "clean": {
+   "v1": {
+    "recall@fppi=0.1": 0.4007,
+    "recall@fppi=1.0": 0.5555
+   },
+   "v2": {
+    "recall@fppi=0.1": 0.3674,
+    "recall@fppi=1.0": 0.5973
+   }
+  },
+  "corrupted": {
+   "v1": {
+    "recall@fppi=0.1": 0.21,
+    "recall@fppi=1.0": 0.3595
+   },
+   "v2": {
+    "recall@fppi=0.1": 0.2458,
+    "recall@fppi=1.0": 0.4757
+   }
+  }
+ },
+ "control_model": {
+  "base_map": 0.7518,
+  "corrupted_map": 0.5153,
+  "note": "same init, epochs and clean images as V2, without the adversarial samples"
+ },
+ "stats": {
+  "corrupted": {
+   "v2_minus_v1": {
+    "mean": 0.0803,
+    "lo": 0.0363,
+    "hi": 0.1191,
+    "n_boot": 300,
+    "n_images": 150
+   },
+   "v2_minus_control": {
+    "mean": 0.0984,
+    "lo": 0.0603,
+    "hi": 0.1351,
+    "n_boot": 300,
+    "n_images": 150
+   }
+  },
+  "clean": {
+   "v2_minus_v1": {
+    "mean": -0.0029,
+    "lo": -0.0284,
+    "hi": 0.0226,
+    "n_boot": 300,
+    "n_images": 150
+   },
+   "v2_minus_control": {
+    "mean": 0.0061,
+    "lo": -0.0101,
+    "hi": 0.0207,
+    "n_boot": 300,
+    "n_images": 150
+   }
+  }
+ },
+ "corruption_repeats": {
+  "draws": [
+   {
+    "rep": 0,
+    "v2_minus_v1": 0.0826,
+    "v2_minus_control": 0.099
+   },
+   {
+    "rep": 1,
+    "v2_minus_v1": 0.1116,
+    "v2_minus_control": 0.1348
+   },
+   {
+    "rep": 2,
+    "v2_minus_v1": 0.087,
+    "v2_minus_control": 0.1004
+   }
+  ],
+  "v2_minus_v1_mean": 0.0937,
+  "v2_minus_v1_std": 0.0128
+ },
  "gate": {
   "max_base_drop": 0.01,
   "min_corrupted_gain": 0.05,
-  "base_drop": -0.0248,
-  "corrupted_gain": 0.0577,
-  "accepted": true
+  "base_drop": 0.001,
+  "corrupted_gain": 0.0826,
+  "accepted": true,
+  "corrupted_gain_ci95": [
+   0.0363,
+   0.1191
+  ],
+  "gain_statistically_supported": true,
+  "beats_clean_only_control": true
  },
  "provenance": {
   "source": "colab_zero_disk_pipeline",
   "model": "derronqi/yolov7-face (yolov7-tiny-face)",
   "base_dataset": "WIDER FACE (validation, streamed)",
-  "n_train": 160,
-  "n_blind": 80,
-  "target_domain": "WIDER FACE through the physical attack engine (proxy; no Ego4D URLs supplied)",
+  "n_train": 250,
+  "n_blind": 150,
+  "target_domain": "WIDER FACE through the physical attack engine (proxy); no Ego4D supplied",
   "ego4d_real": null,
+  "ego4d_error": "AccessDenied: An error occurred (AccessDenied) when calling the ListObjectsV2 operation: User: arn:aws:iam::215061535154:user/m-nh-inh-2fe5 is not authorized to perform: s3:ListBucket on resource: \"arn:aws:s3:::ego4d-consortium-sharing\" because no identity-based policy allows the s3:ListBucket actio",
   "seed": 7,
   "epochs": 30,
-  "generated_at": "2026-10-19T03:45:29Z"
+  "pipeline_version": "2026-10-21.1",
+  "v1_sha256": "91eab824696f6cfadbc60bee63e969d4b4ca0484bc4c1e57b4dbd73917990127",
+  "versions": {
+   "python": "3.13.15",
+   "numpy": "2.1.3",
+   "opencv": "4.14.0",
+   "torch": "2.11.0+cu130"
+  },
+  "leaks_removed": 0,
+  "split": "image-level, near-duplicate guarded (dHash); blind images are never used for synthesis or training",
+  "generated_at": "2026-10-21T04:32:56Z"
  }
 }

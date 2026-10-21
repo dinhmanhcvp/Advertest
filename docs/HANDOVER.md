@@ -20,25 +20,30 @@ model only if it passes a blind gate (base mAP drop ≤ 1 pt **and** corrupted m
 
 ## 2. Measured results (one run)
 
-WIDER FACE validation, streamed: 160 images for training, **80 held-out images** for the blind evaluation, yolov7-tiny-face, 30 epochs, seed 7.
+WIDER FACE validation, streamed: 250 images for training, **150 held-out images** for the blind evaluation, yolov7-tiny-face, 30 epochs, seed 7. A **clean-only control** (same init, epochs and clean images, no adversarial samples) is trained alongside.
 
-| | V1 | V2 | Change |
-|---|---|---|---|
-| Base mAP (clean) | 71.1% | 73.5% | +2.4 pts (gate: drop ≤ 1 pt → pass) |
-| Corrupted mAP (proxy) | 55.0% | 60.7% | +5.8 pts (gate: gain ≥ 5 pts → pass) |
-| Hard negatives recovered | | 16.5% | |
+| | V1 | V2 | Control | Change V2 vs V1 |
+|---|---|---|---|---|
+| Base mAP (clean) | 75.9% | 75.8% | 75.2% | −0.1 pt (gate: drop ≤ 1 pt → pass) |
+| Corrupted mAP (proxy) | 53.2% | 61.4% | 51.5% | +8.3 pts (gate: gain ≥ 5 pts → pass) |
+| Recall @ 1 FP/image, corrupted | 35.9% | 47.6% | | +11.6 pts |
+| Recall @ 1 FP/image, clean | 55.5% | 59.7% | | +4.2 pts |
+| Recall @ 0.1 FP/image, clean | 40.1% | 36.7% | | **−3.3 pts** |
+| Hard negatives recovered | | 21.0% | | |
 
-91 of 160 images were baseline hard negatives (fisheye 24, motion blur 22, sensor/ISO 21, occlusion 24).
+Is the gain real? 95% paired-bootstrap CI of the corrupted gain over V1: **[3.6, 11.9] pts** (excludes 0). V2 beats the clean-only control by **+9.8 pts, CI [6.0, 13.5]**. Three independent random corruption draws of the blind set: gain 9.4 ± 1.3 pts.
+122 of 250 training images were baseline hard negatives (fisheye 27, motion blur 35, sensor/ISO 33, occlusion 27). V2 weights: 16.0 MB, SHA-256 `8205c66ae07d…` (full hash in `manifest.json`), on Google Drive.
 
 ## 3. Honest limitations
 
-1. **Target domain is a proxy, not Ego4D.** Ego4D needs a licence and AWS keys (pending). "Corrupted" = WIDER FACE through the physical attack engine, which has exact ground truth. The report and UI label it as such (`provenance.target_domain`).
-2. **Thin evidence.** 80 blind images, one seed; the gain clears the gate by < 1 pt and has no confidence interval.
-3. **Low recovery.** 16.5% of baseline hard negatives are recovered.
-4. **Landmarks are pseudo-labels** (WIDER FACE has boxes only), taken from the baseline and transformed with the image geometry.
-5. **The Studio view draws synthetic frames** (procedural SVG) to show the physics controls; only Stage 4 shows real images (face crops from the measured run).
-6. **Per-epoch validation inside the repo trainer is disabled** (its keypoint logging crashes); all accuracy numbers come from the pipeline's own blind evaluation.
-7. **Not exercised in the measured run:** Kafka streaming, Ray training, 3D Gaussian Splatting, RL policy, Label Studio round-trip (code and unit tests exist; see `SYSTEM_ARCHITECTURE.md`).
+1. **Target domain is a proxy, not Ego4D.** "Corrupted" = WIDER FACE through the physical attack engine, which has exact ground truth. The report and UI label it as such (`provenance.target_domain`). The Ego4D licence keys exist but the IAM user is not allowed to *list* the bucket (`s3:ListBucket` → AccessDenied), so no real Ego4D frames have been evaluated yet; the pipeline records the error and continues. The code now reads the manifest as the Ego4D CLI does (covered by tests with a fake S3 client) but has **not yet been run with the real keys**.
+2. **One training run.** The intervals capture variation over blind images and corruption draws, **not over training seeds**.
+3. **Partial recovery.** 21% of baseline hard negatives are recovered.
+4. **Strict false-positive budget.** On clean images V2's recall at 0.1 FP/image is *lower* than V1's (−3.3 pts); the gain appears at 1 FP/image. The operating point for the redaction use case must be chosen explicitly.
+5. **Landmarks are pseudo-labels** (WIDER FACE has boxes only), taken from the baseline and transformed with the image geometry.
+6. **The Studio view draws synthetic frames** (procedural SVG) to show the physics controls; only Stage 4 shows real images (face crops from the measured run).
+7. **Per-epoch validation inside the repo trainer is disabled** (its keypoint logging crashes); all accuracy numbers come from the pipeline's own blind evaluation.
+8. **Not exercised in the measured run:** Kafka streaming, Ray training, 3D Gaussian Splatting, RL policy, Label Studio round-trip (code and unit tests exist; see `SYSTEM_ARCHITECTURE.md`).
 
 ## 4. Reproduce the measured run (Colab, no local disk)
 
@@ -49,7 +54,7 @@ WIDER FACE validation, streamed: 160 images for training, **80 held-out images**
 5. The V2 checkpoint is copied to Google Drive (`MyDrive/advertest/yolov7-face-v2.pt`) or PUT to `WEIGHTS_PUT_URL`; its SHA-256 is in `manifest.json` → `weights`.
 
 ### Adding real Ego4D frames (keys stay in Colab)
-Put `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` (from the Ego4D licence email) in **Colab Secrets** (key icon, enable *Notebook access*) — never in a cell, the repo or chat. Then set `EGO4D_AUTO_PRESIGN=1` (optional: `EGO4D_CLIPS`, `EGO4D_PREFIX`, `EGO4D_BUCKET`); the pipeline lists the clips, presigns a few for 6 h, streams them and logs only object names. Licence note: Ego4D frames must not be redistributed, so only statistics are exported (confidence, detector dropout, dropouts fixed by V2, tracker coasting) — no thumbnails.
+Put `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` (from the Ego4D licence email) in **Colab Secrets** (key icon, enable *Notebook access*) — never in a cell, the repo or chat. Then set `EGO4D_AUTO_PRESIGN=1` (optional: `EGO4D_CLIPS`, `EGO4D_VERSION` default `v2_1,v2,v1`, `EGO4D_DATASETS` default `clips,full_scale`, `EGO4D_BENCHMARK` default `social`). Like the official Ego4D CLI, the pipeline does **not** list the bucket (licence keys lack `s3:ListBucket`): it reads `public/<version>/<dataset>/manifest.csv`, picks a few videos of the social benchmark, checks each is readable, presigns them for 6 h, streams them and logs only object names. Licence note: Ego4D frames must not be redistributed, so only statistics are exported (confidence, detector dropout, dropouts fixed by V2, tracker coasting) — no thumbnails.
 
 Manual alternative:
 Request access at ego4d-data.org, then create short-lived URLs for a few clips (`aws s3 presign … --expires-in 7200`) and set `EGO4D_PRESIGNED_URLS`. The pipeline decodes them as streams (never saved) and reports confidence, detector dropout and tracker-recovered frames for V1/V2. It does **not** compute mAP on Ego4D (no box labels in that path).
@@ -83,14 +88,14 @@ Docker: `docker compose up --build` (see `.env.example`).
 |---|---|
 | Pipeline runs end to end on Colab (stream → triage → attacks → fine-tune → blind gate → export) | Done (one run) |
 | Failure taxonomy + audit trail per sample | Done |
-| Blind gate (≤ 1 pt base drop, ≥ 5 pts corrupted gain) | Done, passed narrowly |
+| Blind gate (≤ 1 pt base drop, ≥ 5 pts corrupted gain) | Done, passed (+8.3 pts, CI [3.6, 11.9]) |
 | 5-point landmarks in A/B evidence | Done (V2); V1 shown as "no detection" when it finds nothing |
 | Temporal tracker | Implemented + unit-tested; **not evaluated on real sequences** |
 | UI: 4 stages, runs without any backend | Done |
-| Ego4D real-data validation | **Pending** (licence keys) |
-| V2 weights saved with a verifiable hash | Done: `MyDrive/advertest/yolov7-face-v2.pt`, 15.99 MB, SHA-256 `8c6461c2fd9e9a7320fa75df26e632129ab316be1cce6b804a5709f97b6ec133` |
+| Ego4D real-data validation | **Blocked**: keys cannot list the bucket (see limitation 1); needs clip keys from the Ego4D manifest |
+| V2 weights saved with a verifiable hash | Done: `MyDrive/advertest/yolov7-face-v2.pt`, 15.99 MB, SHA-256 `8205c66ae07d13543d8338640b5b33ea35df8ad941731c4c0ffb616c017c3860` |
 | Weights transferred to the Core Data Lake | **Pending** (copy from Drive, or rerun with `WEIGHTS_PUT_URL`) |
-| Statistical confidence (more seeds / larger blind set) | **Pending** |
-| Per-sample reproducibility record, leak guard, Recall@FPPI | Implemented and unit-tested; **artifacts need one Colab rerun to contain them** |
-| Clean-only control model, 95% bootstrap CI, repeated corruption draws, larger blind set (150) | Implemented; the whole pipeline is covered by an offline dry-run test (fake detector); **needs one Colab rerun to produce numbers** — the UI then shows a "Validity checks" panel |
+| Statistical confidence (bootstrap CI, 150 blind images, repeated corruption draws) | Done; training-seed variance still **pending** |
+| Per-sample reproducibility record, leak guard, Recall@FPPI | Done (in the measured artifacts) |
+| Clean-only control model (V2 beats it by +9.8 pts, CI [6.0, 13.5]) | Done; the UI shows a "Validity checks" panel |
 | Official WIDER Easy/Medium/Hard, event-level split, training-seed variance | **Pending** (see `docs/MENTOR_QA.md`) |
