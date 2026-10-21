@@ -29,6 +29,7 @@ import json
 import math
 import os
 import random
+import re
 import shutil
 import subprocess
 import sys
@@ -125,7 +126,7 @@ def setup_environment() -> Path:
     """Colab only: install light deps, shallow-clone the model repo, fetch weights into /content."""
     wd = Path(CFG["workdir"])
     wd.mkdir(parents=True, exist_ok=True)
-    subprocess.run([sys.executable, "-m", "pip", "-q", "install", "datasets", "gdown", "av", "pillow"], check=True)
+    subprocess.run([sys.executable, "-m", "pip", "-q", "install", "datasets", "gdown", "av", "pillow", "boto3"], check=True)
     repo = wd / "yolov7_face"
     if not repo.exists():
         subprocess.run(["git", "clone", "--depth", "1", CFG["repo_url"], str(repo)], check=True)
@@ -462,7 +463,7 @@ def explain(tag: str, dist: dict, n_hard: int, med_conf: float, att: Attacked) -
     )
 
 
-PIPELINE_VERSION = "2026-10-19.3"
+PIPELINE_VERSION = "2026-10-21.1"
 
 
 def rng_for(seed: int, *key) -> np.random.Generator:
@@ -683,7 +684,11 @@ def pick_keys(keys, n: int) -> list:
 def ego4d_presigned_urls(n: int = 4, expires: int = 6 * 3600, client=None) -> list:
     """List the Ego4D clips the licence allows and presign `n` of them. Only object keys are logged — never the URLs."""
     if client is None:
-        import boto3
+        try:
+            import boto3
+        except ImportError:  # not preinstalled on every Colab image
+            subprocess.run([sys.executable, "-m", "pip", "-q", "install", "boto3"], check=True)
+            import boto3
 
         client = boto3.client("s3", **aws_credentials())
     resp = client.list_objects_v2(Bucket=CFG["ego4d_bucket"], Prefix=CFG["ego4d_prefix"], MaxKeys=1000)
@@ -914,8 +919,33 @@ def bootstrap_diff_ci(dets_a, dets_b, gts, n_boot: int = 300, seed: int = 0, iou
     )
 
 
-def finetune(repo: str, weights: str, data_yaml, name: str) -> Path:
-    """Run yolov7-face's own trainer (keypoint loss on) and return the resulting checkpoint."""
+def files_signature(files) -> str:
+    """Stable fingerprint of a training set (names + sizes) so a stale checkpoint is never silently reused."""
+    h = hashlib.sha256()
+    for p in sorted(Path(f) for f in files):
+        h.update(f"{p.name}:{p.stat().st_size}\n".encode())
+    return h.hexdigest()
+
+
+def finetune(repo: str, weights: str, data_yaml, name: str, data_sig: str | None = None) -> Path:
+    """Run yolov7-face's own trainer (keypoint loss on) and return the resulting checkpoint.
+
+    If a checkpoint with the same recipe (epochs, batch, size, seed, pipeline version, training-set fingerprint) already
+    exists it is reused, so a crash after training costs minutes instead of a re-train. A checkpoint without a stamp is
+    reused only when REUSE_CHECKPOINTS=1 (you assert the configuration is unchanged).
+    """
+    wdir = Path(repo, "runs", "train", name, "weights")
+    stamp = Path(repo, "runs", "train", name, "advertest_stamp.json")
+    want = dict(epochs=CFG["epochs"], batch=CFG["batch"], img=CFG["img_size"], seed=CFG["seed"], version=PIPELINE_VERSION, data=data_sig)
+    existing = next((c for c in (wdir / "best.pt", wdir / "last.pt") if c.exists()), None)
+    if existing is not None:
+        have = json.loads(stamp.read_text()) if stamp.exists() else None
+        if have == want:
+            log(f"reusing the matching checkpoint for {name} (same recipe and data)")
+            return existing
+        if have is None and os.environ.get("REUSE_CHECKPOINTS") == "1":
+            log(f"REUSE_CHECKPOINTS=1: reusing the unstamped checkpoint for {name}; make sure the configuration is unchanged")
+            return existing
     cfg_yaml, hyp_yaml = Path(repo, "cfg", "yolov7-tiny-face.yaml"), Path(repo, "data", "hyp.scratch.tiny.yaml")
     for need in (cfg_yaml, hyp_yaml):
         assert need.exists(), f"{need} missing; repo layout changed: {[p.name for p in need.parent.glob('*')]}"
@@ -931,9 +961,9 @@ def finetune(repo: str, weights: str, data_yaml, name: str) -> Path:
     Path(repo, "requirements.txt").write_text("# pins removed on the Colab worker (deps preinstalled)\n")
     # W&B would demand an API key; experiment tracking is not needed on the worker.
     run_logged(cmd, cwd=repo, env={"TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD": "1", "WANDB_MODE": "disabled", "WANDB_DISABLED": "true"})
-    wdir = Path(repo, "runs", "train", name, "weights")
     ckpt = next((c for c in (wdir / "best.pt", wdir / "last.pt") if c.exists()), None)  # --notest may skip best.pt
     assert ckpt is not None, f"trainer produced no checkpoint in {wdir}: {[p.name for p in wdir.glob('*')]}"
+    stamp.write_text(json.dumps(want))
     return ckpt
 
 
@@ -1143,7 +1173,7 @@ def run_pipeline() -> Path:
 
     # ---- fine-tune V2 (clean replay + targeted adversarial samples) ---------------------------------
     log(f"fine-tuning V2: {CFG['epochs']} epochs on {n_written + len(audit)} images ...")
-    v2_w = finetune(repo, weights, wd / "advertest.yaml", "advertest_v2")
+    v2_w = finetune(repo, weights, wd / "advertest.yaml", "advertest_v2", files_signature((ds / "images" / "train").glob("*.jpg")))
     v2 = FaceDetector(str(v2_w), repo, CFG["img_size"], CFG["det_conf"])
 
     # ---- control: same init, same epochs, same clean images, but NO adversarial samples ---------------
@@ -1156,7 +1186,7 @@ def run_pipeline() -> Path:
             f"train: {wd / 'train_clean.txt'}\nval: {ds / 'images' / 'val'}\nnc: 1\nnames: ['face']\n"
         )
         log(f"fine-tuning clean-only control: {CFG['epochs']} epochs on {len(clean_list)} images ...")
-        ctrl_w = finetune(repo, weights, wd / "advertest_clean.yaml", "advertest_ctrl")
+        ctrl_w = finetune(repo, weights, wd / "advertest_clean.yaml", "advertest_ctrl", files_signature(clean_list))
         ctrl = FaceDetector(str(ctrl_w), repo, CFG["img_size"], CFG["det_conf"])
 
     # ---- blind evaluation: images never used above -------------------------------------------------
@@ -1240,21 +1270,25 @@ def run_pipeline() -> Path:
     recovery = rec_num / rec_den if rec_den else 0.0
 
     # ---- real Ego4D frames (stream only) --------------------------------------------------------------
-    ego = None
-    ego_urls = CFG["ego4d_urls"] or (ego4d_presigned_urls(CFG["ego4d_clips"]) if CFG["ego4d_auto"] else [])
-    if ego_urls:
-        clips = []
-        for url, seq in stream_ego4d(ego_urls, CFG["ego4d_frames"], CFG["ego4d_stride"]):
-            clips.append(dict(
-                name=urlparse(url).path.rsplit("/", 1)[-1],  # object key only; the signed query string is dropped
-                wh=(seq[0].shape[1], seq[0].shape[0]),
-                v1=[v1.predict(f) for f in seq],
-                v2=[v2.predict(f) for f in seq],
-                control=[ctrl.predict(f) for f in seq] if ctrl is not None else None,
-            ))
-        ego = ego_stats(clips)
-        if ego:
-            log("ego4d (real, streamed, statistics only):", {k: v for k, v in ego.items() if k != "per_clip"})
+    ego, ego_error = None, None
+    try:
+        ego_urls = CFG["ego4d_urls"] or (ego4d_presigned_urls(CFG["ego4d_clips"]) if CFG["ego4d_auto"] else [])
+        if ego_urls:
+            clips = []
+            for url, seq in stream_ego4d(ego_urls, CFG["ego4d_frames"], CFG["ego4d_stride"]):
+                clips.append(dict(
+                    name=urlparse(url).path.rsplit("/", 1)[-1],  # object key only; the signed query string is dropped
+                    wh=(seq[0].shape[1], seq[0].shape[0]),
+                    v1=[v1.predict(f) for f in seq],
+                    v2=[v2.predict(f) for f in seq],
+                    control=[ctrl.predict(f) for f in seq] if ctrl is not None else None,
+                ))
+            ego = ego_stats(clips)
+            if ego:
+                log("ego4d (real, streamed, statistics only):", {k: v for k, v in ego.items() if k != "per_clip"})
+    except Exception as exc:  # Ego4D is optional: never lose the trained models and metrics because of it
+        ego_error = re.sub(r"\?\S*", "?<redacted>", f"{type(exc).__name__}: {exc}")[:300]  # strip any signed query string
+        log("Ego4D stage failed; the rest of the run is kept:", ego_error)
 
     # ---- export: small JSON + thumbnails only ---------------------------------------------------------------
     cases.sort(key=lambda c: -c[0])
@@ -1295,7 +1329,7 @@ def run_pipeline() -> Path:
             source="colab_zero_disk_pipeline", model="derronqi/yolov7-face (yolov7-tiny-face)",
             base_dataset="WIDER FACE (validation, streamed)", n_train=len(train), n_blind=len(blind),
             target_domain="WIDER FACE through the physical attack engine (proxy)" + ("; plus real Ego4D frames, statistics only" if ego else "; no Ego4D supplied"),
-            ego4d_real=ego, seed=CFG["seed"], epochs=CFG["epochs"], pipeline_version=PIPELINE_VERSION,
+            ego4d_real=ego, ego4d_error=ego_error, seed=CFG["seed"], epochs=CFG["epochs"], pipeline_version=PIPELINE_VERSION,
             v1_sha256=v1_sha, versions=env_versions(), leaks_removed=len(leaks),
             split="image-level, near-duplicate guarded (dHash); blind images are never used for synthesis or training", generated_at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         ),

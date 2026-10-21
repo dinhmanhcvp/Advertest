@@ -374,8 +374,8 @@ def test_full_pipeline_dry_run_produces_every_artifact_and_reproducible_samples(
     monkeypatch.setattr(cp, "FaceDetector", _FakeDetector)
     trained = []
 
-    def fake_finetune(repo, weights, data_yaml, name):
-        assert Path(data_yaml).exists()
+    def fake_finetune(repo, weights, data_yaml, name, data_sig=None):
+        assert Path(data_yaml).exists() and data_sig  # the training-set fingerprint is always supplied
         trained.append(name)
         p = tmp_path / f"{name}.pt"
         p.write_bytes(name.encode())
@@ -461,3 +461,90 @@ def test_ego_stats_counts_dropouts_fixed_by_v2():
     assert st["v1_dropouts_fixed_by_v2"] == 0.5
     assert st["per_clip"][0]["clip"] == "a.mp4" and st["dropout_control"] == 0.5
     assert cp.ego_stats([]) is None
+
+
+# ---- resilience: reuse a trained checkpoint, and never lose a run to an optional stage ---------------------------
+
+
+def _fake_repo(tmp_path):
+    repo = tmp_path / "repo"
+    (repo / "cfg").mkdir(parents=True)
+    (repo / "data").mkdir()
+    (repo / "cfg" / "yolov7-tiny-face.yaml").write_text("x")
+    (repo / "data" / "hyp.scratch.tiny.yaml").write_text("x")
+    return str(repo)
+
+
+def test_finetune_reuses_a_matching_checkpoint_and_retrains_when_data_changes(tmp_path, monkeypatch):
+    repo = _fake_repo(tmp_path)
+    calls = []
+
+    def fake_run(cmd, cwd=None, env=None, **kw):
+        calls.append(cmd)
+        w = Path(repo, "runs", "train", "m", "weights")
+        w.mkdir(parents=True, exist_ok=True)
+        (w / "best.pt").write_bytes(b"ckpt")
+
+    monkeypatch.setattr(cp, "run_logged", fake_run)
+    a = cp.finetune(repo, "w.pt", "d.yaml", "m", data_sig="sigA")
+    b = cp.finetune(repo, "w.pt", "d.yaml", "m", data_sig="sigA")
+    assert a == b and len(calls) == 1  # second call reused the stamped checkpoint
+    cp.finetune(repo, "w.pt", "d.yaml", "m", data_sig="sigB")
+    assert len(calls) == 2  # different training data => retrain, never a stale model
+
+
+def test_unstamped_checkpoint_needs_an_explicit_opt_in(tmp_path, monkeypatch):
+    repo = _fake_repo(tmp_path)
+    w = Path(repo, "runs", "train", "m", "weights")
+    w.mkdir(parents=True)
+    (w / "last.pt").write_bytes(b"old")
+    calls = []
+    monkeypatch.setattr(cp, "run_logged", lambda *a, **k: (calls.append(1), (w / "best.pt").write_bytes(b"new")))
+    monkeypatch.setenv("REUSE_CHECKPOINTS", "1")
+    assert cp.finetune(repo, "w.pt", "d.yaml", "m", data_sig="x").name == "last.pt" and not calls
+    monkeypatch.delenv("REUSE_CHECKPOINTS")
+    cp.finetune(repo, "w.pt", "d.yaml", "m", data_sig="x")
+    assert calls  # without the opt-in an unstamped checkpoint is not trusted
+
+
+def test_files_signature_changes_with_content_size(tmp_path):
+    a, b = tmp_path / "a.jpg", tmp_path / "b.jpg"
+    a.write_bytes(b"1")
+    b.write_bytes(b"22")
+    s1 = cp.files_signature([a, b])
+    assert s1 == cp.files_signature([b, a])
+    b.write_bytes(b"333")
+    assert cp.files_signature([a, b]) != s1
+
+
+def test_a_failing_ego4d_stage_keeps_the_run_and_hides_the_signature(tmp_path, monkeypatch):
+    import json
+    import zipfile
+
+    wd = tmp_path / "wd"
+    (wd / "yolov7_face").mkdir(parents=True)
+    (wd / "yolov7-tiny-face.pt").write_bytes(b"weights")
+    for k, v in dict(workdir=str(wd), n_pool=44, n_blind=14, epochs=1, n_boot=10, corruption_repeats=1, run_control=False).items():
+        monkeypatch.setitem(cp.CFG, k, v)
+    monkeypatch.setattr(cp, "stream_wider", lambda n: _fake_stream(n))
+    monkeypatch.setattr(cp, "FaceDetector", _FakeDetector)
+
+    def fake_finetune(repo, w, y, name, data_sig=None):
+        p = tmp_path / "v2.pt"
+        p.write_bytes(b"x")
+        return p
+
+    monkeypatch.setattr(cp, "finetune", fake_finetune)
+    monkeypatch.setitem(cp.CFG, "ego4d_urls", [])
+    monkeypatch.setitem(cp.CFG, "ego4d_auto", True)
+
+    def boom(*a, **k):
+        raise ModuleNotFoundError("No module named 'boto3' while opening https://s3.x/clip.mp4?X-Amz-Signature=TOPSECRET")
+
+    monkeypatch.setattr(cp, "ego4d_presigned_urls", boom)
+    zpath = cp.run_pipeline()  # must not raise
+    out = zipfile.ZipFile(zpath)
+    rep = json.loads(out.read("eval_report.json"))
+    assert rep["provenance"]["ego4d_real"] is None
+    assert "ModuleNotFoundError" in rep["provenance"]["ego4d_error"]
+    assert all("TOPSECRET" not in out.read(n).decode() for n in out.namelist())
