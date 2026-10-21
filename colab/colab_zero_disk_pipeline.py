@@ -56,6 +56,10 @@ CFG = dict(
     hard_conf=0.40,  # hard negative: best matched confidence below this ...
     hard_iou=0.50,  # ... or best IoU below this
     ego4d_urls=[u for u in os.environ.get("EGO4D_PRESIGNED_URLS", "").split(",") if u.strip()],
+    ego4d_auto=os.environ.get("EGO4D_AUTO_PRESIGN", "0") == "1",  # presign clips with AWS keys kept in Colab Secrets
+    ego4d_clips=int(os.environ.get("EGO4D_CLIPS", "4")),
+    ego4d_bucket=os.environ.get("EGO4D_BUCKET", "ego4d-consortium-sharing"),
+    ego4d_prefix=os.environ.get("EGO4D_PREFIX", "public/v1/clips/"),
     ego4d_frames=48,
     ego4d_stride=2,
     epochs=int(os.environ.get("EPOCHS", "30")),
@@ -647,7 +651,87 @@ def stream_ego4d(urls, frames_per_clip: int, stride: int):
             k += 1
         cap.release()
         if seq:
-            yield seq
+            yield u, seq
+        else:
+            log(f"could not read frames from {urlparse(u).path.rsplit('/', 1)[-1]} (expired link or access denied?)")
+
+
+def aws_credentials() -> dict:
+    """AWS keys from the environment or Colab Secrets (key icon, left bar). Keys are never printed or exported."""
+    ak, sk = os.environ.get("AWS_ACCESS_KEY_ID"), os.environ.get("AWS_SECRET_ACCESS_KEY")
+    if not (ak and sk):
+        try:
+            from google.colab import userdata  # type: ignore
+
+            ak, sk = userdata.get("AWS_ACCESS_KEY_ID"), userdata.get("AWS_SECRET_ACCESS_KEY")
+        except Exception as exc:
+            raise RuntimeError(
+                "No AWS keys: add AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY in Colab Secrets (key icon) and enable "
+                "'Notebook access', or set them as environment variables."
+            ) from exc
+    return dict(aws_access_key_id=ak, aws_secret_access_key=sk, region_name=os.environ.get("AWS_DEFAULT_REGION", "us-east-1"))
+
+
+def pick_keys(keys, n: int) -> list:
+    """Deterministic, evenly spread choice of n clip keys (sorted so the same run picks the same clips)."""
+    keys = sorted(k for k in keys if k.lower().endswith(".mp4"))
+    if len(keys) <= n:
+        return keys
+    return keys[:: max(1, len(keys) // n)][:n]
+
+
+def ego4d_presigned_urls(n: int = 4, expires: int = 6 * 3600, client=None) -> list:
+    """List the Ego4D clips the licence allows and presign `n` of them. Only object keys are logged — never the URLs."""
+    if client is None:
+        import boto3
+
+        client = boto3.client("s3", **aws_credentials())
+    resp = client.list_objects_v2(Bucket=CFG["ego4d_bucket"], Prefix=CFG["ego4d_prefix"], MaxKeys=1000)
+    keys = pick_keys([o["Key"] for o in resp.get("Contents", [])], n)
+    if not keys:
+        raise RuntimeError(f"no .mp4 objects under s3://{CFG['ego4d_bucket']}/{CFG['ego4d_prefix']} (check the prefix in your licence email)")
+    log(f"presigning {len(keys)} Ego4D clips:", [k.rsplit("/", 1)[-1] for k in keys])
+    return [client.generate_presigned_url("get_object", Params={"Bucket": CFG["ego4d_bucket"], "Key": k}, ExpiresIn=expires) for k in keys]
+
+
+def ego_stats(clips: list) -> dict | None:
+    """Statistics only (the Ego4D licence forbids redistributing frames).
+
+    `clips`: list of dict(name, wh, v1=[dets per frame], v2=[...], control=[...] | None).
+    Reports confidence, detector dropout (frames with no face), how many V1 dropouts V2 fixes, and tracker coasting.
+    """
+    n = sum(len(c["v1"]) for c in clips)
+    if not n:
+        return None
+
+    def conf(key):
+        return sum(max((d.score for d in f), default=0.0) for c in clips for f in c[key]) / n
+
+    def drop(key):
+        return sum(1 for c in clips for f in c[key] if not f) / n
+
+    v1_drop = sum(1 for c in clips for f in c["v1"] if not f)
+    fixed = sum(1 for c in clips for a, b in zip(c["v1"], c["v2"]) if not a and b)
+    out = dict(
+        clips=len(clips),
+        frames=n,
+        mean_conf_v1=round(conf("v1"), 3),
+        mean_conf_v2=round(conf("v2"), 3),
+        dropout_v1=round(drop("v1"), 3),
+        dropout_v2=round(drop("v2"), 3),
+        v1_dropouts_fixed_by_v2=round(fixed / v1_drop, 3) if v1_drop else None,
+        tracker_coasted_frames_v1=sum(1 for c in clips for t in track_sequence(c["v1"], c["wh"]) if t["recovered"]),
+        tracker_coasted_frames_v2=sum(1 for c in clips for t in track_sequence(c["v2"], c["wh"]) if t["recovered"]),
+        per_clip=[
+            dict(clip=c["name"], frames=len(c["v1"]), dropout_v1=round(sum(1 for f in c["v1"] if not f) / len(c["v1"]), 3),
+                 dropout_v2=round(sum(1 for f in c["v2"] if not f) / len(c["v1"]), 3))
+            for c in clips
+        ],
+    )
+    if all(c.get("control") for c in clips):
+        out["mean_conf_control"] = round(conf("control"), 3)
+        out["dropout_control"] = round(drop("control"), 3)
+    return out
 
 
 # %% [markdown]
@@ -765,8 +849,8 @@ class VelocityTracker:
         return None, False
 
 
-def track_sequence(dets_per_frame) -> list[dict]:
-    tr = VelocityTracker()
+def track_sequence(dets_per_frame, frame_wh=None) -> list[dict]:
+    tr = VelocityTracker(frame_wh=frame_wh)
     out = []
     for i, ds in enumerate(dets_per_frame):
         box, rec = tr.update(ds)
@@ -1157,22 +1241,20 @@ def run_pipeline() -> Path:
 
     # ---- real Ego4D frames (stream only) --------------------------------------------------------------
     ego = None
-    if CFG["ego4d_urls"]:
-        s1 = s2 = d1n = d2n = n = tr_rec = 0
-        for seq in stream_ego4d(CFG["ego4d_urls"], CFG["ego4d_frames"], CFG["ego4d_stride"]):
-            r1 = [v1.predict(f) for f in seq]
-            r2 = [v2.predict(f) for f in seq]
-            for a, b in zip(r1, r2):
-                n += 1
-                s1 += max((d.score for d in a), default=0.0)
-                s2 += max((d.score for d in b), default=0.0)
-                d1n += 0 if a else 1
-                d2n += 0 if b else 1
-            tr_rec += sum(1 for t in track_sequence(r1) if t["recovered"])
-        if n:
-            ego = dict(frames=n, mean_conf_v1=round(s1 / n, 3), mean_conf_v2=round(s2 / n, 3),
-                       dropout_v1=round(d1n / n, 3), dropout_v2=round(d2n / n, 3), tracker_recovered_frames_v1=tr_rec)
-            log("ego4d (real, streamed):", ego)
+    ego_urls = CFG["ego4d_urls"] or (ego4d_presigned_urls(CFG["ego4d_clips"]) if CFG["ego4d_auto"] else [])
+    if ego_urls:
+        clips = []
+        for url, seq in stream_ego4d(ego_urls, CFG["ego4d_frames"], CFG["ego4d_stride"]):
+            clips.append(dict(
+                name=urlparse(url).path.rsplit("/", 1)[-1],  # object key only; the signed query string is dropped
+                wh=(seq[0].shape[1], seq[0].shape[0]),
+                v1=[v1.predict(f) for f in seq],
+                v2=[v2.predict(f) for f in seq],
+                control=[ctrl.predict(f) for f in seq] if ctrl is not None else None,
+            ))
+        ego = ego_stats(clips)
+        if ego:
+            log("ego4d (real, streamed, statistics only):", {k: v for k, v in ego.items() if k != "per_clip"})
 
     # ---- export: small JSON + thumbnails only ---------------------------------------------------------------
     cases.sort(key=lambda c: -c[0])
@@ -1212,7 +1294,7 @@ def run_pipeline() -> Path:
         provenance=dict(
             source="colab_zero_disk_pipeline", model="derronqi/yolov7-face (yolov7-tiny-face)",
             base_dataset="WIDER FACE (validation, streamed)", n_train=len(train), n_blind=len(blind),
-            target_domain="Ego4D (real, streamed)" if ego else "WIDER FACE through the physical attack engine (proxy; no Ego4D URLs supplied)",
+            target_domain="WIDER FACE through the physical attack engine (proxy)" + ("; plus real Ego4D frames, statistics only" if ego else "; no Ego4D supplied"),
             ego4d_real=ego, seed=CFG["seed"], epochs=CFG["epochs"], pipeline_version=PIPELINE_VERSION,
             v1_sha256=v1_sha, versions=env_versions(), leaks_removed=len(leaks),
             split="image-level, near-duplicate guarded (dHash); blind images are never used for synthesis or training", generated_at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),

@@ -48,7 +48,10 @@ WIDER FACE validation, streamed: 160 images for training, **80 held-out images**
 4. Unzip into `data/demo_artifacts/`, copy the three JSON files to `frontend/public/demo/`, commit, push → Vercel redeploys.
 5. The V2 checkpoint is copied to Google Drive (`MyDrive/advertest/yolov7-face-v2.pt`) or PUT to `WEIGHTS_PUT_URL`; its SHA-256 is in `manifest.json` → `weights`.
 
-### Adding real Ego4D frames
+### Adding real Ego4D frames (keys stay in Colab)
+Put `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` (from the Ego4D licence email) in **Colab Secrets** (key icon, enable *Notebook access*) — never in a cell, the repo or chat. Then set `EGO4D_AUTO_PRESIGN=1` (optional: `EGO4D_CLIPS`, `EGO4D_PREFIX`, `EGO4D_BUCKET`); the pipeline lists the clips, presigns a few for 6 h, streams them and logs only object names. Licence note: Ego4D frames must not be redistributed, so only statistics are exported (confidence, detector dropout, dropouts fixed by V2, tracker coasting) — no thumbnails.
+
+Manual alternative:
 Request access at ego4d-data.org, then create short-lived URLs for a few clips (`aws s3 presign … --expires-in 7200`) and set `EGO4D_PRESIGNED_URLS`. The pipeline decodes them as streams (never saved) and reports confidence, detector dropout and tracker-recovered frames for V1/V2. It does **not** compute mAP on Ego4D (no box labels in that path).
 
 ## 5. Run locally

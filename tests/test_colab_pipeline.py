@@ -382,6 +382,10 @@ def test_full_pipeline_dry_run_produces_every_artifact_and_reproducible_samples(
         return p
 
     monkeypatch.setattr(cp, "finetune", fake_finetune)
+    monkeypatch.setitem(cp.CFG, "ego4d_urls", ["https://s3.example/clips/a.mp4?X-Amz-Signature=TOPSECRET"])
+    monkeypatch.setattr(
+        cp, "stream_ego4d", lambda urls, n, stride: iter([(urls[0], [img for img, _, _ in _fake_stream(6)])])
+    )
     zpath = cp.run_pipeline()
 
     assert trained == ["advertest_v2", "advertest_ctrl"]
@@ -392,6 +396,10 @@ def test_full_pipeline_dry_run_produces_every_artifact_and_reproducible_samples(
     assert "gain_statistically_supported" in rep["gate"] and "beats_clean_only_control" in rep["gate"]
     assert len(rep["corruption_repeats"]["draws"]) == 2
     assert set(rep["recall_at_fppi"]) == {"clean", "corrupted"}
+    ego = rep["provenance"]["ego4d_real"]
+    assert ego["frames"] == 6 and ego["per_clip"][0]["clip"] == "a.mp4" and "dropout_control" in ego
+    assert "proxy" in rep["provenance"]["target_domain"]  # mAP stays on the proxy domain even with real frames
+    assert all("TOPSECRET" not in out.read(n).decode() for n in out.namelist())  # no signature is ever exported
     assert rep["provenance"]["v1_sha256"] and "leaks_removed" in rep["provenance"]
     manifest = json.loads(out.read("manifest.json"))
     assert manifest["weights"]["sha256"] and manifest["weights"]["bytes"] > 0
@@ -407,3 +415,49 @@ def test_full_pipeline_dry_run_produces_every_artifact_and_reproducible_samples(
     on_disk = cv2.imread(str(wd / "ds" / "images" / "train" / f"adv_{int(rec['id'].split('_')[-1]):04d}.jpg"))
     assert np.array_equal(cv2.imdecode(buf, cv2.IMREAD_COLOR), on_disk)
     assert rebuilt.params == rec["audit_trail"]["parameters"]
+
+
+# ---- Ego4D: presigning from Colab Secrets, statistics only, no signature or frame leaves the worker --------------
+
+
+def test_pick_keys_is_deterministic_and_spread():
+    keys = [f"public/v1/clips/{i:03d}.mp4" for i in range(40)] + ["public/v1/clips/readme.txt"]
+    a = cp.pick_keys(keys, 4)
+    assert a == cp.pick_keys(list(reversed(keys)), 4) and len(a) == 4
+    assert a[0].endswith("000.mp4") and a[-1] > a[0] and all(k.endswith(".mp4") for k in a)
+    assert cp.pick_keys(keys[:2], 5) == sorted(keys[:2])
+
+
+def test_presigning_uses_the_client_and_never_logs_urls(capsys):
+    class FakeS3:
+        def list_objects_v2(self, Bucket, Prefix, MaxKeys):  # noqa: N803  (mirrors the boto3 signature)
+            return {"Contents": [{"Key": f"{Prefix}clip{i}.mp4"} for i in range(6)]}
+
+        def generate_presigned_url(self, op, Params, ExpiresIn):  # noqa: N803
+            return f"https://s3.example/{Params['Key']}?X-Amz-Signature=TOPSECRET&Expires={ExpiresIn}"
+
+    urls = cp.ego4d_presigned_urls(3, expires=600, client=FakeS3())
+    assert len(urls) == 3 and all("TOPSECRET" in u for u in urls)
+    assert "TOPSECRET" not in capsys.readouterr().out  # only object names are logged
+
+
+def test_aws_credentials_error_explains_where_keys_go(monkeypatch):
+    monkeypatch.delenv("AWS_ACCESS_KEY_ID", raising=False)
+    monkeypatch.delenv("AWS_SECRET_ACCESS_KEY", raising=False)
+    with pytest.raises(RuntimeError, match="Colab Secrets"):
+        cp.aws_credentials()
+
+
+def test_ego_stats_counts_dropouts_fixed_by_v2():
+    face = [cp.Det((10, 10, 40, 40), 0.9)]
+    clip = dict(
+        name="a.mp4", wh=(320, 240),
+        v1=[face, [], [], face],      # two dropouts
+        v2=[face, face, [], face],    # V2 fixes one of them
+        control=[face, [], [], face],
+    )
+    st = cp.ego_stats([clip])
+    assert st["frames"] == 4 and st["dropout_v1"] == 0.5 and st["dropout_v2"] == 0.25
+    assert st["v1_dropouts_fixed_by_v2"] == 0.5
+    assert st["per_clip"][0]["clip"] == "a.mp4" and st["dropout_control"] == 0.5
+    assert cp.ego_stats([]) is None

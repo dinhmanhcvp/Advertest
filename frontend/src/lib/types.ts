@@ -61,6 +61,22 @@ export interface CureCase {
   model_v2: ModelResult;
 }
 
+/** Statistics from real Ego4D frames (streamed, never stored or exported: the licence forbids redistribution). */
+export interface Ego4dStats {
+  clips: number;
+  frames: number;
+  mean_conf_v1: number;
+  mean_conf_v2: number;
+  mean_conf_control?: number;
+  dropout_v1: number;
+  dropout_v2: number;
+  dropout_control?: number;
+  v1_dropouts_fixed_by_v2: number | null;
+  tracker_coasted_frames_v1: number;
+  tracker_coasted_frames_v2: number;
+  per_clip: { clip: string; frames: number; dropout_v1: number; dropout_v2: number }[];
+}
+
 export interface EvalReport {
   base_model: { base_map: number; corrupted_map: number };
   advertest_model: { base_map: number; corrupted_map: number };
@@ -78,7 +94,13 @@ export interface EvalReport {
   stats?: Record<"clean" | "corrupted", Record<string, { mean: number; lo: number; hi: number; n_images: number }>>;
   corruption_repeats?: { v2_minus_v1_mean: number; v2_minus_v1_std: number; draws: unknown[] };
   recall_at_fppi?: Record<"clean" | "corrupted", Record<"v1" | "v2", Record<string, number>>>;
-  provenance?: { target_domain?: string; n_blind?: number; n_train?: number; epochs?: number; ego4d_real?: unknown };
+  provenance?: {
+    target_domain?: string;
+    n_blind?: number;
+    n_train?: number;
+    epochs?: number;
+    ego4d_real?: Ego4dStats | null;
+  };
 }
 
 export interface TrackFrame {

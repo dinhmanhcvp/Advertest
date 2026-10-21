@@ -6,7 +6,7 @@ import CVFrame from "@/components/ui/CVFrame";
 import DiffSlider from "@/components/ui/DiffSlider";
 import { Badge, Card, cx, Eyebrow, PrimaryButton, SectionTitle, SPRING } from "@/components/ui/primitives";
 import { landmarksFor, pct, TAGS } from "@/lib/taxonomy";
-import type { CureCase, FailureTag, WorkspaceData } from "@/lib/types";
+import type { CureCase, Ego4dStats, FailureTag, WorkspaceData } from "@/lib/types";
 
 const signed = (v: number, d = 1) => `${v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(d)}%`;
 
@@ -129,6 +129,51 @@ function ValidityChecks({ report }: { report: WorkspaceData["report"] }) {
   );
 }
 
+/** Real Ego4D frames: statistics only (no mAP, no pixels). Hidden until the pipeline was run with Ego4D access. */
+function Ego4dCard({ stats }: { stats: Ego4dStats | null }) {
+  if (!stats) return null;
+  const p = (v: number) => `${(v * 100).toFixed(1)}%`;
+  return (
+    <Card className="p-5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Eyebrow>Real Ego4D frames · streamed, statistics only</Eyebrow>
+        <Badge tone="track">
+          {stats.frames} frames · {stats.clips} clips
+        </Badge>
+      </div>
+      <div className="mt-3 grid gap-3 md:grid-cols-4">
+        <div className="rounded-md border border-white/[0.08] p-3">
+          <p className="text-xs text-zinc-400">Mean best-face confidence</p>
+          <p className="mt-1 font-mono text-lg text-white">
+            {stats.mean_conf_v1.toFixed(2)} → {stats.mean_conf_v2.toFixed(2)}
+          </p>
+        </div>
+        <div className="rounded-md border border-white/[0.08] p-3">
+          <p className="text-xs text-zinc-400">Frames with no face detected</p>
+          <p className="mt-1 font-mono text-lg text-white">
+            {p(stats.dropout_v1)} → {p(stats.dropout_v2)}
+          </p>
+        </div>
+        <div className="rounded-md border border-white/[0.08] p-3">
+          <p className="text-xs text-zinc-400">V1 dropouts fixed by V2</p>
+          <p className="mt-1 font-mono text-lg text-white">
+            {stats.v1_dropouts_fixed_by_v2 == null ? "n/a" : p(stats.v1_dropouts_fixed_by_v2)}
+          </p>
+        </div>
+        <div className="rounded-md border border-white/[0.08] p-3">
+          <p className="text-xs text-zinc-400">Tracker-coasted frames (V1 / V2)</p>
+          <p className="mt-1 font-mono text-lg text-white">
+            {stats.tracker_coasted_frames_v1} / {stats.tracker_coasted_frames_v2}
+          </p>
+        </div>
+      </div>
+      <p className="mt-3 text-xs text-zinc-500">
+        No ground-truth boxes are used on Ego4D, so these are detector-behaviour statistics, not mAP. No Ego4D pixels are stored or shown.
+      </p>
+    </Card>
+  );
+}
+
 export default function ProofOfCure({ data }: { data: WorkspaceData }) {
   const { report, cases } = data;
   const [caseIdx, setCaseIdx] = useState(0);
@@ -188,6 +233,7 @@ export default function ProofOfCure({ data }: { data: WorkspaceData }) {
       </div>
 
       <ValidityChecks report={report} />
+      <Ego4dCard stats={report.provenance?.ego4d_real ?? null} />
 
       <Card className="p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
