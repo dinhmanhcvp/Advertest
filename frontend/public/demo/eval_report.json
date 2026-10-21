@@ -4,14 +4,14 @@
   "corrupted_map": 0.5317
  },
  "advertest_model": {
-  "base_map": 0.758,
-  "corrupted_map": 0.6143
+  "base_map": 0.7591,
+  "corrupted_map": 0.6129
  },
  "deltas": {
-  "base_drop": 0.001,
-  "corrupted_improvement": 0.0826
+  "base_drop": -0.0,
+  "corrupted_improvement": 0.0812
  },
- "hard_negative_recovery": 0.21,
+ "hard_negative_recovery": 0.2132,
  "recall_at_fppi": {
   "clean": {
    "v1": {
@@ -19,8 +19,8 @@
     "recall@fppi=1.0": 0.5555
    },
    "v2": {
-    "recall@fppi=0.1": 0.3674,
-    "recall@fppi=1.0": 0.5973
+    "recall@fppi=0.1": 0.3774,
+    "recall@fppi=1.0": 0.6
    }
   },
   "corrupted": {
@@ -29,45 +29,45 @@
     "recall@fppi=1.0": 0.3595
    },
    "v2": {
-    "recall@fppi=0.1": 0.2458,
-    "recall@fppi=1.0": 0.4757
+    "recall@fppi=0.1": 0.2492,
+    "recall@fppi=1.0": 0.4724
    }
   }
  },
  "control_model": {
-  "base_map": 0.7518,
-  "corrupted_map": 0.5153,
+  "base_map": 0.7517,
+  "corrupted_map": 0.5164,
   "note": "same init, epochs and clean images as V2, without the adversarial samples"
  },
  "stats": {
   "corrupted": {
    "v2_minus_v1": {
-    "mean": 0.0803,
-    "lo": 0.0363,
-    "hi": 0.1191,
+    "mean": 0.079,
+    "lo": 0.034,
+    "hi": 0.1181,
     "n_boot": 300,
     "n_images": 150
    },
    "v2_minus_control": {
-    "mean": 0.0984,
-    "lo": 0.0603,
-    "hi": 0.1351,
+    "mean": 0.0959,
+    "lo": 0.0579,
+    "hi": 0.1312,
     "n_boot": 300,
     "n_images": 150
    }
   },
   "clean": {
    "v2_minus_v1": {
-    "mean": -0.0029,
-    "lo": -0.0284,
-    "hi": 0.0226,
+    "mean": -0.0018,
+    "lo": -0.0278,
+    "hi": 0.0242,
     "n_boot": 300,
     "n_images": 150
    },
    "v2_minus_control": {
-    "mean": 0.0061,
-    "lo": -0.0101,
-    "hi": 0.0207,
+    "mean": 0.0072,
+    "lo": -0.0088,
+    "hi": 0.0211,
     "n_boot": 300,
     "n_images": 150
    }
@@ -77,32 +77,32 @@
   "draws": [
    {
     "rep": 0,
-    "v2_minus_v1": 0.0826,
-    "v2_minus_control": 0.099
+    "v2_minus_v1": 0.0812,
+    "v2_minus_control": 0.0965
    },
    {
     "rep": 1,
-    "v2_minus_v1": 0.1116,
-    "v2_minus_control": 0.1348
+    "v2_minus_v1": 0.1115,
+    "v2_minus_control": 0.1345
    },
    {
     "rep": 2,
-    "v2_minus_v1": 0.087,
-    "v2_minus_control": 0.1004
+    "v2_minus_v1": 0.0902,
+    "v2_minus_control": 0.1032
    }
   ],
-  "v2_minus_v1_mean": 0.0937,
-  "v2_minus_v1_std": 0.0128
+  "v2_minus_v1_mean": 0.0943,
+  "v2_minus_v1_std": 0.0127
  },
  "gate": {
   "max_base_drop": 0.01,
   "min_corrupted_gain": 0.05,
-  "base_drop": 0.001,
-  "corrupted_gain": 0.0826,
+  "base_drop": -0.0,
+  "corrupted_gain": 0.0812,
   "accepted": true,
   "corrupted_gain_ci95": [
-   0.0363,
-   0.1191
+   0.034,
+   0.1181
   ],
   "gain_statistically_supported": true,
   "beats_clean_only_control": true
@@ -128,6 +128,6 @@
   },
   "leaks_removed": 0,
   "split": "image-level, near-duplicate guarded (dHash); blind images are never used for synthesis or training",
-  "generated_at": "2026-10-21T04:32:56Z"
+  "generated_at": "2026-10-21T06:23:31Z"
  }
 }

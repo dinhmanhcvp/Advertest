@@ -17,7 +17,7 @@
  "weights": {
   "name": "yolov7-face-v2.pt",
   "bytes": 15989605,
-  "sha256": "8205c66ae07d13543d8338640b5b33ea35df8ad941731c4c0ffb616c017c3860",
+  "sha256": "9df1306e873889262f3883e973cdc0d351b869cc214d4c411de582e0aa267997",
   "accepted_by_gate": true,
   "location": "Google Drive: MyDrive/advertest/yolov7-face-v2.pt"
  },

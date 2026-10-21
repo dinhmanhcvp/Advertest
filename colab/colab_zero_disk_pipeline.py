@@ -466,7 +466,7 @@ def explain(tag: str, dist: dict, n_hard: int, med_conf: float, att: Attacked) -
     )
 
 
-PIPELINE_VERSION = "2026-10-21.1"
+PIPELINE_VERSION = "2026-10-21.2"
 
 
 def rng_for(seed: int, *key) -> np.random.Generator:
@@ -1114,6 +1114,7 @@ def best_conf_for(gt_box, dets):
 
 
 def run_pipeline() -> Path:
+    log(f"AdverTest pipeline version {PIPELINE_VERSION} (if this is not the latest, reopen the notebook from GitHub)")
     random.seed(CFG["seed"])
     wd = Path(CFG["workdir"])
     repo, weights = str(wd / "yolov7_face"), str(wd / "yolov7-tiny-face.pt")
